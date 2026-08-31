@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Staff Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+
+    .activity-time {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 900px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <ul class="main-nav">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="http://localhost:3001">Products</a></li>
+        <li><a href="http://localhost:3004">Orders</a></li>
+        <li><a href="http://localhost:3005">Chatbot</a></li>
+      </ul>
+
+      <div class="header-actions">
+        <a href="http://localhost:3002" class="btn btn-login">Log out</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder" id="overview">
+    <div class="container">
+      <span class="section-tag">Staff Dashboard</span>
+      <h2 class="section-title">Welcome back, <span class="gradient-text">Staff</span></h2>
+      <p class="section-sub">Here's what's happening across the store today.</p>
+
+      <div class="finder-box">
+        <div class="stat-row">
+          <div>
+            <div class="hero-stat-val" id="statOrders">--</div>
+            <div class="hero-stat-lbl">Total Orders</div>
+          </div>
+          <div>
+            <div class="hero-stat-val" id="statRating">--</div>
+            <div class="hero-stat-lbl">Avg. Rating</div>
+          </div>
+          <div>
+            <div class="hero-stat-val" id="statFlagged">--</div>
+            <div class="hero-stat-lbl">Flagged Reviews</div>
+          </div>
+          <div>
+            <div class="hero-stat-val" id="statProducts">--</div>
+            <div class="hero-stat-lbl">Active Products</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="showcase">
+    <div class="container showcase-inner">
+      <div>
+        <span class="section-tag">Recent Activity</span>
+        <h2 class="section-title">What's happening</h2>
+        <div>
+          <p>New order placed — #10432</p>
+          <p class="activity-time">2 minutes ago</p>
+        </div>
+        <div>
+          <p>Review flagged as suspicious</p>
+          <p class="activity-time">18 minutes ago</p>
+        </div>
+        <div>
+          <p>New 5★ review on Air Jordan 1</p>
+          <p class="activity-time">1 hour ago</p>
+        </div>
+        <div>
+          <p>Order #10428 marked delivered</p>
+          <p class="activity-time">3 hours ago</p>
+        </div>
+      </div>
+
+      <div class="finder-options">
+        <a href="#" class="chip chip-link chip-highlight">🚩 Moderate flagged reviews (<span id="flaggedBadge">--</span>)</a>
+        <a href="http://localhost:3002" class="chip chip-link">📦 Manage product catalog</a>
+        <a href="http://localhost:3004" class="chip chip-link">🧾 View all orders</a>
+        <a href="http://localhost:3003" class="chip chip-link">👤 Customer accounts</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Staff Dashboard</p>
+  </footer>
+
+  <script>
+    async function loadDashboardStats() {
+      try {
+        const res = await fetch('http://localhost:5000/dashboard/stats');
+        const data = await res.json();
+
+        document.getElementById('statOrders').textContent = data.total_orders;
+        document.getElementById('statRating').textContent = data.avg_rating + '★';
+        document.getElementById('statFlagged').textContent = data.flagged_reviews;
+        document.getElementById('statProducts').textContent = data.active_products;
+        document.getElementById('flaggedBadge').textContent = data.flagged_reviews;
+      } catch (err) {
+        console.error('Could not load dashboard stats:', err);
+      }
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('header').classList.toggle('open');
+    });
+
+    loadDashboardStats();
+  </script>
+</body>
+</html>
