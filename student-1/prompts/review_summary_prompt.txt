@@ -1,0 +1,7 @@
+Summarise these customer reviews for a product. 
+Mention both common praises and common complaints if they exist. 
+Keep your response to exactly 1-2 sentences, maximum 40 words.
+
+If there are no reviews, respond with: No reviews available yet.
+
+{comments}
