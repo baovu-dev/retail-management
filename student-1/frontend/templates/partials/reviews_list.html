@@ -1,0 +1,16 @@
+<div class="finder-box">
+  <strong>🤖 AI Summary</strong>
+  {{ summary_text }}
+</div>
+
+{% for r in reviews %}
+<div class="review-item">
+  <span class="review-rating">{{ r.rating }}★</span> — {{ r.comment or '(no comment)' }}
+  <div class="review-sentiment">
+    <span>sentiment: {{ r.sentiment_score }}</span>
+    {% if r.is_flagged %}<span class="flag-pill">🚩 flagged</span>{% endif %}
+  </div>
+</div>
+{% else %}
+<p>No reviews yet for this product.</p>
+{% endfor %}

@@ -4,7 +4,7 @@ import os
 
 from prompt_loader import load_prompt
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/css', static_url_path='/static')
 
 DATABASE_URL = os.getenv("DATABASE_URL", "http://localhost:6001")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
@@ -37,6 +37,32 @@ def is_verified_purchase(customer_id, product_id):
 def index():
     return render_template('index.html')
 
+@app.route('/submit')
+def submit_page():
+    product_id = request.args.get('product_id')
+    customer_id = request.args.get('customer_id')
+    return render_template('submit.html', product_id=product_id, customer_id=customer_id)
+
+@app.route('/reviews/view', methods=['GET'])
+def view_reviews_html():
+    product_id = request.args.get('product_id')
+ 
+    if not product_id:
+        return "<p>Enter a product ID.</p>"
+ 
+    reviews_response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    reviews = reviews_response.json()
+ 
+    summary_response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}")
+    existing_summary = summary_response.json()
+ 
+    if existing_summary and existing_summary.get('generated_summary_text'):
+        summary_text = existing_summary['generated_summary_text']
+    else:
+        summary_text = generate_summary(product_id)
+ 
+    return render_template('partials/reviews_list.html', reviews=reviews, summary_text=summary_text)
+
 @app.route('/reviews/<int:product_id>', methods=['GET'])
 def list_reviews(product_id):
     response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
@@ -54,6 +80,39 @@ def submit_review():
 
     response = requests.post(f"{DATABASE_URL}/reviews", json=data)
     return jsonify(response.json()), response.status_code
+
+@app.route('/reviews/submit-form', methods=['POST'])
+def submit_review_form():
+    data = {
+        "product_id": int(request.form.get('product_id')),
+        "customer_id": int(request.form.get('customer_id')),
+        "rating": int(request.form.get('rating')),
+        "comment": request.form.get('comment', '')
+    }
+ 
+    if not is_verified_purchase(data['customer_id'], data['product_id']):
+        return "<p style='color: var(--pink);'>Only verified purchases can leave a review.</p>"
+ 
+    existing_reviews_res = requests.get(f"{DATABASE_URL}/reviews/{data['product_id']}")
+    existing_reviews = existing_reviews_res.json()
+    already_reviewed = any(
+        rev['customer_id'] == data['customer_id'] for rev in existing_reviews
+    )
+    if already_reviewed:
+        return "<p style='color: var(--pink);'>You've already reviewed this product.</p>"
+ 
+    data['sentiment_score'] = analyse_sentiment(data['comment'])
+    data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0
+ 
+    r = requests.post(f"{DATABASE_URL}/reviews", json=data)
+ 
+    if r.status_code == 201:
+        response = app.make_response(
+            "<p style='color: var(--purple); font-weight: 600;'>Review submitted. Redirecting…</p>"
+        )
+        response.headers['HX-Redirect'] = 'http://localhost:5000/'
+        return response
+    return "<p style='color: var(--pink);'>Something went wrong. Please try again.</p>"
 
 @app.route('/reviews/<int:review_id>', methods=['PUT'])
 def edit_review(review_id):
