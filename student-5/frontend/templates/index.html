@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Sneaker Recommendations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="serviceBanner" class="service-banner" hidden></div>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="{{ store_home }}" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M2 18h20l-2-9H4L2 18z"/><path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+      <ul class="main-nav">
+        <li><a href="#chatbot">Chat</a></li>
+        <li><a href="#recommendations">Your picks</a></li>
+      </ul>
+      <div class="header-actions">
+        <a href="{{ store_home }}" class="btn btn-glass">Store Home</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="ai-hero">
+    <div class="container">
+      <span class="section-tag">Sneaker recommendations</span>
+      <h1 class="section-title">Tell us what you're looking for</h1>
+      <p class="section-sub">Chat with our assistant to get personalized sneaker advice — then browse picks matched to your style below.</p>
+    </div>
+  </section>
+
+  <main class="ai-main">
+    <div class="container">
+      <section class="ai-panel ai-panel-chat ai-panel-primary" id="chatbot">
+        <div class="panel-head">
+          <h2>Shoe shopping assistant</h2>
+          <p>Ask about style, budget, or occasion — we'll help you find the right pair</p>
+        </div>
+        <div class="chat-panel chat-panel-large">
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-bubble bot">Hi! I'm your KICKLAB assistant. What kind of men's sneakers are you looking for?</div>
+          </div>
+          <form class="chat-input-row" id="chatForm">
+            <input type="text" id="chatInput" placeholder="e.g. everyday sneakers under $120" autocomplete="off">
+            <button type="submit" class="btn btn-gradient" id="chatSendBtn">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="ai-panel ai-panel-secondary" id="recommendations">
+        <div class="panel-head">
+          <h2>Recommended for you</h2>
+          <p id="recSubtitle">Picks update automatically based on your chat</p>
+        </div>
+        <span class="status-msg" id="statusMsg"></span>
+        <div class="carousel-wrap">
+          <div class="carousel-track" id="carouselTrack">
+            <p class="empty-state">Tell the assistant what you're looking for — your personalized picks will show up here.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="product-modal" id="productModal" hidden>
+    <div class="product-modal-backdrop" id="modalBackdrop"></div>
+    <div class="product-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div class="product-modal-grid">
+        <div class="product-modal-image">
+          <img id="modalImage" src="" alt="">
+        </div>
+        <div class="product-modal-info">
+          <span class="section-tag" id="modalBrand"></span>
+          <h2 id="modalTitle"></h2>
+          <p class="modal-meta" id="modalMeta"></p>
+          <p class="rec-price" id="modalPrice"></p>
+          <p class="rec-explanation" id="modalExplanation"></p>
+        </div>
+      </div>
+      <div class="product-modal-similar">
+        <h3>You may also like</h3>
+        <div class="carousel-track" id="similarTrack"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · <a href="{{ store_home }}">Back to store</a></p>
+  </footer>
+
+  <script>
+    const CUSTOMER_ID = 1;
+    const API_BASE = '{{ api_base }}';
+    const STORE_HOME = '{{ store_home }}';
+    const carouselTrack = document.getElementById('carouselTrack');
+    const statusMsg = document.getElementById('statusMsg');
+    const serviceBanner = document.getElementById('serviceBanner');
+    const productModal = document.getElementById('productModal');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatForm = document.getElementById('chatForm');
+    const chatMessages = document.getElementById('chatMessages');
+    let chatBusy = false;
+
+    if (window.location.protocol === 'file:') {
+      serviceBanner.hidden = false;
+      serviceBanner.textContent = 'Open this page at http://localhost:3005 (run: cd student-5/frontend && python app.py).';
+      document.body.classList.add('has-service-banner');
+    }
+
+    function showServiceError(message) {
+      serviceBanner.hidden = false;
+      serviceBanner.textContent = message;
+      document.body.classList.add('has-service-banner');
+    }
+
+    function setChatBusy(busy) {
+      chatBusy = busy;
+      chatInput.disabled = busy;
+      chatSendBtn.disabled = busy;
+      chatForm.classList.toggle('chat-busy', busy);
+      chatInput.placeholder = busy ? 'Waiting for a reply…' : 'e.g. everyday sneakers under $120';
+    }
+
+    function appendTypingIndicator() {
+      const el = document.createElement('div');
+      el.className = 'chat-bubble bot chat-typing';
+      el.id = 'typingIndicator';
+      el.innerHTML = '<span></span><span></span><span></span>';
+      chatMessages.appendChild(el);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      document.getElementById('typingIndicator')?.remove();
+    }
+
+    async function checkHealth() {
+      try {
+        const response = await fetch(`${API_BASE}/api/health`);
+        const data = await response.json();
+        if (!data.database_connected) {
+          showServiceError('Recommendation service is starting up. If this persists, run student-5/database/app.py on port 6005.');
+        }
+      } catch {
+        showServiceError('Start all three services: frontend :3005, backend :5005, database :6005 (see student-5/run.sh).');
+      }
+    }
+
+    function openProductModal(product, explanation) {
+      document.getElementById('modalImage').src = product.image || '';
+      document.getElementById('modalImage').alt = product.name || '';
+      document.getElementById('modalBrand').textContent = product.brand || '';
+      document.getElementById('modalTitle').textContent = product.name || '';
+      document.getElementById('modalMeta').textContent = `${(product.category || '').charAt(0).toUpperCase()}${(product.category || '').slice(1)} sneaker`;
+      document.getElementById('modalPrice').textContent = `$${(product.price || 0).toFixed(2)}`;
+      document.getElementById('modalExplanation').textContent = explanation || 'Recommended based on your profile.';
+      productModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      loadSimilarProducts(product.product_id);
+    }
+
+    function closeProductModal() {
+      productModal.hidden = true;
+      document.body.style.overflow = '';
+    }
+
+    async function loadSimilarProducts(productId) {
+      const track = document.getElementById('similarTrack');
+      track.innerHTML = '<p class="empty-state">Loading similar picks…</p>';
+      try {
+        const response = await fetch(`${API_BASE}/api/recommendations/product/${productId}`);
+        const data = await response.json();
+        if (!data.length) {
+          track.innerHTML = '<p class="empty-state">No similar products found.</p>';
+          return;
+        }
+        track.innerHTML = data.map(rec => `
+          <article class="rec-card rec-card-sm">
+            <button type="button" class="rec-card-btn" data-product-id="${rec.product.product_id}" data-explanation="${(rec.explanation || '').replace(/"/g, '&quot;')}">
+              <img src="${rec.product.image}" alt="${rec.product.name}">
+              <span class="rec-title">${rec.product.name}</span>
+              <span class="rec-price">$${rec.product.price.toFixed(2)}</span>
+            </button>
+          </article>
+        `).join('');
+
+        track.querySelectorAll('.rec-card-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const res = await fetch(`${API_BASE}/api/products/${btn.dataset.productId}`);
+            if (res.ok) openProductModal(await res.json(), btn.dataset.explanation);
+          });
+        });
+      } catch {
+        track.innerHTML = '<p class="empty-state">Could not load similar products.</p>';
+      }
+    }
+
+    function renderCarousel(recommendations) {
+      if (!Array.isArray(recommendations) || !recommendations.length) {
+        carouselTrack.innerHTML = '<p class="empty-state">Tell the assistant what you\'re looking for — your personalized picks will show up here.</p>';
+        return;
+      }
+
+      carouselTrack.innerHTML = recommendations.map(rec => {
+        const product = rec.product || {};
+        const recId = rec.recommendation_id;
+        return `
+          <article class="rec-card">
+            <button type="button" class="rec-card-btn rec-card-image-btn" data-product-id="${product.product_id || rec.recommended_product_id}" data-explanation="${(rec.explanation || '').replace(/"/g, '&quot;')}">
+              <img src="${product.image || ''}" alt="${product.name || 'Sneaker'}">
+            </button>
+            <div class="rec-card-body">
+              <span class="rec-score">${Math.round((rec.recommendation_score || 0) * 100)}% match</span>
+              <h3 class="rec-title">${product.name || 'Recommended product'}</h3>
+              <p class="rec-brand">${product.brand || ''} · ${product.category || ''}</p>
+              <p class="rec-explanation">${rec.explanation || 'Recommended based on your profile.'}</p>
+              <p class="rec-price">$${(product.price || 0).toFixed(2)}</p>
+              <div class="feedback-row" data-rec-id="${recId}">
+                <span class="feedback-label">Rate this pick</span>
+                ${[1,2,3,4,5].map(n => `<button type="button" class="star-btn" data-rating="${n}">${n}</button>`).join('')}
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+
+      carouselTrack.querySelectorAll('.rec-card-image-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const res = await fetch(`${API_BASE}/api/products/${btn.dataset.productId}`);
+          if (res.ok) openProductModal(await res.json(), btn.dataset.explanation);
+        });
+      });
+
+      carouselTrack.querySelectorAll('.feedback-row').forEach(row => {
+        row.addEventListener('click', async (event) => {
+          const button = event.target.closest('.star-btn');
+          if (!button || !row.dataset.recId) return;
+          await fetch(`${API_BASE}/api/recommendations/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recommendation_id: Number(row.dataset.recId),
+              customer_feedback_rating: Number(button.dataset.rating),
+              helpful: Number(button.dataset.rating) >= 4,
+              was_purchased: false
+            })
+          });
+          row.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+          button.classList.add('active');
+          statusMsg.textContent = 'Thanks — feedback saved.';
+        });
+      });
+    }
+
+    chatForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (chatBusy) return;
+
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      chatMessages.innerHTML += `<div class="chat-bubble user">${message}</div>`;
+      chatInput.value = '';
+      setChatBusy(true);
+      appendTypingIndicator();
+
+      try {
+        const response = await fetch(`${API_BASE}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, customer_id: CUSTOMER_ID })
+        });
+        const data = await response.json();
+        removeTypingIndicator();
+        chatMessages.innerHTML += `<div class="chat-bubble bot">${data.reply || 'Sorry, I could not respond right now.'}</div>`;
+        if (Array.isArray(data.recommendations) && data.recommendations.length) {
+          renderCarousel(data.recommendations);
+          document.getElementById('recSubtitle').textContent = 'Based on what you just told the assistant';
+          statusMsg.textContent = `${data.recommendations.length} picks matched to your message.`;
+          document.getElementById('recommendations').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch {
+        removeTypingIndicator();
+        chatMessages.innerHTML += `<div class="chat-bubble bot">The AI assistant is unavailable. Try again shortly.</div>`;
+      } finally {
+        setChatBusy(false);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        chatInput.focus();
+      }
+    });
+
+    document.getElementById('modalClose').addEventListener('click', closeProductModal);
+    document.getElementById('modalBackdrop').addEventListener('click', closeProductModal);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeProductModal(); });
+
+    checkHealth();
+  </script>
+</body>
+</html>
