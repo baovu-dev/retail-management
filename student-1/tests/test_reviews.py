@@ -1,0 +1,25 @@
+import pytest
+from backend.app import app
+
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
+
+def test_index_loads(client):
+    response = client.get('/')
+    assert response.status_code == 200
+
+def test_submit_page_loads(client):
+    response = client.get('/submit')
+    assert response.status_code == 200
+
+def test_submit_page_with_product_context(client):
+    response = client.get('/submit?product_id=101&customer_id=1')
+    assert response.status_code == 200
+    assert b'Product #101' in response.data
+
+def test_view_reviews_requires_product_id(client):
+    response = client.get('/reviews/view')
+    assert b'Enter a product ID' in response.data

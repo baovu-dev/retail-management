@@ -1,0 +1,42 @@
+name: Student 1 CI - Reviews & Ratings
+
+on:
+  push:
+    paths:
+      - 'student-1/**'
+  pull_request:
+    paths:
+      - 'student-1/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        working-directory: student-1
+        run: pip install -r tests/requirements.txt
+
+      - name: Run pytest
+        working-directory: student-1
+        run: pytest tests/ -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: student-1
+        run: docker build -t student1-reviews .
