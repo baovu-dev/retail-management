@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Leave a Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <style>
+    .submit-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .product-preview {
+      position: sticky;
+      top: 120px;
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 48px 32px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .product-preview-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      background: var(--gradient);
+      border-radius: 16px;
+    }
+
+    .product-preview-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .product-preview-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 900px) {
+      .submit-layout { grid-template-columns: 1fr; }
+      .product-preview { position: static; margin-bottom: 24px; }
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .review-form label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .review-form input,
+    .review-form textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .review-form input:focus,
+    .review-form textarea:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
+
+    .review-form button {
+      margin-top: 4px;
+      justify-self: start;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .htmx-indicator {
+      display: none;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    .htmx-request .htmx-indicator {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="http://localhost:5000/" class="btn btn-glass">Back to Shop</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder" id="submit-review">
+    <div class="container">
+      <span class="section-tag">⭐ Reviews & Ratings</span>
+      <h2 class="section-title">Leave a review</h2>
+      <p class="section-sub">Tell other shoppers what you thought about your purchase.</p>
+
+      <div class="finder-box">
+        <div class="submit-layout">
+          <div class="product-preview">
+            {# TODO: once Product Management's API exists, replace this icon card with
+               the real product image and name by calling Student 2's product endpoint
+               for this product_id and rendering the returned image_url instead #}
+            <div class="product-preview-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 18h20l-2-9H4L2 18z"/>
+                <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+              </svg>
+            </div>
+            {% if product_id %}
+              <p class="product-preview-label">Product #{{ product_id }}</p>
+              <p class="product-preview-sub">Product image will appear here once linked to the catalog</p>
+            {% else %}
+              <p class="product-preview-label">Your purchase</p>
+              <p class="product-preview-sub">Enter a product to review below</p>
+            {% endif %}
+          </div>
+
+          <div>
+            {% if product_id %}
+            <p class="section-sub" style="margin-bottom: 20px;">Reviewing product #{{ product_id }}{% if customer_id %} as customer #{{ customer_id }}{% endif %}</p>
+            {% endif %}
+
+            <form class="review-form"
+                  hx-post="/reviews/submit-form"
+                  hx-target="#status"
+                  hx-indicator="#loadingIndicator"
+                  hx-on::after-request="if(event.detail.successful) this.reset()">
+              {% if product_id %}
+                <input type="hidden" name="product_id" value="{{ product_id }}">
+              {% endif %}
+              {% if customer_id %}
+                <input type="hidden" name="customer_id" value="{{ customer_id }}">
+              {% endif %}
+
+              {% if not product_id or not customer_id %}
+              <div class="form-row">
+                {% if not product_id %}
+                <div>
+                  <label for="productId">Product ID</label>
+                  <input type="number" id="productId" name="product_id" required>
+                </div>
+                {% endif %}
+                {% if not customer_id %}
+                <div>
+                  <label for="customerId">Customer ID</label>
+                  <input type="number" id="customerId" name="customer_id" required>
+                </div>
+                {% endif %}
+              </div>
+              {% endif %}
+
+              <div>
+                <label for="rating">Rating (1-5)</label>
+                <input type="number" id="rating" name="rating" min="1" max="5" required>
+              </div>
+              <div>
+                <label for="comment">Comment</label>
+                <textarea id="comment" name="comment" rows="4" placeholder="What did you think?"></textarea>
+              </div>
+              <button type="submit" class="btn btn-gradient">Submit Review</button>
+              <p id="loadingIndicator" class="htmx-indicator">Submitting…</p>
+            </form>
+            <div id="status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Reviews & Ratings</p>
+  </footer>
+
+  <script>
+    document.getElementById('menuToggle')?.addEventListener('click', () => {
+      document.getElementById('header').classList.toggle('open');
+    });
+  </script>
+
+</body>
+</html>

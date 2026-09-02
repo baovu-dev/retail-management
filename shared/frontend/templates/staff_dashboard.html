@@ -7,8 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/styles.css">
-  <style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">  <style>
     .stat-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -50,13 +49,13 @@
 
       <ul class="main-nav">
         <li><a href="#overview">Overview</a></li>
-        <li><a href="http://localhost:3001">Products</a></li>
-        <li><a href="http://localhost:3004">Orders</a></li>
-        <li><a href="http://localhost:3005">Chatbot</a></li>
+        <li><a href="http://localhost:5002">Products</a></li>
+        <li><a href="http://localhost:5004">Orders</a></li>
+        <li><a href="http://localhost:5005">Chatbot</a></li>
       </ul>
 
       <div class="header-actions">
-        <a href="http://localhost:3002" class="btn btn-login">Log out</a>
+        <a href="http://localhost:5000/" class="btn btn-login">Log out</a>
         <button class="menu-toggle" id="menuToggle" aria-label="Menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="6" x2="21" y2="6"/>
@@ -71,7 +70,7 @@
   <section class="finder" id="overview">
     <div class="container">
       <span class="section-tag">Staff Dashboard</span>
-      <h2 class="section-title">Welcome back, <span class="gradient-text">Staff</span></h2>
+      <h2 class="section-title">Welcome back! 👋</h2>
       <p class="section-sub">Here's what's happening across the store today.</p>
 
       <div class="finder-box">
@@ -121,10 +120,10 @@
       </div>
 
       <div class="finder-options">
-        <a href="#" class="chip chip-link chip-highlight">🚩 Moderate flagged reviews (<span id="flaggedBadge">--</span>)</a>
-        <a href="http://localhost:3002" class="chip chip-link">📦 Manage product catalog</a>
-        <a href="http://localhost:3004" class="chip chip-link">🧾 View all orders</a>
-        <a href="http://localhost:3003" class="chip chip-link">👤 Customer accounts</a>
+        <a href="http://localhost:5001" class="chip chip-link chip-highlight">🚩 Moderate flagged reviews (<span id="flaggedBadge">--</span>)</a>
+        <a href="http://localhost:5002" class="chip chip-link chip-highlight">📦 Manage product catalog</a>
+        <a href="http://localhost:5004" class="chip chip-link chip-highlight">🧾 View all orders</a>
+        <a href="http://localhost:5003" class="chip chip-link chip-highlight">👤 Customer accounts</a>
       </div>
     </div>
   </section>
