@@ -1,0 +1,24 @@
+* [33m5540612[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mgordon-customer-acc[m[33m)[m Add Docker and CI for customer account service
+*   [33mb9bcb05[m Merge remote-tracking branch 'origin/main' into gordon-customer-acc
+[32m|[m[33m\[m  
+[32m|[m *   [33me045442[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #7 from baovu-dev/student-1_individual_feature_branch
+[32m|[m [34m|[m[35m\[m  
+[32m|[m [34m|[m * [33m4514b6e[m[33m ([m[1;31morigin/student-1_individual_feature_branch[m[33m)[m Add delete feature for reviews
+[32m|[m [34m|[m * [33m60dac07[m Add README.md file
+[32m|[m [34m|[m * [33m7e10b27[m Created template for docker-compose.yml
+[32m|[m [34m|[m * [33m2deaac0[m Added sentimental tests and final fixes to docker-compose
+[32m|[m [34m|[m * [33m30f8c16[m Upgraded CI to use docker-compose with retry based smoke checks and evidence pack
+[32m|[m [34m|[m * [33m9798fd9[m Add scoped docker-compose.yml for local backend/database networking
+[32m|[m * [35m|[m   [33m5a4bc58[m Merge pull request #6 from baovu-dev/Student5-Fixed-Feature
+[32m|[m [36m|[m[1;31m\[m [35m\[m  
+[32m|[m [36m|[m * [35m|[m [33m3a65450[m[33m ([m[1;31morigin/Student5-Fixed-Feature[m[33m)[m Final Touches on Feature
+[32m|[m [36m|[m[36m/[m [35m/[m  
+[32m|[m * [35m|[m   [33m4613154[m Merge pull request #5 from baovu-dev/Student5-AiChatbot
+[32m|[m [1;32m|[m[1;33m\[m [35m\[m  
+[32m|[m [1;32m|[m * [35m|[m [33m79295cc[m added chatbot feature
+[32m|[m * [1;33m|[m [35m|[m   [33m4b19692[m Merge pull request #4 from baovu-dev/student-1_individual_feature_branch
+[32m|[m [1;33m|[m[35m\[m [1;33m\[m [35m\[m  
+[32m|[m [1;33m|[m [35m|[m[1;33m/[m [35m/[m  
+[32m|[m [1;33m|[m[1;33m/[m[35m|[m [35m/[m   
+[32m|[m [1;33m|[m [35m|[m[35m/[m    
+[32m|[m [1;33m|[m * [33mad6c075[m Added basic CI workflow, pytest configuration and Docker containerisation
