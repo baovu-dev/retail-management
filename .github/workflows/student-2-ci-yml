@@ -1,0 +1,45 @@
+name: Student 2 CI - Product Management
+
+on: 
+  push:
+    paths:
+      - 'student-2/**'
+      - '.github/workflows/student-2-ci.yml'
+  pull_request:
+    paths:
+      - 'student-2/**'
+      - '.github/workflows/student-2-ci.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: |
+          pip install -r student-2/backend/requirements.txt
+          pip install -r student-2/frontend/requirements.txt
+          pip install -r student-2/database/requirements.txt
+
+      - name: Initialize database
+        run: python student-2/database/init_db.py
+
+build:
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image 
+        working-directory: student-2
+        run: docker build -t student2-product-management .

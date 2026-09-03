@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+    <h1>Product Management</h1>
+
+    <h2>Add Product</h2>
+
+    <form id="product-form">
+        <input type="text" id="name" placeholder="Product Name" required>
+        <input type="text" id="category" placeholder="Category" required>
+        <input type="text" id="description" placeholder="Description">
+        <input type="number" id="price" placeholder="Price" step="0.01" required>
+        <input type="text" id="brand" placeholder="Brand">
+
+        <select id="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+
+        <button type="submit">Add Product</button>
+    </form>
+
+<h2>Products</h2>
+
+<div id="product-list"></div>
+
+<script>
+    const API_URL = "http://localhost:5002";
+
+    async function loadProducts() {
+        const response = await fetch(`${API_URL}/products`);
+        const products = await response.json();
+
+        const productList = document.getElementById("product-list");
+        productList.innerHTML = "";
+
+        products.forEach(product => {
+            const productDiv = document.createElement("div");
+            productDiv.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>Brand: ${product.brand}</p>
+                <p>Category: ${product.category}</p>
+                <p>Price: $${product.price}</p>
+                <p>Status: ${product.status}</p>
+                <p>${product.description || ""}</p>
+
+               <button onclick="editProduct(${product.product_id})">
+                    Edit
+                </button>
+
+                <button onclick="generateDescription(${product.product_id})">
+                    Generate AI Description
+                </button>
+
+                <button onclick="deleteProduct(${product.product_id})">
+                    Delete
+                </button>
+
+                <hr>
+            `;
+
+            productList.appendChild(productDiv);
+        });
+    }
+
+    document.getElementById("product-form").addEventListener(
+        "submit", 
+        async function(event) {
+            event.preventDefault();
+
+            const product = {
+                name: document.getElementById("name").value,
+                category: document.getElementById("category").value,
+                description: document.getElementById("description").value,
+                price: Number(document.getElementById("price").value),
+                brand: document.getElementById("brand").value,
+                status: document.getElementById("status").value
+            };
+            
+            await fetch(`${API_URL}/products`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(product)
+            });
+
+            document.getElementById("product-form").reset();
+            loadProducts();
+
+        }
+    );
+
+    async function editProduct(productId) {
+        const response = await fetch(`${API_URL}/products/${productId}`);
+        const product = await response.json();
+
+        const name = prompt("Edit Product Name:", product.name);
+        if (name === null) return;
+
+        const category = prompt("Edit Category:", product.category);
+        if (category === null) return;
+
+        const description = prompt("Edit Description:", product.description || "");
+        if (description === null) return;
+
+        const price = prompt("Edit Price:", product.price);
+        if (price === null) return;
+
+        const brand = prompt("Edit Brand:", product.brand || "");
+        if (brand === null) return;
+        
+        const status = prompt("Edit Status (active/inactive):", product.status);
+        if (status === null) return;
+
+        await fetch(`${API_URL}/products/${productId}`, {
+            method: "PUT",
+            headers: { 
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: name,
+                category: category,
+                description: description,
+                price: Number(price),
+                brand: brand,
+                status: status
+            })
+        });
+        
+        loadProducts();
+    }
+
+    async function deleteProduct(productId) {
+        await fetch(`${API_URL}/products/${productId}`, {
+            method: "DELETE"
+        });
+        loadProducts();
+    }
+
+    async function generateDescription(productId) {
+        const response = await fetch(
+            `${API_URL}/products/${productId}/generate-description`, 
+            {
+            method: "POST"
+        }
+    
+    );
+    
+    const result = await response.json();
+
+    alert(result.description);
+    }
+
+    loadProducts();
+</script>
+
+</body>
+</html>
