@@ -1,0 +1,20 @@
+{% for r in reviews %}
+<div class="review-item" id="review-{{ r.review_id }}">
+  <span class="review-rating">{{ r.rating }}★</span> — Product #{{ r.product_id }} — {{ r.comment or '(no comment)' }}
+  <div class="review-sentiment">
+    <span>sentiment: {{ r.sentiment_score }}</span>
+    <span class="flag-pill">🚩 flagged</span>
+  </div>
+  <button
+    class="btn btn-glass"
+    style="margin-top: 10px; font-size: 0.8rem; padding: 6px 14px;"
+    hx-delete="/reviews/delete-form/{{ r.review_id }}"
+    hx-target="#review-{{ r.review_id }}"
+    hx-swap="outerHTML"
+    hx-confirm="Delete this review?">
+    Delete
+  </button>
+</div>
+{% else %}
+<p>No flagged reviews right now.</p>
+{% endfor %}
