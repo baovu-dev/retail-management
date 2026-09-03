@@ -89,6 +89,43 @@ def test_backend_chat_requires_message(backend_client):
     assert response.status_code == 400
 
 
+def test_backend_chat_respects_budget(backend_client, monkeypatch):
+    backend = sys.modules["student5_backend_api"]
+
+    class FakeResponse:
+        def __init__(self, status_code=200, payload=None):
+            self.status_code = status_code
+            self._payload = payload or {}
+
+        def json(self):
+            return self._payload
+
+    monkeypatch.setattr(
+        backend,
+        "call_ollama",
+        lambda prompt: "Try the Nike Air Force 1 Low and Puma Future Rider.",
+    )
+    monkeypatch.setattr(backend, "db_put", lambda path, payload: FakeResponse())
+    monkeypatch.setattr(backend, "db_delete", lambda path: FakeResponse())
+    monkeypatch.setattr(
+        backend,
+        "db_post",
+        lambda path, payload: FakeResponse(201, {"recommendation_id": 1}),
+    )
+    monkeypatch.setattr(backend, "db_get", lambda path, **params: FakeResponse(200, []))
+    monkeypatch.setattr(backend, "get_customer_context", lambda cid: ({}, [], set()))
+
+    response = backend_client.post(
+        "/api/chat",
+        json={"customer_id": 1, "message": "shoes under 120"},
+    )
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["recommendations"]
+    for item in payload["recommendations"]:
+        assert item["product"]["price"] <= 120
+
+
 def test_frontend_index_loads(frontend_client):
     response = frontend_client.get("/")
     assert response.status_code == 200
