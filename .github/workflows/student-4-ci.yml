@@ -1,0 +1,48 @@
+name: Student 4 CI - Order Management
+
+on:
+  push:
+    paths:
+      - 'student-4/**'
+      - '.github/workflows/student-4-ci.yml'
+  pull_request:
+    paths:
+      - 'student-4/**'
+      - '.github/workflows/student-4-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        working-directory: student-4
+        run: pip install -r tests/requirements.txt
+
+      - name: Run pytest
+        working-directory: student-4
+        run: pytest tests/ -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: student-4
+        run: docker build -t student4-orders .
+
+      - name: Validate Docker Compose config
+        working-directory: student-4
+        run: docker compose config
