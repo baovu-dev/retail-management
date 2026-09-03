@@ -1,4 +1,7 @@
-from prompt_loader import load_prompt
+try:
+    from backend.prompt_loader import load_prompt
+except ModuleNotFoundError:
+    from prompt_loader import load_prompt
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import requests

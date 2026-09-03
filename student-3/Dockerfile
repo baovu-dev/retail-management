@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir \
 COPY backend/ backend/
 COPY database/ database/
 COPY frontend/ frontend/
+COPY prompts/ prompts/
 
 EXPOSE 5003
 EXPOSE 6003
