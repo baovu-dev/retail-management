@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Account Summary</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css')}}">
+</head>
+
+<body>
+
+    <!-- Shared KICKLAB background -->
+    <div class="bg-effects" aria-hidden="true">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+
+    <!-- Header -->
+    <header class="scrolled">
+        <div class="container header-inner">
+
+            <a href="http://localhost:5000" class="logo">
+                <span class="logo-mark">
+                    <svg width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="#fff" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 18h20l-2-9H4L2 18z"/>
+                        <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+                    </svg>
+                </span>
+
+                <span class="logo-name">KICKLAB</span>
+            </a>
+
+            <ul class="main-nav">
+                <li><a href="#account">Account</a></li>
+                <li><a href="#assistant">AI Assistant</a></li>
+            </ul>
+
+            <a href="http://localhost:5000" class="btn btn-login">Log out</a>
+
+        </div>
+    </header>
+
+
+    <main>
+
+        <!-- ACCOUNT SUMMARY -->
+        <section class="account-section" id="account">
+
+            <div class="container">
+
+                <span class="section-tag">My Account</span>
+                <h1 class="section-title">Account Summary</h1>
+                <p class="section-sub">
+                    View and manage your account details.
+                </p>
+
+
+                <div class="account-card">
+
+                    <div class="account-header">
+
+                        <div class="account-avatar" id="customerAvatar">
+                            --
+                        </div>
+
+                        <div>
+                            <h2 id="customerName">Ahmad Ali</h2>
+                            <span class="account-status" id="customerStatus">
+                                Active
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="account-details">
+
+                        <div>
+                            <p class="account-label">Email</p>
+                            <p id="customerEmail">ahmad.ali@gmail.com</p>
+                        </div>
+
+                        <div>
+                            <p class="account-label">Phone</p>
+                            <p id="customerPhone">0465469594</p>
+                        </div>
+
+                        <div>
+                            <p class="account-label">Member Since</p>
+                            <p id="customerCreatedAt">1 September 2026</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="account-actions">
+                        <button class="btn btn-gradient" id="editButton">
+                            Edit Details
+                        </button>
+
+                        <button class="btn btn-delete" id="deleteButton">
+                            Delete Account
+                        </button>
+                    </div>
+
+
+                    <!-- Hidden until Edit Details is clicked -->
+                    <form id="editForm" class="edit-form" hidden>
+
+                        <input id="firstName" type="text" placeholder="First name" required>
+                        <input id="lastName" type="text" placeholder="Last name" required>
+                        <input id="email" type="email" placeholder="Email" required>
+                        <input id="phone" type="tel" placeholder="Phone">
+
+                        <button class="btn btn-gradient" type="submit">
+                            Save
+                        </button>
+
+                        <button class="btn btn-glass" type="button" id="cancelButton">
+                            Cancel
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- AI ASSISTANT -->
+        <section class="assistant-section" id="assistant">
+
+            <div class="container">
+
+                <div class="finder-box">
+
+                    <span class="section-tag">AI Mode</span>
+                    <h2>Account Assistant</h2>
+
+                    <p class="assistant-description">
+                        Ask for help managing your account.
+                    </p>
+
+                    <form id="assistantForm" class="assistant-form">
+
+                        <input
+                            id="question"
+                            type="text"
+                            placeholder="How do I update my email?"
+                            required
+                        >
+
+                        <button class="btn btn-gradient" type="submit">
+                            Ask AI
+                        </button>
+
+                    </form>
+
+                    <p id="aiResponse" class="ai-response"></p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <p class="footer-copy">
+            &copy; 2026 KICKLAB · Customer Account Management
+        </p>
+    </footer>
+
+
+
+    <script>
+
+        // Temporary customer ID until login integration is completed.
+        const customerId = 1;
+        let currentCustomer;
+
+
+        // READ CUSTOMER
+        async function loadCustomer() {
+
+            const response = await fetch(`/customers/${customerId}`);
+            const customer = await response.json();
+
+            currentCustomer = customer;
+
+            document.getElementById("customerName").textContent =
+                `${customer.first_name} ${customer.last_name}`;
+
+            document.getElementById("customerEmail").textContent =
+                customer.email;
+
+            document.getElementById("customerPhone").textContent =
+                customer.phone || "Not provided";
+
+            document.getElementById("customerStatus").textContent =
+                customer.status;
+
+            document.getElementById("customerCreatedAt").textContent =
+                customer.created_at;
+
+            document.getElementById("customerAvatar").textContent =
+                customer.first_name[0] + customer.last_name[0];
+        }
+
+
+        // OPEN EDIT FORM
+        document.getElementById("editButton").addEventListener("click", () => {
+
+            document.getElementById("firstName").value =
+                currentCustomer.first_name;
+
+            document.getElementById("lastName").value =
+                currentCustomer.last_name;
+
+            document.getElementById("email").value =
+                currentCustomer.email;
+
+            document.getElementById("phone").value =
+                currentCustomer.phone || "";
+
+            document.getElementById("editForm").hidden = false;
+        });
+
+
+        // CANCEL EDITING
+        document.getElementById("cancelButton").addEventListener("click", () => {
+            document.getElementById("editForm").hidden = true;
+        });
+
+
+        // UPDATE CUSTOMER
+        document.getElementById("editForm").addEventListener("submit", async (event) => {
+
+            event.preventDefault();
+
+            const updatedCustomer = {
+                first_name: document.getElementById("firstName").value,
+                last_name: document.getElementById("lastName").value,
+                email: document.getElementById("email").value,
+                phone: document.getElementById("phone").value
+            };
+
+            await fetch(`/customers/${customerId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedCustomer)
+            });
+
+            document.getElementById("editForm").hidden = true;
+
+            loadCustomer();
+        });
+
+
+        // DELETE CUSTOMER
+        document.getElementById("deleteButton").addEventListener("click", async () => {
+
+            const confirmed =
+                confirm("Are you sure you want to delete your account?");
+
+            if (!confirmed) return;
+
+            await fetch(`/customers/${customerId}`, {
+                method: "DELETE"
+            });
+
+            window.location.href = "http://localhost:5000";
+        });
+
+
+        // AI ASSISTANT
+        document.getElementById("assistantForm").addEventListener("submit", async (event) => {
+
+            event.preventDefault();
+
+            const question =
+                document.getElementById("question").value;
+
+            document.getElementById("aiResponse").textContent =
+                "Thinking...";
+
+            const response = await fetch("/account-assistant", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    customer_id: customerId,
+                    question: question
+                })
+            });
+
+            const result = await response.json();
+
+            document.getElementById("aiResponse").textContent =
+                result.response;
+        });
+
+
+        loadCustomer();
+
+    </script>
+
+</body>
+
+</html>
