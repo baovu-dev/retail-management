@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+ENV PYTHONUNBUFFERED=1
+
 COPY backend/requirements.txt ./backend-requirements.txt
 COPY database/requirements.txt ./database-requirements.txt
 COPY frontend/requirements.txt ./frontend-requirements.txt
@@ -14,9 +16,12 @@ COPY backend/ ./backend/
 COPY database/ ./database/
 COPY frontend/ ./frontend/
 COPY prompts/ ./prompts/
+COPY conftest.py pytest.ini ./
 
-# Default: API backend. Override CMD per service in docker-compose:
-#   database: python database/app.py  (port 6005)
-#   backend:  python backend/app.py   (port 5005)
-#   frontend: python frontend/app.py    (port 3005)
+EXPOSE 3005 5005 6005
+
+# Default: API backend. Override in docker-compose per service:
+#   database → python database/app.py  (6005)
+#   backend  → python backend/app.py   (5005)
+#   frontend → python frontend/app.py    (3005)
 CMD ["python", "backend/app.py"]

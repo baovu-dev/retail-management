@@ -21,7 +21,7 @@
 
   <header id="header" class="scrolled">
     <div class="container header-inner">
-      <a href="{{ store_home }}" class="logo">
+      <a href="http://localhost:5000/" class="logo">
         <span class="logo-mark">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M2 18h20l-2-9H4L2 18z"/><path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>
         </span>
@@ -32,7 +32,7 @@
         <li><a href="#recommendations">Your picks</a></li>
       </ul>
       <div class="header-actions">
-        <a href="{{ store_home }}" class="btn btn-glass">Store Home</a>
+        <a href="http://localhost:5000/" class="btn btn-glass">Store Home</a>
       </div>
     </div>
   </header>
@@ -102,13 +102,12 @@
   </div>
 
   <footer>
-    <p class="footer-copy">&copy; 2026 KICKLAB · <a href="{{ store_home }}">Back to store</a></p>
+    <p class="footer-copy">&copy; 2026 KICKLAB · <a href="http://localhost:5000/">Back to store</a></p>
   </footer>
 
   <script>
     const CUSTOMER_ID = 1;
     const API_BASE = '{{ api_base }}';
-    const STORE_HOME = '{{ store_home }}';
     const carouselTrack = document.getElementById('carouselTrack');
     const statusMsg = document.getElementById('statusMsg');
     const serviceBanner = document.getElementById('serviceBanner');

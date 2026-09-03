@@ -34,7 +34,7 @@ PRODUCT_CATALOG = [
         "brand": "New Balance",
         "category": "everyday",
         "price": 110.00,
-        "image": "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/thumbnail.webp",
+        "image": "https://image.goat.com/transform/v1/attachments/product_template_pictures/images/091/190/375/original/1229872_00.png.png",
         "tags": ["lifestyle", "everyday", "classic"],
     },
     {
@@ -48,11 +48,11 @@ PRODUCT_CATALOG = [
     },
     {
         "product_id": 106,
-        "name": "Adidas Ultraboost Runner",
+        "name": "Adidas Yeezy Boost 350 V2",
         "brand": "Adidas",
         "category": "running",
         "price": 129.99,
-        "image": "https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/1.webp",
+        "image": "https://image.goat.com/transform/v1/attachments/product_template_pictures/images/075/775/173/original/924555_00.png.png",
         "tags": ["running", "active", "boost"],
     },
     {
@@ -61,7 +61,7 @@ PRODUCT_CATALOG = [
         "brand": "Jordan",
         "category": "basketball",
         "price": 210.00,
-        "image": "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp",
+        "image": "https://image.goat.com/transform/v1/attachments/product_template_pictures/images/071/333/263/original/895934_00.png.png",
         "tags": ["jordan", "basketball", "street"],
     },
     {
@@ -70,7 +70,7 @@ PRODUCT_CATALOG = [
         "brand": "Nike",
         "category": "street",
         "price": 99.99,
-        "image": "https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-and-red/1.webp",
+        "image": "https://image.goat.com/transform/v1/attachments/product_template_pictures/images/048/340/054/original/712867_00.png.png",
         "tags": ["street", "everyday", "classic"],
     },
 ]
