@@ -44,7 +44,7 @@ jobs:
 
       - name: Run pytest
         working-directory: student-3
-        run: pytest tests/ -v
+        run: PYTHONPATH=. pytest tests/ -v
 
   build:
     runs-on: ubuntu-latest
