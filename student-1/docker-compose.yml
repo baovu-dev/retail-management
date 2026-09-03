@@ -1,0 +1,17 @@
+services:
+  database:
+    build: .
+    command: sh -c "cd database && python init_db.py && python app.py"
+    ports:
+      - "6001:6001"
+
+  backend:
+    build: .
+    command: python backend/app.py
+    ports:
+      - "5001:5001"
+    environment:
+      - DATABASE_URL=http://database:6001
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+    depends_on:
+      - database
