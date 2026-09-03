@@ -1,0 +1,48 @@
+name: Student 5 CI - Recommendations & Chatbot
+
+on:
+  push:
+    paths:
+      - 'student-5/**'
+      - '.github/workflows/student-5-ci.yml'
+  pull_request:
+    paths:
+      - 'student-5/**'
+      - '.github/workflows/student-5-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        working-directory: student-5
+        run: pip install -r tests/requirements.txt
+
+      - name: Run pytest
+        working-directory: student-5
+        run: pytest tests/ -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: student-5
+        run: docker build -t student5-recommendations .
+
+      - name: Validate Docker Compose config
+        working-directory: student-5
+        run: docker compose config

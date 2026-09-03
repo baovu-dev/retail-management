@@ -1,0 +1,128 @@
+name: Student 1 CI - Reviews & Ratings
+
+on:
+  push:
+    paths:
+      - 'student-1/**'
+  pull_request:
+    paths:
+      - 'student-1/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        working-directory: student-1
+        run: pip install -r tests/requirements.txt
+
+      - name: Run pytest
+        working-directory: student-1
+        run: pytest tests/ -v
+
+  build-images:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build services
+        working-directory: student-1
+        run: docker compose build
+
+  smoke-check:
+    runs-on: ubuntu-latest
+    needs: [build-images]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start services
+        working-directory: student-1
+        run: docker compose up -d --build
+
+      - name: Smoke checks
+        run: |
+          check_url() {
+            local url="$1"
+            local attempts=8
+            local code=""
+
+            for i in $(seq 1 "$attempts"); do
+              code=$(curl -sS -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 20 "$url" || true)
+              if [ "$code" = "200" ]; then
+                echo "PASS $url -> $code"
+                return 0
+              fi
+              echo "Retry $i/$attempts for $url (got: ${code:-none})"
+              sleep 2
+            done
+
+            echo "FAIL $url after $attempts attempts"
+            return 1
+          }
+
+          check_url "http://localhost:5001/"
+          check_url "http://localhost:6001/reviews"
+
+      - name: Stop services
+        if: always()
+        working-directory: student-1
+        run: docker compose down -v
+
+  evidence-pack:
+    runs-on: ubuntu-latest
+    needs: [smoke-check]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create reports directory
+        run: mkdir -p student-1/reports
+
+      - name: Generate report.json
+        run: |
+          cat > student-1/reports/report.json << 'EOF'
+          {
+            "workflow_name": "student-1-ci",
+            "run_id": "${{ github.run_id }}",
+            "commit_sha": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}"
+          }
+          EOF
+
+      - name: Generate report.md
+        run: |
+          cat > student-1/reports/report.md << EOF
+          ## Student 1 (Reviews & Ratings) Workflow Report
+
+          - Workflow: student-1-ci
+          - Run ID: ${{ github.run_id }}
+          - Commit SHA: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          EOF
+
+      - name: Generate run-view.md
+        run: |
+          cat > student-1/reports/run-view.md << EOF
+          Run URL:
+          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: student-1-report
+          path: student-1/reports

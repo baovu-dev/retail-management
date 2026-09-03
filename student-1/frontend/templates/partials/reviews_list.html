@@ -1,0 +1,25 @@
+<div class="finder-box">
+  <strong>🤖 AI Summary</strong>
+  {{ summary_text }}
+</div>
+
+{% for r in reviews %}
+<div class="review-item" id="review-{{ r.review_id }}">
+  <span class="review-rating">{{ r.rating }}★</span> — {{ r.comment or '(no comment)' }}
+  <div class="review-sentiment">
+    <span>sentiment: {{ r.sentiment_score }}</span>
+    {% if r.is_flagged %}<span class="flag-pill">🚩 flagged</span>{% endif %}
+  </div>
+  <button
+    class="btn btn-glass"
+    style="margin-top: 10px; font-size: 0.8rem; padding: 6px 14px;"
+    hx-delete="/reviews/delete-form/{{ r.review_id }}"
+    hx-target="#review-{{ r.review_id }}"
+    hx-swap="outerHTML"
+    hx-confirm="Delete this review?">
+    Delete
+  </button>
+</div>
+{% else %}
+<p>No reviews yet for this product.</p>
+{% endfor %}

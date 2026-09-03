@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Reviews & Ratings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <style>
+    .lookup-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .lookup-row input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 1rem;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .lookup-row input:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
+
+    #reviewResults .finder-box {
+      margin-bottom: 28px;
+    }
+
+    #reviewResults .finder-box strong {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--cyan);
+      margin-bottom: 8px;
+    }
+
+    .review-item {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .review-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .review-rating {
+      font-weight: 800;
+      color: var(--orange);
+      font-size: 1.05rem;
+    }
+
+    .review-sentiment {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .flag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 61, 154, 0.12);
+      color: var(--pink);
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+    }
+
+    .htmx-indicator {
+      display: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .htmx-request .htmx-indicator {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <ul class="main-nav">
+        <li><a href="http://localhost:3002">Shop</a></li>
+        <li><a href="http://localhost:3004">Orders</a></li>
+        <li><a href="http://localhost:3005">Chatbot</a></li>
+      </ul>
+
+      <div class="header-actions">
+          <a href="http://localhost:5000/staff_dashboard" class="btn btn-glass">Back to Dashboard</a>        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder" id="reviews">
+    <div class="container">
+      <span class="section-tag">🔍 Reviews & Ratings</span>
+      <h2 class="section-title">Manage product reviews</h2>
+      <p class="section-sub">Look up a product to check its reviews, ratings, and AI-generated summary.</p>
+
+      <form class="lookup-row"
+            hx-get="/reviews/view"
+            hx-target="#reviewResults"
+            hx-indicator="#loadingIndicator">
+        <input type="number" name="product_id" placeholder="Enter a product ID…" required>
+        <button type="submit" class="btn btn-gradient">Search</button>
+      </form>
+
+      <p id="loadingIndicator" class="htmx-indicator">Loading…</p>
+
+      <div id="reviewResults"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Reviews & Ratings</p>
+  </footer>
+
+  <script>
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('header').classList.toggle('open');
+    });
+  </script>
+
+</body>
+</html>

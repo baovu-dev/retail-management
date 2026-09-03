@@ -1,8 +1,18 @@
-from flask import Flask, jsonify
+import os
+
+from flask import Flask, jsonify, render_template
 from flask_cors import CORS
 import requests
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(FRONTEND_DIR, "templates"),
+    static_folder=os.path.join(FRONTEND_DIR, "css"),
+    static_url_path="/css",
+)
 CORS(app)
 
 REVIEWS_API = "http://localhost:5001"
@@ -16,6 +26,16 @@ FALLBACK_STATS = {
     "flagged_reviews": 0,
     "active_products": 0
 }
+
+
+@app.route('/')
+def customer_home():
+    return render_template('Index.html')
+
+
+@app.route('/staff_dashboard')
+def staff_dashboard():
+    return render_template('staff_dashboard.html')
 
 
 @app.route('/dashboard/stats', methods=['GET'])
