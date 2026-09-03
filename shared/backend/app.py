@@ -37,6 +37,9 @@ def customer_home():
 def staff_dashboard():
     return render_template('staff_dashboard.html')
 
+@app.route('/create-account')
+def create_account():
+    return render_template('create_account.html')
 
 @app.route('/dashboard/stats', methods=['GET'])
 def dashboard_stats():
