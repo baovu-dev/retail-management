@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KICKLAB — My Orders</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="container header-inner">
+
+            <a href="http://localhost:5000/" class="logo">
+                <span class="logo-name">KICKLAB</span>
+            </a>
+
+            <div class="header-actions">
+                <a href="http://localhost:5000/" class="btn btn-glass">
+                    Store Home
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+
+    <main class="page-main">
+
+        <div class="container">
+
+            <section class="page-hero">
+
+                <div class="hero-copy">
+
+                    <span class="section-tag">
+                        Order Management
+                    </span>
+
+                    <h1 class="section-title">
+                        My Orders
+                    </h1>
+
+                    <p class="section-sub">
+                        View your orders, check order details,
+                        cancel orders, and ask the AI Order Assistant
+                        about your order status.
+                    </p>
+
+                </div>
+
+                <div class="hero-visual" aria-hidden="true">
+                    <div class="hero-orb hero-orb-one"></div>
+                    <div class="hero-orb hero-orb-two"></div>
+
+                    <div class="hero-shopping-card">
+                        <div class="hero-bag">
+                            K
+                        </div>
+
+                        <div class="hero-box"></div>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <div id="statusMessage" class="status-msg"></div>
+
+
+            <!-- AI ORDER ASSISTANT -->
+            <section class="assistant-card">
+
+                <div class="assistant-heading">
+
+                    <span class="section-tag">
+                        ✦ AI Mode
+                    </span>
+
+                    <h2>
+                        Order Assistant
+                    </h2>
+
+                    <p>
+                        Ask a question about one of your orders.
+                        The assistant uses the actual order information
+                        stored by the Order Management service.
+                    </p>
+
+                </div>
+
+
+                <div class="assistant-form">
+
+                    <div class="field-group field-order">
+
+                        <label for="assistantOrderId">
+                            Order ID
+                        </label>
+
+                        <input id="assistantOrderId" type="number" min="1" placeholder="e.g. 2">
+
+                    </div>
+
+
+                    <div class="field-group field-question">
+
+                        <label for="assistantQuestion">
+                            Ask about your order
+                        </label>
+
+                        <input id="assistantQuestion" type="text" placeholder="What is the current status of my order?">
+
+                    </div>
+
+
+                    <button type="button" class="btn btn-ai" onclick="askOrderAssistant()">
+                        ✦ Ask AI
+                    </button>
+
+                </div>
+
+
+                <div id="assistantAnswer" class="assistant-answer"></div>
+
+            </section>
+
+
+            <!-- ORDER LIST -->
+            <section>
+
+                <div class="orders-section-head">
+
+                    <div>
+                        <span class="section-tag">
+                            Recent Orders
+                        </span>
+
+                        <h2 class="orders-section-title">
+                            Your order history
+                        </h2>
+                    </div>
+
+                    <p class="orders-section-copy">
+                        Review order status, totals and item details below.
+                    </p>
+
+                </div>
+
+
+                <div id="ordersContainer" class="orders-grid">
+                    <p>Loading orders...</p>
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- ORDER DETAIL MODAL -->
+    <div id="orderModal" class="modal" hidden>
+
+        <div class="modal-backdrop" id="modalBackdrop"></div>
+
+
+        <div class="modal-dialog">
+
+            <button id="modalClose" class="modal-close" aria-label="Close">
+                &times;
+            </button>
+
+            <span class="section-tag">
+                Order Information
+            </span>
+
+            <h2 class="modal-title">
+                Order Details
+            </h2>
+
+            <div id="orderDetail"></div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const API_BASE = "{{ api_base }}";
+
+        const ordersContainer =
+            document.getElementById("ordersContainer");
+
+        const statusMessage =
+            document.getElementById("statusMessage");
+
+        const modal =
+            document.getElementById("orderModal");
+
+        const orderDetail =
+            document.getElementById("orderDetail");
+
+
+        async function loadOrders() {
+
+            try {
+
+                const response =
+                    await fetch(`${API_BASE}/api/orders`);
+
+                if (!response.ok) {
+                    throw new Error("Could not load orders");
+                }
+
+                const orders =
+                    await response.json();
+
+
+                if (!orders.length) {
+
+                    ordersContainer.innerHTML =
+                        "<p>No orders found.</p>";
+
+                    return;
+                }
+
+
+                ordersContainer.innerHTML =
+                    orders.map(order => `
+
+                        <article class="order-card">
+
+                            <div class="order-card-top">
+
+                                <div>
+
+                                    <span class="order-label">
+                                        Order
+                                    </span>
+
+                                    <h2>
+                                        #${order.order_id}
+                                    </h2>
+
+                                </div>
+
+
+                                <span
+                                    class="
+                                        status-pill
+                                        ${order.status.toLowerCase()}
+                                    "
+                                >
+                                    ${order.status}
+                                </span>
+
+                            </div>
+
+
+                            <div class="order-meta">
+
+                                <span class="order-date">
+                                    ${order.order_date}
+                                </span>
+
+                            </div>
+
+
+                            <p class="order-total">
+                                $${Number(
+                        order.total_amount
+                    ).toFixed(2)}
+                            </p>
+
+
+                            <div class="order-actions">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-glass"
+                                    onclick="
+                                        viewOrder(
+                                            ${order.order_id}
+                                        )
+                                    "
+                                >
+                                    View Details
+                                </button>
+
+
+                                ${order.status !== "CANCELLED"
+
+                            ? `
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger"
+                                            onclick="
+                                                cancelOrder(
+                                                    ${order.order_id}
+                                                )
+                                            "
+                                        >
+                                            Cancel
+                                        </button>
+
+                                    `
+
+                            : `
+                                        <button
+                                            type="button"
+                                            class="btn btn-disabled"
+                                            disabled
+                                        >
+                                            Cancelled
+                                        </button>
+                                    `
+                        }
+
+                            </div>
+
+                        </article>
+
+                    `).join("");
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                ordersContainer.innerHTML =
+                    "<p>Order service is currently unavailable.</p>";
+            }
+        }
+
+
+        async function viewOrder(orderId) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/api/orders/${orderId}`
+                    );
+
+
+                const order =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    statusMessage.textContent =
+                        order.error ||
+                        "Could not load order.";
+
+                    return;
+                }
+
+
+                const items =
+                    Array.isArray(order.items)
+                        ? order.items
+                        : [];
+
+
+                orderDetail.innerHTML = `
+
+                    <div class="detail-summary">
+
+                        <div>
+                            <span>Order ID</span>
+                            <strong>#${order.order_id}</strong>
+                        </div>
+
+                        <div>
+                            <span>Customer</span>
+                            <strong>${order.customer_id}</strong>
+                        </div>
+
+                        <div>
+                            <span>Status</span>
+                            <strong>${order.status}</strong>
+                        </div>
+
+                        <div>
+                            <span>Total</span>
+                            <strong>
+                                $${Number(
+                    order.total_amount
+                ).toFixed(2)}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-items">
+
+                        <h3>
+                            Items
+                        </h3>
+
+                        ${items.length
+
+                        ? items.map(item => `
+
+                                <div class="order-item">
+
+                                    <span>
+                                        Product #${item.product_id}
+                                    </span>
+
+                                    <span>
+                                        ${item.quantity}
+                                        ×
+                                        $${Number(
+                            item.unit_price
+                        ).toFixed(2)}
+                                    </span>
+
+                                    <strong>
+                                        $${Number(
+                            item.subtotal
+                        ).toFixed(2)}
+                                    </strong>
+
+                                </div>
+
+                            `).join("")
+
+                        : "<p>No items found.</p>"
+                    }
+
+                    </div>
+                `;
+
+
+                modal.hidden = false;
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                statusMessage.textContent =
+                    "Could not load order details.";
+            }
+        }
+
+
+        async function cancelOrder(orderId) {
+
+            const confirmed =
+                confirm(
+                    `Cancel order #${orderId}?`
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/api/orders/${orderId}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    statusMessage.textContent =
+                        data.error ||
+                        "Could not cancel order.";
+
+                    return;
+                }
+
+
+                statusMessage.textContent =
+                    `Order #${orderId} cancelled successfully.`;
+
+
+                await loadOrders();
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                statusMessage.textContent =
+                    "Order service is unavailable.";
+            }
+        }
+
+
+        async function askOrderAssistant() {
+
+            const orderId =
+                document
+                    .getElementById(
+                        "assistantOrderId"
+                    )
+                    .value;
+
+
+            const question =
+                document
+                    .getElementById(
+                        "assistantQuestion"
+                    )
+                    .value
+                    .trim();
+
+
+            const answerBox =
+                document
+                    .getElementById(
+                        "assistantAnswer"
+                    );
+
+
+            if (!orderId || !question) {
+
+                answerBox.textContent =
+                    "Please enter an order ID and a question.";
+
+                return;
+            }
+
+
+            answerBox.innerHTML = `
+                <div class="assistant-loading">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <p>Checking your order...</p>
+                </div>
+            `;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/api/order-assistant`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                order_id:
+                                    Number(orderId),
+
+                                question:
+                                    question
+                            })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    answerBox.textContent =
+                        data.error ||
+                        "Could not answer your question.";
+
+                    return;
+                }
+
+
+                answerBox.innerHTML = `
+
+                    <div class="assistant-avatar">
+                        🤖
+                    </div>
+
+                    <div class="assistant-response-content">
+
+                        <strong>
+                            Order Assistant
+                        </strong>
+
+                        <p>
+                            ${escapeHtml(
+                    data.answer
+                )}
+                        </p>
+
+                        <small>
+                            ✓ Response source:
+                            ${data.source === "ollama"
+                        ? "AI"
+                        : "Order service"
+                    }
+                        </small>
+
+                    </div>
+                `;
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                answerBox.textContent =
+                    "Order Assistant is currently unavailable.";
+            }
+        }
+
+
+        function closeModal() {
+            modal.hidden = true;
+        }
+
+
+        document
+            .getElementById(
+                "modalClose"
+            )
+            .addEventListener(
+                "click",
+                closeModal
+            );
+
+
+        document
+            .getElementById(
+                "modalBackdrop"
+            )
+            .addEventListener(
+                "click",
+                closeModal
+            );
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+                    closeModal();
+                }
+            }
+        );
+
+
+        function escapeHtml(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent =
+                value ?? "";
+
+            return div.innerHTML;
+        }
+
+
+        loadOrders();
+
+    </script>
+
+</body>
+
+</html>
