@@ -4,6 +4,12 @@ services:
     command: sh -c "cd database && python init_db.py && python app.py"
     ports:
       - "6001:6001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6001/reviews')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build: .
@@ -14,4 +20,5 @@ services:
       - DATABASE_URL=http://database:6001
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
     depends_on:
-      - database
+      database:
+        condition: service_healthy

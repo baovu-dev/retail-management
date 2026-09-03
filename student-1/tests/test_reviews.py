@@ -1,5 +1,6 @@
 import pytest
-from backend.app import app
+from unittest.mock import patch
+from backend.app import app, analyse_sentiment
 
 @pytest.fixture
 def client():
@@ -23,3 +24,10 @@ def test_submit_page_with_product_context(client):
 def test_view_reviews_requires_product_id(client):
     response = client.get('/reviews/view')
     assert b'Enter a product ID' in response.data
+
+def test_analyse_sentiment_returns_zero_for_empty_comment():
+    assert analyse_sentiment("") == 0.0
+
+def test_analyse_sentiment_returns_zero_on_ollama_failure():
+    with patch('app.requests.post', side_effect=Exception("connection failed")):
+        assert analyse_sentiment("great product") == 0.0
