@@ -227,14 +227,22 @@
               <img src="${product.image || ''}" alt="${product.name || 'Sneaker'}">
             </button>
             <div class="rec-card-body">
-              <span class="rec-score">${Math.round((rec.recommendation_score || 0) * 100)}% match</span>
               <h3 class="rec-title">${product.name || 'Recommended product'}</h3>
               <p class="rec-brand">${product.brand || ''} · ${product.category || ''}</p>
-              <p class="rec-explanation">${rec.explanation || 'Recommended based on your profile.'}</p>
+              <details class="rec-reason">
+                <summary class="rec-reason-toggle">
+                  <span class="rec-reason-label">The reason why</span>
+                  <span class="rec-reason-chevron" aria-hidden="true"></span>
+                </summary>
+                <ul class="rec-reasons">
+                  ${(rec.explanation || 'Recommended based on your chat.').split('\n').filter(Boolean).map(reason => `<li>${reason}</li>`).join('')}
+                </ul>
+              </details>
               <p class="rec-price">$${(product.price || 0).toFixed(2)}</p>
-              <div class="feedback-row" data-rec-id="${recId}">
-                <span class="feedback-label">Rate this pick</span>
-                ${[1,2,3,4,5].map(n => `<button type="button" class="star-btn" data-rating="${n}">${n}</button>`).join('')}
+              <div class="feedback-row" data-rec-id="${recId || ''}">
+                <span class="feedback-label">Was this helpful?</span>
+                <button type="button" class="feedback-btn feedback-yes" data-helpful="1">Yes</button>
+                <button type="button" class="feedback-btn feedback-no" data-helpful="0">No</button>
               </div>
             </div>
           </article>`;
@@ -249,21 +257,22 @@
 
       carouselTrack.querySelectorAll('.feedback-row').forEach(row => {
         row.addEventListener('click', async (event) => {
-          const button = event.target.closest('.star-btn');
+          const button = event.target.closest('.feedback-btn');
           if (!button || !row.dataset.recId) return;
+          const helpful = button.dataset.helpful === '1';
           await fetch(`${API_BASE}/api/recommendations/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               recommendation_id: Number(row.dataset.recId),
-              customer_feedback_rating: Number(button.dataset.rating),
-              helpful: Number(button.dataset.rating) >= 4,
+              customer_feedback_rating: helpful ? 5 : 2,
+              helpful,
               was_purchased: false
             })
           });
-          row.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+          row.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('active'));
           button.classList.add('active');
-          statusMsg.textContent = 'Thanks — feedback saved.';
+          statusMsg.textContent = helpful ? 'Glad this helped!' : 'Got it — we\'ll improve suggestions.';
         });
       });
     }
@@ -292,7 +301,7 @@
         if (Array.isArray(data.recommendations) && data.recommendations.length) {
           renderCarousel(data.recommendations);
           document.getElementById('recSubtitle').textContent = 'Based on what you just told the assistant';
-          statusMsg.textContent = `${data.recommendations.length} picks matched to your message.`;
+          statusMsg.textContent = `${data.recommendations.length} picks based on your message.`;
           document.getElementById('recommendations').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       } catch {
