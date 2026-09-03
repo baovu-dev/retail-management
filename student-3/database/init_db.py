@@ -12,6 +12,7 @@ def seed():
         cursor.executescript(f.read())
 
         cursor.execute("DELETE FROM customer")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='customer'")
 
         sample_customers = [
             ("Ahmad", "Abdi", "0489543890", "ahmad.abdi@gmail.com", "Active"),

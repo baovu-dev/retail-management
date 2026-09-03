@@ -1,0 +1,62 @@
+name: Student 3 CI - Customer Account Management
+
+on:
+  push:
+    paths:
+      - 'student-3/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/student-3-ci.yml'
+  pull_request:
+    paths:
+      - 'student-3/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/student-3-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: student-3
+        run: |
+          pip install -r backend/requirements.txt
+          pip install -r database/requirements.txt
+          pip install pytest
+
+      - name: Initialise database
+        working-directory: student-3/database
+        run: python init_db.py
+
+      - name: Start database service
+        working-directory: student-3
+        run: |
+          python database/app.py &
+          sleep 5
+
+      - name: Run pytest
+        working-directory: student-3
+        run: pytest tests/ -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: student-3
+        run: docker build -t student3-customer-account .
+
+      - name: Validate Docker Compose config
+        run: docker compose config
