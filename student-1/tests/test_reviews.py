@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from backend.app import app, analyse_sentiment
 
 @pytest.fixture
@@ -25,6 +25,16 @@ def test_view_reviews_requires_product_id(client):
     response = client.get('/reviews/view')
     assert b'Enter a product ID' in response.data
 
+def test_delete_review_form_returns_empty_response(client):
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"deleted": 1}
+ 
+    with patch('app.requests.delete', return_value=mock_response) as mock_delete:
+        response = client.delete('/reviews/delete-form/1')
+        assert response.status_code == 200
+        assert response.data == b''
+        mock_delete.assert_called_once()
+ 
 def test_analyse_sentiment_returns_zero_for_empty_comment():
     assert analyse_sentiment("") == 0.0
 
