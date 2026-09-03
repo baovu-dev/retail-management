@@ -125,6 +125,11 @@ def delete_review(review_id):
     response = requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
     return jsonify(response.json()), response.status_code
 
+@app.route('/reviews/delete-form/<int:review_id>', methods=['DELETE'])
+def remove_review_form(review_id):
+    requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
+    return ''
+
 def generate_summary(product_id):
     response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
     reviews = response.json()
