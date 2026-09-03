@@ -1,3 +1,4 @@
+from prompt_loader import load_prompt
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import requests
@@ -26,6 +27,18 @@ OLLAMA_MODEL = os.getenv(
     "OLLAMA_MODEL",
     "llama3.1:8b"
 )
+
+def call_ollama(prompt):
+    response = requests.post(
+        OLLAMA_URL,
+        json={
+            'model': OLLAMA_MODEL,
+            'prompt': prompt,
+            'stream': False
+        }
+    )
+
+    return response.json()['response']
 
 @app.route('/')
 def index():
@@ -100,49 +113,42 @@ def account_assistant():
 
     customer = customer_response.json()
 
-    prompt = f"""
-    You are the Customer Account Assistant.
-
-    Help customers with questions about managing their account.
-
-    Customer information:
-    Name: {customer['first_name']} {customer['last_name']}
-    Email: {customer['email']}
-    Phone: {customer['phone']}
-    Status: {customer['status']}
-
-    The account page currently allows customers to:
-    - View their account details
-    - Edit their first name
-    - Edit their last name
-    - Edit their email
-    - Edit their phone number
-    - Delete their account
-
-    Customer question:
-    {question}
-
-    Instructions:
-    - Give a short and clear answer.
-    - Only describe features listed above.
-    - Do not invent buttons, pages, menus, contact details or functionality.
-    - Do not treat the customer's personal information as KICKLAB contact information.
-    - If the requested feature is unavailable, clearly say that it is not available.
-    """
-
-    ollama_response = requests.post(
-        OLLAMA_URL,
-        json={
-            'model': OLLAMA_MODEL,
-            'prompt': prompt,
-            'stream': False
-        }
+    prompt_template = load_prompt(
+    'account_assistant_prompt.txt'
     )
 
-    result = ollama_response.json()
+    prompt = prompt_template.format(
+    first_name=customer['first_name'],
+    last_name=customer['last_name'],
+    email=customer['email'],
+    phone=customer['phone'],
+    status=customer['status'],
+    question=question
+    )
+
+
+    print("PLAN: Prepare an account-management answer.")
+
+    answer = call_ollama(prompt)
+    print("ACT: Generated initial AI response.")
+
+    if answer and len(answer.strip()) > 10:
+        print("OBSERVE: Response is valid.")
+    else:
+        print("OBSERVE: Response is too short or empty.")
+
+        adapted_prompt = prompt + """
+
+The previous response was not useful.
+Answer the customer's question clearly and directly.
+Only use functionality that exists in KICKLAB.
+"""
+
+        answer = call_ollama(adapted_prompt)
+        print("ADAPT: Generated an improved response.")
 
     return jsonify({
-        'response': result['response']
+        'response': answer
     })
 
 if __name__ == "__main__":

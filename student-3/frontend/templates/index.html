@@ -194,7 +194,18 @@
     <script>
 
         // Temporary customer ID until login integration is completed.
-        const customerId = 1;
+const params = new URLSearchParams(window.location.search);
+
+const urlCustomerId = params.get('customer_id');
+
+if (urlCustomerId) {
+    sessionStorage.setItem('customer_id', urlCustomerId);
+}
+
+const customerId =
+    urlCustomerId ||
+    sessionStorage.getItem('customer_id') ||
+    1;
         let currentCustomer;
 
 
