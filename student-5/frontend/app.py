@@ -4,7 +4,6 @@ from flask import Flask, render_template
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 API_BASE = os.getenv("API_BASE", "http://localhost:5005")
-STORE_HOME = os.getenv("STORE_HOME", "http://localhost:5000/")
 
 app = Flask(
     __name__,
@@ -16,7 +15,7 @@ app = Flask(
 
 @app.route("/")
 def index():
-    return render_template("index.html", api_base=API_BASE, store_home=STORE_HOME)
+    return render_template("index.html", api_base=API_BASE)
 
 
 if __name__ == "__main__":
