@@ -1,0 +1,63 @@
+
+services:
+  # ── Shared microservice (login, customer homepage, staff dashboard) ──
+  # TODO: whoever finishes the shared service, add your build/command/ports here
+  # shared-backend:
+  #   build: ./shared
+  #   ports:
+  #     - "5000:5000"
+ 
+  # ── Student 1 — Reviews & Ratings ──
+  student1-database:
+    build: ./student-1
+    command: sh -c "cd database && python init_db.py && python app.py"
+    ports:
+      - "6001:6001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6001/reviews')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+ 
+  student1-backend:
+    build: ./student-1
+    command: python backend/app.py
+    ports:
+      - "5001:5001"
+    environment:
+      - DATABASE_URL=http://student1-database:6001
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+    depends_on:
+      student1-database:
+        condition: service_healthy
+
+  # ── Student 2 — Product Management ── 
+  # etc 
+
+
+  # ── Student 3 — Customer Account Management ──
+  student3-database:
+    build: ./student-3
+    command: sh -c "cd database && python init_db.py && python app.py"
+    ports:
+      - "6003:6003"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6003/customers')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  student3-backend:
+    build: ./student-3
+    command: python backend/app.py
+    ports:
+      - "5003:5003"
+    environment:
+      - DATABASE_URL=http://student3-database:6003
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+      - OLLAMA_MODEL=llama3.1:8b
+    depends_on:
+      student3-database:
+        condition: service_healthy

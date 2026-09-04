@@ -125,6 +125,11 @@ def delete_review(review_id):
     response = requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
     return jsonify(response.json()), response.status_code
 
+@app.route('/reviews/delete-form/<int:review_id>', methods=['DELETE'])
+def remove_review_form(review_id):
+    requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
+    return ''
+
 def generate_summary(product_id):
     response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
     reviews = response.json()
@@ -160,6 +165,19 @@ def get_review_summary(product_id):
 
     summary_text = generate_summary(product_id)
     return jsonify({"product_id": product_id, "generated_summary_text": summary_text}), 200
+
+@app.route('/moderate')
+def moderate_page():
+    return render_template('moderate.html')
+
+@app.route('/reviews/flagged', methods=['GET'])
+def view_flagged_reviews():
+    r = requests.get(f"{DATABASE_URL}/reviews")
+    all_reviews = r.json()
+
+    flagged_reviews = [rev for rev in all_reviews if rev['is_flagged']]
+
+    return render_template('partials/flagged_list.html', reviews=flagged_reviews)
 
 @app.route('/reviews/stats', methods=['GET'])
 def get_review_stats():

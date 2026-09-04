@@ -43,8 +43,63 @@ class RecommendationLogicTests(unittest.TestCase):
 
     def test_chat_explanation_includes_product_name(self):
         product = catalog.get_product(108)
-        explanation = backend.chat_explanation(product, "everyday sneakers")
-        self.assertIn(product["name"], explanation)
+        explanation = backend.build_chat_explanation(
+            product,
+            "everyday sneakers",
+            backend.infer_chat_preferences("everyday sneakers"),
+        )
+        self.assertIn("Air Force 1", explanation)
+
+    def test_budget_filter_excludes_expensive_shoes(self):
+        prefs = backend.infer_chat_preferences("shoes under 120")
+        self.assertTrue(prefs["budget_specified"])
+        self.assertEqual(prefs["price_range_max"], 120.0)
+        jordan1 = catalog.get_product(101)
+        af1 = catalog.get_product(108)
+        self.assertFalse(backend.product_matches_budget(jordan1, prefs))
+        self.assertTrue(backend.product_matches_budget(af1, prefs))
+
+    def test_build_recommendations_respects_under_120(self):
+        saved = {}
+
+        def fake_put(path, payload):
+            saved.update(payload)
+
+        def fake_get(path, **params):
+            class R:
+                status_code = 200
+
+                def json(self):
+                    if path == "/browsing-history":
+                        return []
+                    return {}
+
+            return R()
+
+        def fake_delete(path):
+            class R:
+                status_code = 200
+            return R()
+
+        def fake_post(path, payload):
+            class R:
+                status_code = 201
+
+                def json(self):
+                    return {"recommendation_id": 1}
+
+            return R()
+
+        backend.db_put = fake_put
+        backend.db_get = fake_get
+        backend.db_delete = fake_delete
+        backend.db_post = fake_post
+        backend.get_customer_context = lambda cid: ({}, [], set())
+
+        recs = backend.build_recommendations_from_chat(1, "shoes under 120", "")
+        self.assertTrue(recs)
+        for item in recs:
+            self.assertLessEqual(item["product"]["price"], 120)
 
     def test_similar_products_excludes_self(self):
         similar = backend.similar_products_for_product(108)

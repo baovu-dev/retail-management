@@ -728,17 +728,101 @@ footer {
 
 .rec-card-body { padding: 18px 20px 22px; }
 
-.rec-score {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.rec-reason {
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #faf9fc;
+  overflow: hidden;
+}
+
+.rec-reason-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.rec-reason-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.rec-reason-toggle::marker {
+  content: '';
+}
+
+.rec-reason-label {
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--purple);
-  background: rgba(155, 93, 229, 0.12);
-  padding: 4px 10px;
-  border-radius: 100px;
+}
+
+.rec-reason-chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--purple);
+  border-bottom: 2px solid var(--purple);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-top: -2px;
+}
+
+.rec-reason[open] .rec-reason-chevron {
+  transform: rotate(-135deg);
+  margin-top: 2px;
+}
+
+.rec-reason-toggle:hover {
+  background: rgba(155, 93, 229, 0.06);
+}
+
+.rec-reasons {
+  margin: 0;
+  padding: 10px 12px 12px 28px;
+  border-top: 1px solid var(--border);
+  background: #f8f6fc;
+  border-left: 3px solid var(--purple);
+  list-style: disc;
+}
+
+.rec-reasons li {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.55;
   margin-bottom: 8px;
+}
+
+.rec-reasons li:last-child {
+  margin-bottom: 0;
+}
+
+.feedback-btn {
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.feedback-btn:hover,
+.feedback-btn.active.feedback-yes {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0, 196, 167, 0.08);
+}
+
+.feedback-btn.active.feedback-no {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
 }
 
 .rec-title {

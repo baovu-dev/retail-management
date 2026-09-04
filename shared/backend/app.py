@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 import requests
 
@@ -32,6 +32,35 @@ FALLBACK_STATS = {
 def customer_home():
     return render_template('Index.html')
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '')
+
+    if not email:
+        return render_template(
+            'login.html',
+            error='Please enter your email address.'
+        ), 400
+
+    if not password:
+        return render_template(
+            'login.html',
+            error='Please enter your password.',
+            email=email
+        ), 400
+
+    # Customer Account Management API
+    # will be connected here when its login endpoint is confirmed.
+    return render_template(
+        'login.html',
+        message='Login form submitted successfully.',
+        email=email
+    )
 
 @app.route('/staff_dashboard')
 def staff_dashboard():

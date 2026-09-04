@@ -1,14 +1,9 @@
-<div class="finder-box">
-  <strong>🤖 AI Summary</strong>
-  {{ summary_text }}
-</div>
-
 {% for r in reviews %}
 <div class="review-item" id="review-{{ r.review_id }}">
-  <span class="review-rating">{{ r.rating }}★</span> — {{ r.comment or '(no comment)' }}
+  <span class="review-rating">{{ r.rating }}★</span> — Product #{{ r.product_id }} — {{ r.comment or '(no comment)' }}
   <div class="review-sentiment">
     <span>sentiment: {{ r.sentiment_score }}</span>
-    {% if r.is_flagged %}<span class="flag-pill">🚩 flagged</span>{% endif %}
+    <span class="flag-pill">🚩 flagged</span>
   </div>
   <button
     class="btn btn-glass"
@@ -21,5 +16,5 @@
   </button>
 </div>
 {% else %}
-<p>No reviews yet for this product.</p>
+<p>No flagged reviews right now.</p>
 {% endfor %}

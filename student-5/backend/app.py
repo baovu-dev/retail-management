@@ -132,6 +132,7 @@ def infer_chat_preferences(message, base_preferences=None):
     if over_match:
         price_min = float(over_match.group(1))
     budget_match = re.search(r"\$?\s*(\d+)\s*(?:budget|range)", text)
+    budget_specified = bool(under_match or over_match or budget_match)
     if budget_match:
         price_max = float(budget_match.group(1))
 
@@ -146,7 +147,20 @@ def infer_chat_preferences(message, base_preferences=None):
         "preferred_brands": ",".join(dict.fromkeys(brands)),
         "price_range_min": price_min,
         "price_range_max": price_max,
+        "budget_specified": budget_specified,
     }
+
+
+def product_matches_budget(product, chat_preferences):
+    if not chat_preferences.get("budget_specified"):
+        return True
+    price_min = float(chat_preferences.get("price_range_min", 0) or 0)
+    price_max = float(chat_preferences.get("price_range_max", 9999) or 9999)
+    return price_min <= product["price"] <= price_max
+
+
+def preferences_for_db(chat_preferences):
+    return {k: v for k, v in chat_preferences.items() if k != "budget_specified"}
 
 
 def chat_product_score(product, message, reply):
@@ -172,18 +186,66 @@ def chat_product_score(product, message, reply):
     return min(score, 1)
 
 
-def chat_explanation(product, message):
-    snippet = message.strip()[:80] + ("…" if len(message.strip()) > 80 else "")
-    return (
-        f"Picked because you asked about \"{snippet}\" — "
-        f"the {product['name']} is a strong {product['category']} option from {product['brand']}."
+PRODUCT_INSIGHTS = {
+    101: "Classic Jordan 1 high-top — bold on court and on the street.",
+    102: "Retro Puma trainers with soft cushioning for all-day wear.",
+    103: "Sport cleats built for traction and quick cuts on the field.",
+    104: "New Balance 550 blends vintage style with everyday comfort.",
+    105: "Off-White accents give this pair a designer streetwear edge.",
+    106: "Yeezy Boost 350 V2 — responsive foam for running and active days.",
+    107: "Premium Jordan 4 retro with standout color blocking.",
+    108: "Air Force 1 Low — one of Nike's most versatile everyday sneakers.",
+}
+
+
+def build_chat_explanation(product, message, chat_preferences, rank=1):
+    reasons = []
+    message_lower = message.lower()
+    price = product["price"]
+    brand = product["brand"]
+    name = product["name"]
+
+    reasons.append(
+        PRODUCT_INSIGHTS.get(
+            product["product_id"],
+            f"The {name} is a strong {product['category']} option from {brand}.",
+        )
     )
+
+    if chat_preferences.get("budget_specified"):
+        price_max = float(chat_preferences.get("price_range_max", 9999))
+        price_min = float(chat_preferences.get("price_range_min", 0))
+        if price_min <= price <= price_max and any(
+            word in message_lower for word in ("under", "below", "less than", "max")
+        ):
+            reasons.append(
+                f"Priced at ${price:.2f}, within your under-${price_max:.0f} budget."
+            )
+
+    if brand.lower() in message_lower:
+        reasons.append(f"You mentioned {brand} — this model fits that request.")
+
+    categories = parse_csv_field(chat_preferences.get("product_category_interests", ""))
+    if product["category"] in categories:
+        reasons.append(f"Matches the {product['category']} style you're looking for.")
+
+    if rank == 1:
+        reasons.append("Top-ranked pick based on your message.")
+    elif rank >= 2:
+        reasons.append(f"Ranked #{rank} — a solid alternative worth comparing.")
+
+    return "\n".join(reasons[:3])
+
+
+def chat_explanation(product, message):
+    prefs = infer_chat_preferences(message)
+    return build_chat_explanation(product, message, prefs)
 
 
 def build_recommendations_from_chat(customer_id, message, reply, limit=6):
     preferences, history, viewed_ids = get_customer_context(customer_id)
     chat_preferences = infer_chat_preferences(message, preferences or {})
-    db_put(f"/preferences/{customer_id}", chat_preferences)
+    db_put(f"/preferences/{customer_id}", preferences_for_db(chat_preferences))
 
     all_history_response = db_get("/browsing-history")
     all_history = (
@@ -194,6 +256,9 @@ def build_recommendations_from_chat(customer_id, message, reply, limit=6):
 
     scored_products = []
     for product in get_all_products():
+        if not product_matches_budget(product, chat_preferences):
+            continue
+
         chat = chat_product_score(product, message, reply)
         content = content_score(product, chat_preferences, viewed_ids)
         collaborative = collaborative_score(product, customer_id, all_history)
@@ -205,14 +270,17 @@ def build_recommendations_from_chat(customer_id, message, reply, limit=6):
     top_products = scored_products[:limit]
 
     if not top_products:
-        for product in get_all_products()[:limit]:
-            top_products.append((product, 0.4))
+        top_products = [
+            (product, 0.4)
+            for product in get_all_products()
+            if product_matches_budget(product, chat_preferences)
+        ][:limit]
 
     db_delete(f"/recommendations/customer/{customer_id}")
 
     recommendations = []
-    for product, score in top_products:
-        explanation = chat_explanation(product, message)
+    for rank, (product, score) in enumerate(top_products, start=1):
+        explanation = build_chat_explanation(product, message, chat_preferences, rank=rank)
         create_response = db_post(
             "/recommendations",
             {
@@ -235,6 +303,13 @@ def build_recommendations_from_chat(customer_id, message, reply, limit=6):
             "explanation": explanation,
             "product": product,
         })
+
+    if chat_preferences.get("budget_specified"):
+        recommendations = [
+            rec
+            for rec in recommendations
+            if product_matches_budget(rec["product"], chat_preferences)
+        ]
 
     return recommendations
 

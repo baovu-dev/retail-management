@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Moderate Flagged Reviews</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <style>
+    .review-item {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .review-rating {
+      font-weight: 800;
+      color: var(--orange);
+      font-size: 1.05rem;
+    }
+
+    .review-sentiment {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .flag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 61, 154, 0.12);
+      color: var(--pink);
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="#" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="http://localhost:5001/" class="btn btn-glass">All Reviews</a>
+        <a href="http://localhost:5000/staff_dashboard" class="btn btn-glass">Back to Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder" id="moderate">
+    <div class="container">
+      <span class="section-tag">🚩 Moderation</span>
+      <h2 class="section-title">Flagged reviews</h2>
+      <p class="section-sub">Reviews with very negative sentiment are flagged automatically for staff review.</p>
+
+      <div id="flaggedResults" hx-get="/reviews/flagged" hx-trigger="load" hx-swap="innerHTML">
+        <p>Loading…</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Reviews & Ratings</p>
+  </footer>
+
+</body>
+</html>

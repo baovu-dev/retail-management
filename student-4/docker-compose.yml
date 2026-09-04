@@ -1,0 +1,35 @@
+services:
+  database:
+    build: .
+    command: sh -c "python database/init_db.py && python database/app.py"
+    ports:
+      - "6004:6004"
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6004/health')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build: .
+    command: python backend/app.py
+    ports:
+      - "5004:5004"
+    environment:
+      DATABASE_URL: http://database:6004
+      OLLAMA_URL: http://host.docker.internal:11434/api/generate
+      OLLAMA_MODEL: qwen2.5:0.5b
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    build: .
+    command: python frontend/app.py
+    ports:
+      - "3004:3004"
+    environment:
+      API_BASE: http://localhost:5004
+    depends_on:
+      - backend
