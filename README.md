@@ -1,8 +1,6 @@
 # KICKLAB
 
-# FEEL FREE TO EDIT - NOT FINALISED
-
-ASD 2026 group project - retail/shopping domain. 
+ASD 2026 Group 26 project - retail/shopping domain. 
 
 ## Team
 - Bao Vu - Reviews & Ratings
@@ -12,13 +10,19 @@ ASD 2026 group project - retail/shopping domain.
 - Aiden Phan - Chatbot/Recommendations
 
 ## Setup
-
-You'll need Docker Desktop and Ollama installed. Pull a model before running
-anything AI-related, e.g.
-
+ 
+You'll need Docker Desktop and Ollama installed.
+ 
+1. Open Docker Desktop and make sure it's actually running (check for the
+   whale icon in your menu bar) - `docker` commands will fail with a
+   confusing error otherwise.
+2. Pull a model and get Ollama running:
 ```
 ollama pull llama3.1:8b
+ollama serve
 ```
+
+Leave `ollama serve` running in its own terminal, anything AI-related will fail to connect if it's not up.
 
 ## Running everything
 
@@ -30,10 +34,10 @@ This should spin up all 5 features plus the shared login/dashboard stuff.
 Still a work in progress - not every service is wired into this file yet,
 check with whoever owns a feature if theirs isn't showing up.
 
-You can also just run your own feature on its own instead of the whole thing:
+You can also just run each individual feature on its own instead of the whole thing:
 
 ```
-cd student-1
+cd student-X (X can be any number of your choice from 1 to 5)
 docker compose up --build
 ```
 
