@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"></head>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+
 <body>
 
   <div class="bg-effects" aria-hidden="true">
@@ -20,11 +23,12 @@
 
   <header id="header">
     <div class="container header-inner">
-      <a href="#" class="logo">
+      <a href="http://localhost:5000/" class="logo">
         <span class="logo-mark">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 18h20l-2-9H4L2 18z"/>
-            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z" />
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" />
           </svg>
         </span>
         <span class="logo-name">KICKLAB</span>
@@ -33,18 +37,17 @@
       <ul class="main-nav">
         <li><a href="#finder">Get Started</a></li>
         <li><a href="http://localhost:3001">Shop</a></li>
-        <li><a href="http://localhost:3003">Recommendations</a></li>
       </ul>
 
       <div class="header-actions">
         <a href="http://localhost:3001" class="btn btn-glass">Browse</a>
-        <a href="#finder" class="btn btn-gradient">Help Me Choose</a>
-        <a href="http://localhost:3002" class="btn btn-login">Log in</a>
+        <a href="http://localhost:3005/" class="btn btn-gradient">Help Me Choose</a>
+        <a href="/login" class="btn btn-login">Log in</a>
         <button class="menu-toggle" id="menuToggle" aria-label="Menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
       </div>
@@ -63,10 +66,11 @@
           <span class="gradient-text">Zero stress.</span>
         </h1>
         <p class="hero-desc">
-          Not sure what to buy? KICKLAB helps you discover men's sneakers that match your style — then shop with confidence.
+          Not sure what to buy? KICKLAB helps you discover men's sneakers that match your style — then shop with
+          confidence.
         </p>
         <div class="hero-actions">
-          <a href="#finder" class="btn btn-gradient">Find My Shoes</a>
+          <a href="http://localhost:3005/" class="btn btn-gradient">Ask AI for Picks</a>
           <a href="http://localhost:3001" class="btn btn-glass">Shop Now</a>
         </div>
         <div class="hero-stats">
@@ -88,7 +92,9 @@
       <div class="hero-visual">
         <div class="hero-glow"></div>
         <div class="hero-shoe-wrap">
-          <img id="heroImage" src="https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp" alt="Featured sneaker" />
+          <img id="heroImage"
+            src="https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp"
+            alt="Featured sneaker" />
         </div>
         <div class="hero-card-float">
           <div class="brand" id="heroBrand">Nike</div>
@@ -101,10 +107,14 @@
 
   <div class="marquee-section">
     <div class="marquee-track">
-      <span class="c1">Nike</span><span class="c2">Jordan</span><span class="c3">Adidas</span><span class="c4">Puma</span>
-      <span class="c1">New Balance</span><span class="c2">Converse</span><span class="c3">Yeezy</span><span class="c4">Off White</span>
-      <span class="c1">Nike</span><span class="c2">Jordan</span><span class="c3">Adidas</span><span class="c4">Puma</span>
-      <span class="c1">New Balance</span><span class="c2">Converse</span><span class="c3">Yeezy</span><span class="c4">Off White</span>
+      <span class="c1">Nike</span><span class="c2">Jordan</span><span class="c3">Adidas</span><span
+        class="c4">Puma</span>
+      <span class="c1">New Balance</span><span class="c2">Converse</span><span class="c3">Yeezy</span><span
+        class="c4">Off White</span>
+      <span class="c1">Nike</span><span class="c2">Jordan</span><span class="c3">Adidas</span><span
+        class="c4">Puma</span>
+      <span class="c1">New Balance</span><span class="c2">Converse</span><span class="c3">Yeezy</span><span
+        class="c4">Off White</span>
     </div>
   </div>
 
@@ -120,7 +130,7 @@
           <a href="http://localhost:3001?category=basketball" class="chip chip-link">🏀 Basketball</a>
           <a href="http://localhost:3001?category=street" class="chip chip-link">✨ Street style</a>
           <a href="http://localhost:3001?category=active" class="chip chip-link">⚡ Active</a>
-          <a href="http://localhost:3003" class="chip chip-link chip-highlight">🎯 Not sure? Get recommendations</a>
+          <a href="http://localhost:3005/" class="chip chip-link chip-highlight">🎯 Not sure? Ask our AI</a>
         </div>
       </div>
     </div>
@@ -131,18 +141,22 @@
       <div class="showcase-text">
         <span class="section-tag">Trending Now</span>
         <h2 class="section-title">Fresh drops.<br>Classic heat.</h2>
-        <p class="section-sub">From court icons to everyday staples — explore curated men's sneakers built for how you actually live.</p>
+        <p class="section-sub">From court icons to everyday staples — explore curated men's sneakers built for how you
+          actually live.</p>
         <a href="http://localhost:3001" class="btn btn-gradient">Explore the Store →</a>
       </div>
       <div class="showcase-visual">
         <div class="showcase-card showcase-card-1">
-          <img src="https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/1.webp" alt="Puma trainers" loading="lazy" />
+          <img src="https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/1.webp"
+            alt="Puma trainers" loading="lazy" />
         </div>
         <div class="showcase-card showcase-card-2">
-          <img src="https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/1.webp" alt="Nike cleats" loading="lazy" />
+          <img src="https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/1.webp" alt="Nike cleats"
+            loading="lazy" />
         </div>
         <div class="showcase-card showcase-card-3">
-          <img src="https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/1.webp" alt="Off White sneakers" loading="lazy" />
+          <img src="https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/1.webp"
+            alt="Off White sneakers" loading="lazy" />
         </div>
       </div>
     </div>
@@ -154,8 +168,8 @@
         <h2>Ready to step up your shoe game?</h2>
         <p>Join thousands of guys who stopped guessing and started wearing what actually works.</p>
         <div class="cta-actions">
-          <a href="http://localhost:3001" class="btn btn-glass">Shop Sneakers</a>
-          <a href="http://localhost:3002" class="btn btn-login-light">Create Account</a>
+          <a href="http://localhost:3005/" class="btn btn-glass">Try AI Assistant</a>
+          <a href="/create-account" class="btn btn-login-light">Create Account</a>
         </div>
       </div>
     </div>
@@ -207,4 +221,5 @@
     loadFeaturedShoe();
   </script>
 </body>
+
 </html>
