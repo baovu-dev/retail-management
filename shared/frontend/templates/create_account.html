@@ -1,45 +1,168 @@
 <!DOCTYPE html>
-<html lang='en'>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Create Account</title>
-    </head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — KICKLAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .signup-form {
+      display: grid;
+      gap: 18px;
+      max-width: 420px;
+    }
 
-    <body>
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
 
-        <h1>Create Account</h1>
+    .signup-form label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
 
-        <form id="create-account-form">
-            <label>Full Name</label>
-            <input type="text" id="name" required>
+    .signup-form input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: #fff;
+    }
 
-            <br><br>
+    .signup-form input:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
 
-            <label>Email</label>
+    #message {
+      margin-top: 16px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to Store</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder" id="create-account">
+    <div class="container">
+      <span class="section-tag">Member Access</span>
+      <h2 class="section-title">Create your account</h2>
+      <p class="section-sub">Save your details, track orders, and get personalised picks.</p>
+
+      <div class="finder-box">
+        <form id="create-account-form" class="signup-form">
+          <div class="form-row">
+            <div>
+              <label for="firstName">First Name</label>
+              <input type="text" id="firstName" required>
+            </div>
+            <div>
+              <label for="lastName">Last Name</label>
+              <input type="text" id="lastName" required>
+            </div>
+          </div>
+          <div>
+            <label for="email">Email</label>
             <input type="email" id="email" required>
-            <br><br>
-
-            <label>Password</label>
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" required>
+          </div>
+          <div>
+            <label for="password">Password</label>
             <input type="password" id="password" required>
-
-            <br><br>
-
-            <button type="submit">Create Account</button>
+          </div>
+          <button type="submit" class="btn btn-gradient">Create Account</button>
         </form>
-
         <p id="message"></p>
+      </div>
+    </div>
+  </section>
 
-        <script>
-            document.getElementById("create-account-form").addEventListener(
-                "submit",
-                function(event) {
-                    event.preventDefault();
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Member Access</p>
+  </footer>
 
-                    document.getElementById("message").textContent =
-                        "Account details submitted successfully.";
-                }
-            );
-        </script>
-    </body>
+  <script>
+    document.getElementById("create-account-form").addEventListener(
+      "submit",
+      async function (event) {
+        event.preventDefault();
+
+        const payload = {
+          first_name: document.getElementById("firstName").value,
+          last_name: document.getElementById("lastName").value,
+          email: document.getElementById("email").value,
+          phone: document.getElementById("phone").value,
+          password: document.getElementById("password").value
+        };
+
+        try {
+          const res = await fetch("http://localhost:5003/customers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            document.getElementById("message").textContent =
+              "Account created successfully.";
+            event.target.reset();
+          } else {
+            const err = await res.json();
+            document.getElementById("message").textContent =
+              "Error: " + (err.error || "could not create account.");
+          }
+        } catch (err) {
+          document.getElementById("message").textContent =
+            "Could not reach the account service. Please try again later.";
+        }
+      }
+    );
+
+    document.getElementById('menuToggle')?.addEventListener('click', () => {
+      document.getElementById('header').classList.toggle('open');
+    });
+  </script>
+
+</body>
 </html>

@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, redirect, url_for
 from flask_cors import CORS
 import requests
 
@@ -34,7 +34,6 @@ def customer_home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
     if request.method == 'GET':
         return render_template('login.html')
 
@@ -42,25 +41,11 @@ def login():
     password = request.form.get('password', '')
 
     if not email:
-        return render_template(
-            'login.html',
-            error='Please enter your email address.'
-        ), 400
-
+        return render_template('login.html', error='Please enter your email address.'), 400
     if not password:
-        return render_template(
-            'login.html',
-            error='Please enter your password.',
-            email=email
-        ), 400
+        return render_template('login.html', error='Please enter your password.', email=email), 400
 
-    # Customer Account Management API
-    # will be connected here when its login endpoint is confirmed.
-    return render_template(
-        'login.html',
-        message='Login form submitted successfully.',
-        email=email
-    )
+    return redirect(url_for('customer_home'))
 
 @app.route('/staff_dashboard')
 def staff_dashboard():
@@ -75,7 +60,7 @@ def dashboard_stats():
     stats = dict(FALLBACK_STATS)
 
     try:
-        orders = requests.get(f"{ORDERS_API}/orders/count", timeout=3).json()
+        orders = requests.get(f"{ORDERS_API}/api/orders/count", timeout=3).json()
         stats["total_orders"] = orders.get("count", stats["total_orders"])
     except requests.exceptions.RequestException:
         pass
