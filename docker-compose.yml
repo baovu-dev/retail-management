@@ -33,7 +33,26 @@ services:
         condition: service_healthy
 
   # ── Student 2 — Product Management ── 
-  # etc 
+  student2-backend:
+    build: ./student-2
+    command: python backend/app.py
+    ports:
+      - "5002:5002"
+    environment:
+      - DATABASE_URL=http://student2-database:6002
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+    depends_on:
+      - student2-database
+ 
+  student2-frontend:
+    build: ./student-2
+    command: python frontend/app.py
+    ports:
+      - "3002:3002"
+    environment:
+      - API_BASE=http://student2-backend:5002
+    depends_on:
+      - student2-backend
 
 
   # ── Student 3 — Customer Account Management ──
