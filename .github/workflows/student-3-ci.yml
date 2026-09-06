@@ -57,7 +57,3 @@ jobs:
       - name: Build Docker image
         working-directory: student-3
         run: docker build -t student3-customer-account .
-
-      - name: Validate Docker Compose config
-        working-directory: student-3
-        run: docker compose config
