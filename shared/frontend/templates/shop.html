@@ -94,8 +94,8 @@
   <section class="finder" id="shop">
     <div class="container">
       <span class="section-tag">Shop</span>
-      <h2 class="section-title">Browse sneakers</h2>
-      <p class="section-sub">Every pair currently in stock.</p>
+      <h2 class="section-title" id="shopTitle">Browse sneakers</h2>
+      <p class="section-sub" id="shopSub">Every pair currently in stock.</p>
 
       <div id="productResults">
         <p>Loading products…</p>
@@ -113,14 +113,29 @@
         const res = await fetch('http://localhost:5002/products');
         const products = await res.json();
 
+        const params = new URLSearchParams(window.location.search);
+        const categoryFilter = params.get('category');
+
+        if (categoryFilter) {
+          document.getElementById('shopTitle').textContent = categoryFilter + ' sneakers';
+          document.getElementById('shopSub').innerHTML =
+            `Showing ${categoryFilter} only. <a href="/shop">View all</a>`;
+        }
+
+        const filtered = categoryFilter
+          ? products.filter(p => p.category === categoryFilter)
+          : products;
+
         const container = document.getElementById('productResults');
 
-        if (!products.length) {
-          container.innerHTML = '<p>No products available right now.</p>';
+        if (!filtered.length) {
+          container.innerHTML = categoryFilter
+            ? `<p>No products found in "${categoryFilter}".</p>`
+            : '<p>No products available right now.</p>';
           return;
         }
 
-        container.innerHTML = '<div class="product-grid">' + products.map(p => `
+        container.innerHTML = '<div class="product-grid">' + filtered.map(p => `
           <div class="product-card">
             <div class="product-brand">${p.brand || ''}</div>
             <div class="product-name">${p.name}</div>
