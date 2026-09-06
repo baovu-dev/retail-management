@@ -33,6 +33,12 @@ services:
         condition: service_healthy
 
   # ── Student 2 — Product Management ── 
+  student2-database:
+    build: ./student-2
+    command: python database/app.py
+    ports:
+      - "6002:6002"
+
   student2-backend:
     build: ./student-2
     command: python backend/app.py
