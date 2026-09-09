@@ -36,13 +36,22 @@
 
       <ul class="main-nav">
         <li><a href="#finder">Get Started</a></li>
-        <li><a href="http://localhost:3001">Shop</a></li>
+        <li><a href="/shop">Shop</a></li>
+        <li><a href="http://localhost:5001/">Reviews</a></li>
       </ul>
 
       <div class="header-actions">
-        <a href="http://localhost:3001" class="btn btn-glass">Browse</a>
+        <a href="/shop" class="btn btn-glass">Browse</a>
         <a href="http://localhost:3005/" class="btn btn-gradient">Help Me Choose</a>
+
+        {% if customer %}
+        <a href="http://localhost:5003/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Account</a>
+        <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Orders</a>
+        <a href="/logout" class="btn btn-login">Logout</a>
+        {% else %}
         <a href="/login" class="btn btn-login">Log in</a>
+        {% endif %}
+
         <button class="menu-toggle" id="menuToggle" aria-label="Menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="6" x2="21" y2="6" />
@@ -61,27 +70,33 @@
           <span class="hero-badge-dot"></span>
           New season · Men's sneakers
         </span>
+
         <h1>
           The right pair.<br>
           <span class="gradient-text">Zero stress.</span>
         </h1>
+
         <p class="hero-desc">
           Not sure what to buy? KICKLAB helps you discover men's sneakers that match your style — then shop with
           confidence.
         </p>
+
         <div class="hero-actions">
           <a href="http://localhost:3005/" class="btn btn-gradient">Ask AI for Picks</a>
-          <a href="http://localhost:3001" class="btn btn-glass">Shop Now</a>
+          <a href="/shop" class="btn btn-glass">Shop Now</a>
         </div>
+
         <div class="hero-stats">
           <div>
             <div class="hero-stat-val">45+</div>
             <div class="hero-stat-lbl">Top brands</div>
           </div>
+
           <div>
             <div class="hero-stat-val">4.8★</div>
             <div class="hero-stat-lbl">Customer rating</div>
           </div>
+
           <div>
             <div class="hero-stat-val">Free</div>
             <div class="hero-stat-lbl">Returns</div>
@@ -91,11 +106,13 @@
 
       <div class="hero-visual">
         <div class="hero-glow"></div>
+
         <div class="hero-shoe-wrap">
           <img id="heroImage"
             src="https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp"
             alt="Featured sneaker" />
         </div>
+
         <div class="hero-card-float">
           <div class="brand" id="heroBrand">Nike</div>
           <div class="title" id="heroTitle">Air Jordan 1</div>
@@ -107,30 +124,61 @@
 
   <div class="marquee-section">
     <div class="marquee-track">
-      <span class="c1">Nike</span><span class="c2">Jordan</span><span class="c3">Adidas</span><span
-        class="c4">Puma</span>
-      <span class="c1">New Balance</span><span class="c2">Converse</span><span class="c3">Yeezy</span><span
-        class="c4">Off White</span>
-      <span class="c1">Nike</span><span class="c2">Jordan</span><span class="c3">Adidas</span><span
-        class="c4">Puma</span>
-      <span class="c1">New Balance</span><span class="c2">Converse</span><span class="c3">Yeezy</span><span
-        class="c4">Off White</span>
+      <span class="c1">Nike</span>
+      <span class="c2">Jordan</span>
+      <span class="c3">Adidas</span>
+      <span class="c4">Puma</span>
+
+      <span class="c1">New Balance</span>
+      <span class="c2">Converse</span>
+      <span class="c3">Yeezy</span>
+      <span class="c4">Off White</span>
+
+      <span class="c1">Nike</span>
+      <span class="c2">Jordan</span>
+      <span class="c3">Adidas</span>
+      <span class="c4">Puma</span>
+
+      <span class="c1">New Balance</span>
+      <span class="c2">Converse</span>
+      <span class="c3">Yeezy</span>
+      <span class="c4">Off White</span>
     </div>
   </div>
 
   <section class="finder" id="finder">
     <div class="container">
       <span class="section-tag">Get Started</span>
+
       <h2 class="section-title">What's your vibe?</h2>
-      <p class="section-sub">Pick a style and we'll take you straight to the right collection.</p>
+
+      <p class="section-sub">
+        Pick a style and let our AI help you find the right sneakers.
+      </p>
 
       <div class="finder-box">
         <div class="finder-options" id="finderOptions">
-          <a href="http://localhost:3001?category=everyday" class="chip chip-link">👟 Everyday</a>
-          <a href="http://localhost:3001?category=basketball" class="chip chip-link">🏀 Basketball</a>
-          <a href="http://localhost:3001?category=street" class="chip chip-link">✨ Street style</a>
-          <a href="http://localhost:3001?category=active" class="chip chip-link">⚡ Active</a>
-          <a href="http://localhost:3005/" class="chip chip-link chip-highlight">🎯 Not sure? Ask our AI</a>
+
+          <a href="http://localhost:3005/" class="chip chip-link">
+            👟 Everyday
+          </a>
+
+          <a href="http://localhost:3005/" class="chip chip-link">
+            🏀 Basketball
+          </a>
+
+          <a href="http://localhost:3005/" class="chip chip-link">
+            ✨ Street style
+          </a>
+
+          <a href="http://localhost:3005/" class="chip chip-link">
+            ⚡ Active
+          </a>
+
+          <a href="http://localhost:3005/" class="chip chip-link chip-highlight">
+            🎯 Not sure? Ask our AI
+          </a>
+
         </div>
       </div>
     </div>
@@ -138,26 +186,39 @@
 
   <section class="showcase">
     <div class="container showcase-inner">
+
       <div class="showcase-text">
         <span class="section-tag">Trending Now</span>
-        <h2 class="section-title">Fresh drops.<br>Classic heat.</h2>
-        <p class="section-sub">From court icons to everyday staples — explore curated men's sneakers built for how you
-          actually live.</p>
-        <a href="http://localhost:3001" class="btn btn-gradient">Explore the Store →</a>
+
+        <h2 class="section-title">
+          Fresh drops.<br>
+          Classic heat.
+        </h2>
+
+        <p class="section-sub">
+          From court icons to everyday staples — explore curated men's sneakers built for how you actually live.
+        </p>
+
+        <a href="/shop" class="btn btn-gradient"> Explore KICKLAB →</a>
       </div>
+
       <div class="showcase-visual">
+
         <div class="showcase-card showcase-card-1">
           <img src="https://cdn.dummyjson.com/product-images/mens-shoes/puma-future-rider-trainers/1.webp"
             alt="Puma trainers" loading="lazy" />
         </div>
+
         <div class="showcase-card showcase-card-2">
           <img src="https://cdn.dummyjson.com/product-images/mens-shoes/nike-baseball-cleats/1.webp" alt="Nike cleats"
             loading="lazy" />
         </div>
+
         <div class="showcase-card showcase-card-3">
           <img src="https://cdn.dummyjson.com/product-images/mens-shoes/sports-sneakers-off-white-red/1.webp"
             alt="Off White sneakers" loading="lazy" />
         </div>
+
       </div>
     </div>
   </section>
@@ -165,49 +226,94 @@
   <section class="cta-section">
     <div class="container">
       <div class="cta-box">
+
         <h2>Ready to step up your shoe game?</h2>
-        <p>Join thousands of guys who stopped guessing and started wearing what actually works.</p>
+
+        <p>
+          Join thousands of guys who stopped guessing and started wearing what actually works.
+        </p>
+
         <div class="cta-actions">
-          <a href="http://localhost:3005/" class="btn btn-glass">Try AI Assistant</a>
-          <a href="/create-account" class="btn btn-login-light">Create Account</a>
+
+          <a href="http://localhost:3005/" class="btn btn-glass">
+            Try AI Assistant
+          </a>
+
+          {% if customer %}
+
+          <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-login-light">
+            View My Orders
+          </a>
+
+          {% else %}
+
+          <a href="/create-account" class="btn btn-login-light">
+            Create Account
+          </a>
+
+          {% endif %}
+
         </div>
       </div>
     </div>
   </section>
 
   <footer>
-    <p class="footer-copy">&copy; 2026 KICKLAB · Men's sneakers, made simple</p>
+    <p class="footer-copy">
+      &copy; 2026 KICKLAB · Men's sneakers, made simple
+    </p>
   </footer>
 
   <script>
     const SNEAKERS_API = 'https://sneakers-api-cmkf.onrender.com/';
 
     function getImageUrl(p) {
-      if (Array.isArray(p.image)) return p.image[0] || '';
+      if (Array.isArray(p.image)) {
+        return p.image[0] || '';
+      }
+
       return p.image || p.thumbnail || p.images?.[0] || '';
     }
 
     function setHero(product) {
       if (!product) return;
+
       const img = getImageUrl(product);
+
       if (!img) return;
+
       document.getElementById('heroImage').src = img;
-      document.getElementById('heroImage').alt = product.name || product.title || 'Featured sneaker';
-      document.getElementById('heroBrand').textContent = product.brand || '';
-      document.getElementById('heroTitle').textContent = product.name || product.title || '';
-      document.getElementById('heroPrice').textContent = '$' + (Number(product.price) || 0).toLocaleString();
+
+      document.getElementById('heroImage').alt =
+        product.name || product.title || 'Featured sneaker';
+
+      document.getElementById('heroBrand').textContent =
+        product.brand || '';
+
+      document.getElementById('heroTitle').textContent =
+        product.name || product.title || '';
+
+      document.getElementById('heroPrice').textContent =
+        '$' + (Number(product.price) || 0).toLocaleString();
     }
 
     async function loadFeaturedShoe() {
       try {
         const res = await fetch(SNEAKERS_API);
+
         if (!res.ok) return;
+
         const data = await res.json();
+
         if (Array.isArray(data) && data.length) {
-          const pick = data[Math.floor(Math.random() * data.length)];
+          const pick =
+            data[Math.floor(Math.random() * data.length)];
+
           setHero(pick);
         }
-      } catch { /* keep default hero image */ }
+
+      } catch {
+      }
     }
 
     document.getElementById('menuToggle').addEventListener('click', () => {
@@ -215,11 +321,15 @@
     });
 
     window.addEventListener('scroll', () => {
-      document.getElementById('header').classList.toggle('scrolled', window.scrollY > 40);
+      document.getElementById('header').classList.toggle(
+        'scrolled',
+        window.scrollY > 40
+      );
     });
 
     loadFeaturedShoe();
   </script>
+
 </body>
 
 </html>

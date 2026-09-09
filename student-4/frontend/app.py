@@ -17,6 +17,9 @@ app = Flask(
 def index():
     return render_template("index.html", api_base=API_BASE)
 
+@app.route("/admin")
+def admin():
+    return render_template("admin.html", api_base=API_BASE)
 
 if __name__ == "__main__":
     print("Order Frontend running on http://localhost:3004")

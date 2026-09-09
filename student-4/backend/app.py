@@ -176,9 +176,14 @@ def health():
     methods=["GET"]
 )
 def get_orders():
-    response = db_get(
-        "/orders"
-    )
+    customer_id = request.args.get("customer_id")
+
+    path = "/orders"
+
+    if customer_id:
+        path += f"?customer_id={customer_id}"
+
+    response = db_get(path)
 
     return jsonify(
         response.json()

@@ -4,286 +4,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Login — KICKLAB</title>
+    <title>Login | KICKLAB</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 
 <body>
+    <div class="bg-effects">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+        <div class="bg-grid"></div>
+    </div>
 
-    <div class="login-page">
+    <a class="logo auth-brand-fixed" href="/">
+        <span class="logo-mark">K</span>
+        <span class="logo-name">KICKLAB</span>
+    </a>
 
-        <header class="login-header">
+    <a class="btn btn-glass auth-top-back" href="/">
+        Back to Store
+    </a>
 
-            <a href="/" class="login-brand">
-                <span class="login-brand-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2 18h20l-2-9H4L2 18z" />
-                        <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" />
-                    </svg>
-                </span>
+    <main class="auth-page">
+        <section class="auth-shell">
 
-                <span class="login-brand-name">
-                    KICKLAB
-                </span>
-            </a>
+            <div class="auth-form-panel">
+                <span class="auth-eyebrow">Customer Account</span>
 
-            <a href="/" class="back-store">
-                ← Back to Store
-            </a>
+                <h1 class="auth-title">
+                    Welcome back.
+                </h1>
 
-        </header>
+                <p class="auth-subtitle">
+                    Log in to continue shopping and access your KICKLAB account.
+                </p>
 
+                {% if error %}
+                <div class="auth-message auth-error">
+                    {{ error }}
+                </div>
+                {% endif %}
 
-        <main class="login-main">
+                {% if message %}
+                <div class="auth-message auth-success">
+                    {{ message }}
+                </div>
+                {% endif %}
 
-            <div class="login-shell">
+                <form class="auth-form" method="POST" action="/login">
 
-                <!-- LEFT -->
-                <section class="login-form-panel">
+                    <div class="auth-group">
+                        <label for="email">
+                            Email
+                        </label>
 
-                    <p class="login-eyebrow">
-                        Member Access
-                    </p>
-
-                    <h1 class="login-title">
-                        Welcome back.
-                    </h1>
-
-                    <p class="login-subtitle">
-                        Sign in to manage your account, orders and sneaker preferences.
-                    </p>
-
-
-                    {% if error %}
-                    <div class="login-message">
-                        {{ error }}
-                    </div>
-                    {% endif %}
-
-
-                    {% if message %}
-                    <div class="login-success">
-                        {{ message }}
-                    </div>
-                    {% endif %}
-
-
-                    <form method="POST" action="/login" class="login-form">
-
-                        <div class="form-group">
-
-                            <label for="email" class="form-label">
-                                Email address
-                            </label>
-
-                            <div class="input-wrap">
-
-                                <span class="input-icon">
-                                    @
-                                </span>
-
-                                <input id="email" name="email" type="email" class="form-input" value="{{ email or '' }}"
-                                    placeholder="you@example.com" autocomplete="email" required>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="password" class="form-label">
-                                Password
-                            </label>
-
-                            <div class="input-wrap">
-
-                                <span class="input-icon">
-                                    •
-                                </span>
-
-                                <input id="password" name="password" type="password" class="form-input"
-                                    placeholder="Enter your password" autocomplete="current-password" required>
-
-                                <button type="button" class="password-toggle" id="passwordToggle">
-                                    Show
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="remember-row">
-
-                            <label class="remember-label">
-
-                                <input type="checkbox" name="remember">
-
-                                Remember me
-
-                            </label>
-
-                        </div>
-
-
-                        <button type="submit" class="login-button">
-                            Log in
-                            <span>→</span>
-                        </button>
-
-                    </form>
-
-
-                    <div class="login-divider">
-                        New to KICKLAB?
+                        <input class="auth-input" type="email" id="email" name="email"
+                            value="{{ email if email else '' }}" placeholder="you@example.com" autocomplete="email"
+                            required>
                     </div>
 
+                    <div class="auth-group">
+                        <label for="password">
+                            Password
+                        </label>
 
-                    <p class="signup-copy">
-                        Create an account to save your details,
-                        manage orders and receive personalised picks.
-                    </p>
+                        <div class="auth-password-wrap">
+                            <input class="auth-input" type="password" id="password" name="password"
+                                placeholder="Enter your password" autocomplete="current-password" required>
 
-                    <a href="/create-account" class="create-account">
-                        Create Account
+                            <button class="auth-password-toggle" type="button" data-toggle-password="password">
+                                Show
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="auth-remember">
+                        <input type="checkbox" name="remember">
+                        Remember me
+                    </label>
+
+                    <button class="btn btn-gradient auth-submit" type="submit">
+                        Log In
+                    </button>
+                </form>
+
+                <p class="auth-switch">
+                    New to KICKLAB?
+                    <a href="/create-account">
+                        Create an account
                     </a>
+                </p>
+            </div>
 
-                </section>
+            <aside class="auth-side-panel">
+                <div class="auth-side-content">
 
+                    <span class="auth-eyebrow">
+                        KICKLAB Member Access
+                    </span>
 
-                <!-- RIGHT -->
-                <section class="login-brand-panel">
-
-                    <p class="member-eyebrow">
-                        KICKLAB Member
-                    </p>
-
-                    <h2 class="member-title">
-                        More than
-                        <span class="member-title-gradient">
-                            just sneakers.
+                    <h2 class="auth-side-title">
+                        One account.
+                        <span class="gradient-text">
+                            Your whole KICKLAB experience.
                         </span>
                     </h2>
 
-                    <p class="member-description">
-                        Your KICKLAB account connects your shopping,
-                        orders and recommendations in one place.
+                    <p class="auth-side-copy">
+                        Access your account, orders and connected KICKLAB features
+                        from one shared shopping experience.
                     </p>
 
+                    <div class="auth-benefits">
 
-                    <div class="member-benefits">
-
-                        <div class="member-benefit">
-
-                            <div class="benefit-number">
+                        <div class="auth-benefit">
+                            <span class="auth-benefit-num">
                                 01
-                            </div>
+                            </span>
 
-                            <div class="benefit-text">
+                            <div>
                                 <strong>
                                     Track your orders
                                 </strong>
 
                                 <span>
-                                    View current and previous orders
-                                    and check their latest status.
+                                    View your order history and current order status.
                                 </span>
                             </div>
-
                         </div>
 
-
-                        <div class="member-benefit">
-
-                            <div class="benefit-number">
+                        <div class="auth-benefit">
+                            <span class="auth-benefit-num">
                                 02
-                            </div>
+                            </span>
 
-                            <div class="benefit-text">
+                            <div>
                                 <strong>
                                     Manage your account
                                 </strong>
 
                                 <span>
-                                    Keep your customer information
-                                    and preferences up to date.
+                                    Keep your customer information in one place.
                                 </span>
                             </div>
-
                         </div>
 
-
-                        <div class="member-benefit">
-
-                            <div class="benefit-number">
+                        <div class="auth-benefit">
+                            <span class="auth-benefit-num">
                                 03
-                            </div>
+                            </span>
 
-                            <div class="benefit-text">
+                            <div>
                                 <strong>
                                     Smarter recommendations
                                 </strong>
 
                                 <span>
-                                    Receive sneaker suggestions based
-                                    on your interests and activity.
+                                    Discover sneakers that match your preferences.
                                 </span>
                             </div>
-
                         </div>
 
                     </div>
+                </div>
+            </aside>
 
-
-                    <div class="login-art">
-                        <div class="login-bag-large"></div>
-                        <div class="login-bag-small"></div>
-                    </div>
-
-                </section>
-
-            </div>
-
-        </main>
-
-    </div>
-
+        </section>
+    </main>
 
     <script>
+        document
+            .querySelectorAll("[data-toggle-password]")
+            .forEach(function (button) {
 
-        const passwordInput =
-            document.getElementById("password");
+                button.addEventListener(
+                    "click",
+                    function () {
 
-        const passwordToggle =
-            document.getElementById("passwordToggle");
+                        const input =
+                            document.getElementById(
+                                button.dataset.togglePassword
+                            );
 
+                        const isVisible =
+                            input.type === "text";
 
-        passwordToggle.addEventListener(
-            "click",
-            function () {
+                        input.type =
+                            isVisible
+                                ? "password"
+                                : "text";
 
-                const hidden =
-                    passwordInput.type === "password";
-
-                passwordInput.type =
-                    hidden ? "text" : "password";
-
-                passwordToggle.textContent =
-                    hidden ? "Hide" : "Show";
-            }
-        );
-
+                        button.textContent =
+                            isVisible
+                                ? "Show"
+                                : "Hide";
+                    }
+                );
+            });
     </script>
-
 </body>
 
 </html>

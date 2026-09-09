@@ -1,45 +1,342 @@
 <!DOCTYPE html>
-<html lang='en'>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Create Account</title>
-    </head>
+<html lang="en">
 
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <h1>Create Account</h1>
+    <title>Create Account | KICKLAB</title>
 
-        <form id="create-account-form">
-            <label>Full Name</label>
-            <input type="text" id="name" required>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-            <br><br>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-            <label>Email</label>
-            <input type="email" id="email" required>
-            <br><br>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
 
-            <label>Password</label>
-            <input type="password" id="password" required>
+<body>
 
-            <br><br>
+    <!-- Background -->
+    <div class="bg-effects">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+        <div class="bg-grid"></div>
+    </div>
 
-            <button type="submit">Create Account</button>
-        </form>
+    <!-- KICKLAB Logo -->
+    <a class="logo auth-brand-fixed" href="/">
+        <span class="logo-mark">K</span>
+        <span class="logo-name">KICKLAB</span>
+    </a>
 
-        <p id="message"></p>
+    <a class="btn btn-glass auth-top-back" href="/">
+        Back to Store
+    </a>
 
-        <script>
-            document.getElementById("create-account-form").addEventListener(
-                "submit",
-                function(event) {
-                    event.preventDefault();
 
-                    document.getElementById("message").textContent =
-                        "Account details submitted successfully.";
-                }
-            );
-        </script>
-    </body>
+    <!-- CREATE ACCOUNT PAGE -->
+    <main class="auth-page">
+
+        <section class="auth-shell">
+
+            <!-- LEFT -->
+            <div class="auth-form-panel">
+
+                <span class="auth-eyebrow">
+                    Customer Registration
+                </span>
+
+                <h1 class="auth-title">
+                    Create your account.
+                </h1>
+
+                <p class="auth-subtitle">
+                    Join KICKLAB to manage your account, track orders
+                    and discover sneakers that match your style.
+                </p>
+
+
+                <!-- ERROR MESSAGE -->
+                {% if error %}
+                <div class="auth-message auth-error">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+
+                <!-- REAL REGISTRATION FORM -->
+                <form class="auth-form" method="POST" action="/create-account">
+
+                    <!-- NAME -->
+                    <div class="auth-row">
+
+                        <div class="auth-group">
+
+                            <label for="first_name">
+                                First Name
+                            </label>
+
+                            <input class="auth-input" type="text" id="first_name" name="first_name"
+                                value="{{ form_data.first_name if form_data else '' }}" placeholder="First name"
+                                autocomplete="given-name" required>
+
+                        </div>
+
+
+                        <div class="auth-group">
+
+                            <label for="last_name">
+                                Last Name
+                            </label>
+
+                            <input class="auth-input" type="text" id="last_name" name="last_name"
+                                value="{{ form_data.last_name if form_data else '' }}" placeholder="Last name"
+                                autocomplete="family-name" required>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PHONE -->
+                    <div class="auth-group">
+
+                        <label for="phone">
+                            Phone
+                        </label>
+
+                        <input class="auth-input" type="tel" id="phone" name="phone"
+                            value="{{ form_data.phone if form_data else '' }}" placeholder="0400 000 000"
+                            autocomplete="tel">
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+                    <div class="auth-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input class="auth-input" type="email" id="email" name="email"
+                            value="{{ form_data.email if form_data else '' }}" placeholder="you@example.com"
+                            autocomplete="email" required>
+
+                    </div>
+
+
+                    <!-- PASSWORDS -->
+                    <div class="auth-row">
+
+                        <div class="auth-group">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <div class="auth-password-wrap">
+
+                                <input class="auth-input" type="password" id="password" name="password"
+                                    placeholder="Password" autocomplete="new-password" required>
+
+                                <button class="auth-password-toggle" type="button" data-toggle-password="password">
+                                    Show
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="auth-group">
+
+                            <label for="confirm_password">
+                                Confirm Password
+                            </label>
+
+                            <div class="auth-password-wrap">
+
+                                <input class="auth-input" type="password" id="confirm_password" name="confirm_password"
+                                    placeholder="Confirm password" autocomplete="new-password" required>
+
+                                <button class="auth-password-toggle" type="button"
+                                    data-toggle-password="confirm_password">
+                                    Show
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SUBMIT -->
+                    <button class="btn btn-gradient auth-submit" type="submit">
+                        Create Account
+                    </button>
+
+                </form>
+
+
+                <p class="auth-switch">
+
+                    Already have an account?
+
+                    <a href="/login">
+                        Log in
+                    </a>
+
+                </p>
+
+            </div>
+
+
+            <!-- RIGHT -->
+            <aside class="auth-side-panel">
+
+                <div class="auth-side-content">
+
+                    <span class="auth-eyebrow">
+                        Join KICKLAB
+                    </span>
+
+                    <h2 class="auth-side-title">
+
+                        Your sneakers.
+
+                        <span class="gradient-text">
+                            Your account.
+                        </span>
+
+                    </h2>
+
+
+                    <p class="auth-side-copy">
+                        Create your KICKLAB account and enjoy a connected
+                        shopping experience across our services.
+                    </p>
+
+
+                    <div class="auth-benefits">
+
+
+                        <!-- BENEFIT 1 -->
+                        <div class="auth-benefit">
+
+                            <span class="auth-benefit-num">
+                                01
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Manage your profile
+                                </strong>
+
+                                <span>
+                                    Keep your customer information up to date.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BENEFIT 2 -->
+                        <div class="auth-benefit">
+
+                            <span class="auth-benefit-num">
+                                02
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Track your orders
+                                </strong>
+
+                                <span>
+                                    View your purchases and follow their latest status.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BENEFIT 3 -->
+                        <div class="auth-benefit">
+
+                            <span class="auth-benefit-num">
+                                03
+                            </span>
+
+                            <div>
+
+                                <strong>
+                                    Discover better picks
+                                </strong>
+
+                                <span>
+                                    Get sneaker recommendations through KICKLAB.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+
+    <!-- PASSWORD SHOW / HIDE -->
+    <script>
+
+        document
+            .querySelectorAll("[data-toggle-password]")
+            .forEach(function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        const input =
+                            document.getElementById(
+                                button.dataset.togglePassword
+                            );
+
+                        const isVisible =
+                            input.type === "text";
+
+                        input.type =
+                            isVisible
+                                ? "password"
+                                : "text";
+
+                        button.textContent =
+                            isVisible
+                                ? "Show"
+                                : "Hide";
+                    }
+                );
+
+            });
+
+    </script>
+
+</body>
+
 </html>

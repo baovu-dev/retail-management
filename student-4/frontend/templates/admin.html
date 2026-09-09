@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>KICKLAB — My Orders</title>
+    <title>KICKLAB — Order Management</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,13 +19,17 @@
     <header>
         <div class="container header-inner">
 
-            <a href="http://localhost:5000/" class="logo">
+            <a href="http://localhost:5000/staff-dashboard" class="logo">
                 <span class="logo-name">KICKLAB</span>
             </a>
 
             <div class="header-actions">
+                <a href="http://localhost:5000/staff-dashboard" class="btn btn-glass">
+                    Staff Dashboard
+                </a>
+
                 <a href="http://localhost:5000/" class="btn btn-glass">
-                    Store Home
+                    View Store
                 </a>
             </div>
 
@@ -42,32 +46,35 @@
                 <div class="hero-copy">
 
                     <span class="section-tag">
-                        Order Management
+                        Staff Mode
                     </span>
 
                     <h1 class="section-title">
-                        My Orders
+                        Order Management
                     </h1>
 
                     <p class="section-sub">
-                        View your orders, check order details,
-                        cancel orders, and ask the AI Order Assistant
-                        about your order status.
+                        Review all customer orders, inspect order details,
+                        confirm pending orders and cancel orders when required.
                     </p>
 
                 </div>
 
                 <div class="hero-visual" aria-hidden="true">
+
                     <div class="hero-orb hero-orb-one"></div>
                     <div class="hero-orb hero-orb-two"></div>
 
                     <div class="hero-shopping-card">
+
                         <div class="hero-bag">
                             K
                         </div>
 
                         <div class="hero-box"></div>
+
                     </div>
+
                 </div>
 
             </section>
@@ -76,81 +83,24 @@
             <div id="statusMessage" class="status-msg"></div>
 
 
-            <!-- AI ORDER ASSISTANT -->
-            <section class="assistant-card">
-
-                <div class="assistant-heading">
-
-                    <span class="section-tag">
-                        ✦ AI Mode
-                    </span>
-
-                    <h2>
-                        Order Assistant
-                    </h2>
-
-                    <p>
-                        Ask a question about one of your orders.
-                        The assistant uses the actual order information
-                        stored by the Order Management service.
-                    </p>
-
-                </div>
-
-
-                <div class="assistant-form">
-
-                    <div class="field-group field-order">
-
-                        <label for="assistantOrderId">
-                            Order ID
-                        </label>
-
-                        <input id="assistantOrderId" type="number" min="1" placeholder="e.g. 1">
-
-                    </div>
-
-
-                    <div class="field-group field-question">
-
-                        <label for="assistantQuestion">
-                            Ask about your order
-                        </label>
-
-                        <input id="assistantQuestion" type="text" placeholder="What is the current status of my order?">
-
-                    </div>
-
-
-                    <button type="button" class="btn btn-ai" onclick="askOrderAssistant()">
-                        ✦ Ask AI
-                    </button>
-
-                </div>
-
-
-                <div id="assistantAnswer" class="assistant-answer"></div>
-
-            </section>
-
-
-            <!-- ORDER LIST -->
             <section>
 
                 <div class="orders-section-head">
 
                     <div>
+
                         <span class="section-tag">
-                            Recent Orders
+                            All Orders
                         </span>
 
                         <h2 class="orders-section-title">
-                            Your order history
+                            Customer order activity
                         </h2>
+
                     </div>
 
                     <p class="orders-section-copy">
-                        Review order status, totals and item details below.
+                        Staff can view and manage orders across all customers.
                     </p>
 
                 </div>
@@ -167,11 +117,9 @@
     </main>
 
 
-    <!-- ORDER DETAIL MODAL -->
     <div id="orderModal" class="modal" hidden>
 
         <div class="modal-backdrop" id="modalBackdrop"></div>
-
 
         <div class="modal-dialog">
 
@@ -180,7 +128,7 @@
             </button>
 
             <span class="section-tag">
-                Order Information
+                Staff Order View
             </span>
 
             <h2 class="modal-title">
@@ -198,9 +146,6 @@
 
         const API_BASE = "{{ api_base }}";
 
-        const params = new URLSearchParams(window.location.search);
-        const customerId = params.get("customer_id");
-
         const ordersContainer =
             document.getElementById("ordersContainer");
 
@@ -213,17 +158,19 @@
         const orderDetail =
             document.getElementById("orderDetail");
 
+        const modalClose =
+            document.getElementById("modalClose");
+
+        const modalBackdrop =
+            document.getElementById("modalBackdrop");
+
 
         async function loadOrders() {
 
             try {
 
-                const ordersUrl = customerId
-                    ? `${API_BASE}/api/orders?customer_id=${encodeURIComponent(customerId)}`
-                    : `${API_BASE}/api/orders`;
-
                 const response =
-                    await fetch(ordersUrl);
+                    await fetch(`${API_BASE}/api/orders`);
 
                 if (!response.ok) {
                     throw new Error("Could not load orders");
@@ -276,6 +223,10 @@
 
                             <div class="order-meta">
 
+                                <span>
+                                    Customer #${order.customer_id}
+                                </span>
+
                                 <span class="order-date">
                                     ${order.order_date}
                                 </span>
@@ -284,9 +235,7 @@
 
 
                             <p class="order-total">
-                                $${Number(
-                        order.total_amount
-                    ).toFixed(2)}
+                                $${Number(order.total_amount).toFixed(2)}
                             </p>
 
 
@@ -295,35 +244,41 @@
                                 <button
                                     type="button"
                                     class="btn btn-glass"
-                                    onclick="
-                                        viewOrder(
-                                            ${order.order_id}
-                                        )
-                                    "
+                                    onclick="viewOrder(${order.order_id})"
                                 >
                                     View Details
                                 </button>
 
 
+                                ${order.status === "PENDING"
+
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="btn btn-ai"
+                                            onclick="confirmOrder(${order.order_id})"
+                                        >
+                                            Confirm
+                                        </button>
+                                    `
+
+                                    : ""
+                                }
+
+
                                 ${order.status !== "CANCELLED"
 
-                            ? `
-
+                                    ? `
                                         <button
                                             type="button"
                                             class="btn btn-danger"
-                                            onclick="
-                                                cancelOrder(
-                                                    ${order.order_id}
-                                                )
-                                            "
+                                            onclick="cancelOrder(${order.order_id})"
                                         >
                                             Cancel
                                         </button>
-
                                     `
 
-                            : `
+                                    : `
                                         <button
                                             type="button"
                                             class="btn btn-disabled"
@@ -332,7 +287,7 @@
                                             Cancelled
                                         </button>
                                     `
-                        }
+                                }
 
                             </div>
 
@@ -360,7 +315,6 @@
                     await fetch(
                         `${API_BASE}/api/orders/${orderId}`
                     );
-
 
                 const order =
                     await response.json();
@@ -393,7 +347,7 @@
 
                         <div>
                             <span>Customer</span>
-                            <strong>${order.customer_id}</strong>
+                            <strong>#${order.customer_id}</strong>
                         </div>
 
                         <div>
@@ -404,9 +358,7 @@
                         <div>
                             <span>Total</span>
                             <strong>
-                                $${Number(
-                    order.total_amount
-                ).toFixed(2)}
+                                $${Number(order.total_amount).toFixed(2)}
                             </strong>
                         </div>
 
@@ -421,7 +373,7 @@
 
                         ${items.length
 
-                        ? items.map(item => `
+                            ? items.map(item => `
 
                                 <div class="order-item">
 
@@ -432,23 +384,19 @@
                                     <span>
                                         ${item.quantity}
                                         ×
-                                        $${Number(
-                            item.unit_price
-                        ).toFixed(2)}
+                                        $${Number(item.unit_price).toFixed(2)}
                                     </span>
 
                                     <strong>
-                                        $${Number(
-                            item.subtotal
-                        ).toFixed(2)}
+                                        $${Number(item.subtotal).toFixed(2)}
                                     </strong>
 
                                 </div>
 
                             `).join("")
 
-                        : "<p>No items found.</p>"
-                    }
+                            : "<p>No items found.</p>"
+                        }
 
                     </div>
                 `;
@@ -464,6 +412,70 @@
 
                 statusMessage.textContent =
                     "Could not load order details.";
+            }
+        }
+
+
+        async function confirmOrder(orderId) {
+
+            const confirmed =
+                confirm(
+                    `Confirm order #${orderId}?`
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/api/orders/${orderId}`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                status: "CONFIRMED"
+                            })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    statusMessage.textContent =
+                        data.error ||
+                        "Could not confirm order.";
+
+                    return;
+                }
+
+
+                statusMessage.textContent =
+                    `Order #${orderId} confirmed successfully.`;
+
+                await loadOrders();
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                statusMessage.textContent =
+                    "Order service is unavailable.";
             }
         }
 
@@ -509,7 +521,6 @@
                 statusMessage.textContent =
                     `Order #${orderId} cancelled successfully.`;
 
-
                 await loadOrders();
 
             }
@@ -524,176 +535,33 @@
         }
 
 
-        async function askOrderAssistant() {
-
-            const orderId =
-                document
-                    .getElementById(
-                        "assistantOrderId"
-                    )
-                    .value;
-
-
-            const question =
-                document
-                    .getElementById(
-                        "assistantQuestion"
-                    )
-                    .value
-                    .trim();
-
-
-            const answerBox =
-                document
-                    .getElementById(
-                        "assistantAnswer"
-                    );
-
-
-            if (!orderId || !question) {
-
-                answerBox.textContent =
-                    "Please enter an order ID and a question.";
-
-                return;
-            }
-
-
-            answerBox.innerHTML = `
-                <div class="assistant-loading">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <p>Checking your order...</p>
-                </div>
-            `;
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE}/api/order-assistant`,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-                                order_id:
-                                    Number(orderId),
-
-                                question:
-                                    question
-                            })
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    answerBox.textContent =
-                        data.error ||
-                        "Could not answer your question.";
-
-                    return;
-                }
-
-
-                answerBox.innerHTML = `
-
-                    <div class="assistant-avatar">
-                        🤖
-                    </div>
-
-                    <div class="assistant-response-content">
-
-                        <strong>
-                            Order Assistant
-                        </strong>
-
-                        <p>
-                            ${escapeHtml(
-                    data.answer
-                )}
-                        </p>
-
-                        <small>
-                            ✓ Response source:
-                            ${data.source === "ollama"
-                        ? "AI"
-                        : "Order service"
-                    }
-                        </small>
-
-                    </div>
-                `;
-
-            }
-
-            catch (error) {
-
-                console.error(error);
-
-                answerBox.textContent =
-                    "Order Assistant is currently unavailable.";
-            }
-        }
-
-
         function closeModal() {
             modal.hidden = true;
         }
 
 
-        document
-            .getElementById(
-                "modalClose"
-            )
-            .addEventListener(
-                "click",
-                closeModal
-            );
+        modalClose.addEventListener(
+            "click",
+            closeModal
+        );
 
 
-        document
-            .getElementById(
-                "modalBackdrop"
-            )
-            .addEventListener(
-                "click",
-                closeModal
-            );
+        modalBackdrop.addEventListener(
+            "click",
+            closeModal
+        );
 
 
         document.addEventListener(
             "keydown",
-            function (event) {
+            event => {
 
                 if (event.key === "Escape") {
                     closeModal();
                 }
+
             }
         );
-
-
-        function escapeHtml(value) {
-
-            const div =
-                document.createElement("div");
-
-            div.textContent =
-                value ?? "";
-
-            return div.innerHTML;
-        }
 
 
         loadOrders();
