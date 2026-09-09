@@ -26,8 +26,8 @@
 
     <div class="auth-page">
 
-        <div class="auth-topbar">
-            <a href="/" class="logo">
+
+            <a href="/" class="logo auth-brand-fixed">
                 <span class="logo-mark">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -39,14 +39,13 @@
                 <span class="logo-name">KICKLAB</span>
             </a>
 
-            <a href="/" class="auth-back">
+            <a href="/" class="auth-top-back">
                 ← Back to Store
             </a>
-        </div>
 
         <div class="auth-shell">
 
-            <div class="auth-form-side">
+            <div class="auth-form-panel">
 
                 <span class="section-tag">
                     Staff Access
@@ -68,22 +67,22 @@
 
                 <form method="POST" action="/staff-login" class="auth-form">
 
-                    <div class="auth-field">
+                    <div class="auth-group">
                         <label for="email">
                             Staff email
                         </label>
 
-                        <input type="email" id="email" name="email" value="{{ email or '' }}"
+                        <input class="auth-input" type="email" id="email" name="email" value="{{ email or '' }}"
                             placeholder="admin@kicklab.com" autocomplete="email" required>
                     </div>
 
-                    <div class="auth-field">
+                    <div class="auth-group">
                         <label for="password">
                             Password
                         </label>
 
                         <div class="auth-password-wrap">
-                            <input type="password" id="password" name="password" placeholder="Enter your password"
+                            <input class="auth-input" type="password" id="password" name="password" placeholder="Enter your password"
                                 autocomplete="current-password" required>
 
                             <button type="button" class="auth-password-toggle" id="passwordToggle"
@@ -108,7 +107,7 @@
 
             </div>
 
-            <div class="auth-benefits-side">
+            <div class="auth-side-panel">
 
                 <span class="section-tag">
                     KICKLAB Staff

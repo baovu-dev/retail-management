@@ -384,7 +384,7 @@ def create_account():
                     email=email
                 )
 
-            customer = login_result.get("customer")
+            customer = login_result.get("customer") or login_result
 
         except (requests.exceptions.RequestException, ValueError):
             return render_template(
