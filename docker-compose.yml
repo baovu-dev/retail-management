@@ -6,7 +6,7 @@ services:
   #   build: ./shared
   #   ports:
   #     - "5000:5000"
- 
+
   # ── Student 1 — Reviews & Ratings ──
   student1-database:
     build: ./student-1
@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
- 
+
   student1-backend:
     build: ./student-1
     command: python backend/app.py
@@ -32,8 +32,33 @@ services:
       student1-database:
         condition: service_healthy
 
-  # ── Student 2 — Product Management ── 
-  # etc 
+  # ── Student 2 — Product Management ──
+  student2-database:
+    build: ./student-2
+    command: python database/app.py
+    ports:
+      - "6002:6002"
+
+  student2-backend:
+    build: ./student-2
+    command: python backend/app.py
+    ports:
+      - "5002:5002"
+    environment:
+      - DATABASE_URL=http://student2-database:6002
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+    depends_on:
+      - student2-database
+
+  student2-frontend:
+    build: ./student-2
+    command: python frontend/app.py
+    ports:
+      - "3002:3002"
+    environment:
+      - API_BASE=http://student2-backend:5002
+    depends_on:
+      - student2-backend
 
 
   # ── Student 3 — Customer Account Management ──
@@ -61,3 +86,77 @@ services:
     depends_on:
       student3-database:
         condition: service_healthy
+
+ # ── Student 4 — Order Management ──
+  student4-database:
+    build: ./student-4
+    command: sh -c "python database/init_db.py && python database/app.py"
+    ports:
+      - "6004:6004"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6004/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  student4-backend:
+    build: ./student-4
+    command: python backend/app.py
+    ports:
+      - "5004:5004"
+    environment:
+      - DATABASE_URL=http://student4-database:6004
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+      - OLLAMA_MODEL=qwen2.5:0.5b
+    depends_on:
+      student4-database:
+        condition: service_healthy
+
+  student4-frontend:
+    build: ./student-4
+    command: python frontend/app.py
+    ports:
+      - "3004:3004"
+    environment:
+      - API_BASE=http://student4-backend:5004
+    depends_on:
+      - student4-backend
+
+  # ── Student 5 — Recommendation & Chatbot ──
+  student5-database:
+    build: ./student-5
+    command: python database/app.py
+    ports:
+      - "6005:6005"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6005/stats/metrics')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  student5-backend:
+    build: ./student-5
+    command: python backend/app.py
+    ports:
+      - "5005:5005"
+    environment:
+      - DATABASE_URL=http://student5-database:6005
+      - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+    depends_on:
+      student5-database:
+        condition: service_healthy
+
+  student5-frontend:
+    build: ./student-5
+    command: python frontend/app.py
+    ports:
+      - "3005:3005"
+    environment:
+      - API_BASE=http://student5-backend:5005
+    depends_on:
+      - student5-backend
+
+  # ── Shared AI services (Release 1+) ──
+  # TODO: whoever's building ai-mode/mcp-server/rag-server — add here late

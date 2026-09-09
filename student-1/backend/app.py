@@ -30,8 +30,29 @@ def analyse_sentiment(comment_text):
         return 0.0  # Default to neutral sentiment on error
 
 def is_verified_purchase(customer_id, product_id):
-    # HAVE TO IMPLEMENT ONCE ORDER IS COMPLETED!!!
-    return True
+    try:
+        r = requests.get("http://host.docker.internal:5004/api/orders", timeout=5)
+        orders = r.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Orders API connection error: {e}")
+        return False
+
+    for order in orders:
+        if order['customer_id'] != customer_id:
+            continue
+        if order['status'] != 'CONFIRMED':
+            continue
+
+        order_detail_res = requests.get(
+            f"http://host.docker.internal:5004/api/orders/{order['order_id']}", timeout=5
+        )
+        order_detail = order_detail_res.json()
+        item_product_ids = [item['product_id'] for item in order_detail.get('items', [])]
+
+        if product_id in item_product_ids:
+            return True
+
+    return False
 
 @app.route('/')
 def index():

@@ -48,7 +48,7 @@
                 <li><a href="#assistant">AI Assistant</a></li>
             </ul>
 
-            <a href="http://localhost:5000" class="btn btn-login">Log out</a>
+            <a href="http://localhost:5000/logout" class="btn btn-login" onclick="sessionStorage.removeItem('customer_id')">Log out</a>
 
         </div>
     </header>
@@ -111,6 +111,10 @@
                             Edit Details
                         </button>
 
+                        <button class="btn btn-gradient" id="changePasswordButton">
+                            Change Password
+                        </button>
+
                         <button class="btn btn-delete" id="deleteButton">
                             Delete Account
                         </button>
@@ -130,6 +134,30 @@
                         </button>
 
                         <button class="btn btn-glass" type="button" id="cancelButton">
+                            Cancel
+                        </button>
+
+                    </form>
+
+                    <form id="passwordForm" class="edit-form" hidden>
+                        <input
+                            id="currentPassword"
+                            type="password"
+                            placeholder="Current password"
+                            required>
+
+                        <input
+                            id="newPassword"
+                            type="password"
+                            placeholder="New password"
+                            minlength="8"
+                            required>
+
+                        <button class="btn btn-gradient" type="submit">
+                        Change Password
+                        </button>
+
+                        <button class="btn btn-glass" type="button" id="cancelPasswordButton">
                             Cancel
                         </button>
 
@@ -193,7 +221,6 @@
 
     <script>
 
-        // Temporary customer ID until login integration is completed.
 const params = new URLSearchParams(window.location.search);
 
 const urlCustomerId = params.get('customer_id');
@@ -204,9 +231,13 @@ if (urlCustomerId) {
 
 const customerId =
     urlCustomerId ||
-    sessionStorage.getItem('customer_id') ||
-    1;
-        let currentCustomer;
+    sessionStorage.getItem('customer_id');
+
+    if(!customerId) {
+        window.location.href = "http://localhost:5000/login";
+    }
+
+    let currentCustomer;
 
 
         // READ CUSTOMER
@@ -287,6 +318,46 @@ const customerId =
             loadCustomer();
         });
 
+        // OPEN CHANGE PASSWORD FORM
+        document.getElementById("changePasswordButton").addEventListener("click", () => {
+            document.getElementById("passwordForm").hidden = false;
+        });
+
+
+        // CANCEL PASSWORD CHANGE
+        document.getElementById("cancelPasswordButton").addEventListener("click", () => {
+            document.getElementById("passwordForm").hidden = true;
+        });
+
+
+        // CHANGE PASSWORD
+        document.getElementById("passwordForm").addEventListener("submit", async (event) => {
+
+            event.preventDefault();
+
+            const response = await fetch(`/customers/${customerId}/password`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    current_password: document.getElementById("currentPassword").value,
+                    new_password: document.getElementById("newPassword").value
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Password changed successfully.");
+
+                document.getElementById("passwordForm").reset();
+                document.getElementById("passwordForm").hidden = true;
+            } else {
+                alert(result.error || "Unable to change password.");
+            }
+        });
+
 
         // DELETE CUSTOMER
         document.getElementById("deleteButton").addEventListener("click", async () => {
@@ -333,7 +404,9 @@ const customerId =
         });
 
 
-        loadCustomer();
+        if (customerId) {
+            loadCustomer();
+        }
 
     </script>
 
