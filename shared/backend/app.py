@@ -35,6 +35,10 @@ FALLBACK_STATS = {
 def customer_home():
     return render_template('Index.html')
 
+@app.route('/shop')
+def shop():
+    return render_template('shop.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 

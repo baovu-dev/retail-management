@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop — KICKLAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .product-card {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .product-brand {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .product-name {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .product-category {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .product-price {
+      font-weight: 800;
+      color: var(--orange);
+      font-size: 1.1rem;
+    }
+
+    .product-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to Home</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder" id="shop">
+    <div class="container">
+      <span class="section-tag">Shop</span>
+      <h2 class="section-title" id="shopTitle">Browse sneakers</h2>
+      <p class="section-sub" id="shopSub">Every pair currently in stock.</p>
+
+      <div id="productResults">
+        <p>Loading products…</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Shop</p>
+  </footer>
+
+  <script>
+    async function loadProducts() {
+      try {
+        const res = await fetch('http://localhost:5002/products');
+        const products = await res.json();
+
+        const params = new URLSearchParams(window.location.search);
+        const categoryFilter = params.get('category');
+
+        if (categoryFilter) {
+          document.getElementById('shopTitle').textContent = categoryFilter + ' sneakers';
+          document.getElementById('shopSub').innerHTML =
+            `Showing ${categoryFilter} only. <a href="/shop">View all</a>`;
+        }
+
+        const filtered = categoryFilter
+          ? products.filter(p => p.category === categoryFilter)
+          : products;
+
+        const container = document.getElementById('productResults');
+
+        if (!filtered.length) {
+          container.innerHTML = categoryFilter
+            ? `<p>No products found in "${categoryFilter}".</p>`
+            : '<p>No products available right now.</p>';
+          return;
+        }
+
+        container.innerHTML = '<div class="product-grid">' + filtered.map(p => `
+          <div class="product-card">
+            <div class="product-brand">${p.brand || ''}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-category">${p.category}</div>
+            <div class="product-price">$${Number(p.price).toFixed(2)}</div>
+            ${p.description ? `<div class="product-desc">${p.description}</div>` : ''}
+          </div>
+        `).join('') + '</div>';
+      } catch (err) {
+        document.getElementById('productResults').innerHTML =
+          '<p>Could not load products right now. Please try again later.</p>';
+      }
+    }
+
+    loadProducts();
+  </script>
+
+</body>
+</html>
