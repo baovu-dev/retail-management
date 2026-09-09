@@ -6,7 +6,7 @@ services:
   #   build: ./shared
   #   ports:
   #     - "5000:5000"
- 
+
   # ── Student 1 — Reviews & Ratings ──
   student1-database:
     build: ./student-1
@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
- 
+
   student1-backend:
     build: ./student-1
     command: python backend/app.py
@@ -32,7 +32,7 @@ services:
       student1-database:
         condition: service_healthy
 
-  # ── Student 2 — Product Management ── 
+  # ── Student 2 — Product Management ──
   student2-database:
     build: ./student-2
     command: python database/app.py
@@ -49,7 +49,7 @@ services:
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
     depends_on:
       - student2-database
- 
+
   student2-frontend:
     build: ./student-2
     command: python frontend/app.py
@@ -99,7 +99,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
- 
+
   student4-backend:
     build: ./student-4
     command: python backend/app.py
@@ -112,7 +112,7 @@ services:
     depends_on:
       student4-database:
         condition: service_healthy
- 
+
   student4-frontend:
     build: ./student-4
     command: python frontend/app.py
@@ -135,7 +135,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
- 
+
   student5-backend:
     build: ./student-5
     command: python backend/app.py
@@ -147,7 +147,7 @@ services:
     depends_on:
       student5-database:
         condition: service_healthy
- 
+
   student5-frontend:
     build: ./student-5
     command: python frontend/app.py
@@ -157,6 +157,6 @@ services:
       - API_BASE=http://student5-backend:5005
     depends_on:
       - student5-backend
- 
+
   # ── Shared AI services (Release 1+) ──
   # TODO: whoever's building ai-mode/mcp-server/rag-server — add here late

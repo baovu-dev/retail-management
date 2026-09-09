@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Order | KICKLAB</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <style>
+        .order-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 140px 24px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .order-card {
+            width: 100%;
+            max-width: 620px;
+            padding: 42px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 24px 70px rgba(71, 44, 103, 0.12);
+            backdrop-filter: blur(20px);
+        }
+
+        .order-back {
+            display: inline-block;
+            margin-bottom: 28px;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 600;
+            opacity: 0.65;
+        }
+
+        .order-back:hover {
+            opacity: 1;
+        }
+
+        .order-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.55;
+        }
+
+        .order-card h1 {
+            margin: 0 0 8px;
+            font-size: 2.3rem;
+        }
+
+        .order-brand {
+            margin-bottom: 14px;
+            font-size: 1rem;
+            opacity: 0.6;
+        }
+
+        .order-description {
+            margin: 0;
+            line-height: 1.6;
+            opacity: 0.7;
+        }
+
+        .order-divider {
+            height: 1px;
+            margin: 30px 0;
+            background: rgba(45, 31, 59, 0.1);
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .order-row-label {
+            font-weight: 600;
+        }
+
+        .order-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid rgba(45, 31, 59, 0.15);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.65);
+        }
+
+        .quantity-control button {
+            width: 44px;
+            height: 42px;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            font: inherit;
+            font-size: 1.2rem;
+        }
+
+        .quantity-control input {
+            width: 48px;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            text-align: center;
+            font: inherit;
+            font-weight: 700;
+        }
+
+        .total-row {
+            margin-bottom: 30px;
+            padding-top: 6px;
+        }
+
+        .total-label {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .total-price {
+            font-size: 1.65rem;
+            font-weight: 800;
+        }
+
+        .place-order-btn {
+            width: 100%;
+            border: 0;
+            padding: 15px 24px;
+            border-radius: 999px;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #ff4fb8, #8b5cf6);
+            box-shadow: 0 10px 28px rgba(164, 85, 210, 0.24);
+        }
+
+        .place-order-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .order-error {
+            margin-bottom: 22px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(255, 80, 110, 0.1);
+            color: #a32f4a;
+        }
+
+        @media (max-width: 600px) {
+            .order-card {
+                padding: 28px;
+            }
+
+            .order-card h1 {
+                font-size: 1.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-effects" aria-hidden="true">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <header id="header">
+        <div class="container header-inner">
+
+            <a href="/" class="logo">
+                <span class="logo-mark">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 18h20l-2-9H4L2 18z" />
+                        <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" />
+                    </svg>
+                </span>
+                <span class="logo-name">KICKLAB</span>
+            </a>
+
+            <ul class="main-nav">
+                <li><a href="/#finder">Get Started</a></li>
+                <li><a href="/shop">Shop</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <a href="/shop" class="btn btn-glass">Browse</a>
+                <a href="http://localhost:3005/" class="btn btn-gradient">Help Me Choose</a>
+
+                <a href="http://localhost:5003/?customer_id={{ customer.customer_id }}" class="btn btn-glass">
+                    My Account
+                </a>
+
+                <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-glass">
+                    My Orders
+                </a>
+
+                <a href="/logout" class="btn btn-login">
+                    Logout
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="order-page">
+
+        <section class="order-card">
+
+            <a href="/shop" class="order-back">← Back to Shop</a>
+
+            {% if error %}
+            <div class="order-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if product %}
+
+            <span class="order-label">{{ product.category }}</span>
+
+            <h1>{{ product.name }}</h1>
+
+            <div class="order-brand">
+                {{ product.brand }}
+            </div>
+
+            <p class="order-description">
+                {{ product.description }}
+            </p>
+
+            <div class="order-divider"></div>
+
+            <form method="POST" action="/order/{{ product.product_id }}/place">
+
+                <div class="order-row">
+                    <span class="order-row-label">Unit Price</span>
+
+                    <span class="order-price">
+                        ${{ "%.2f"|format(product.price) }}
+                    </span>
+                </div>
+
+                <div class="order-row">
+                    <label for="quantity" class="order-row-label">
+                        Quantity
+                    </label>
+
+                    <div class="quantity-control">
+                        <button type="button" id="decreaseQuantity">−</button>
+
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="10" readonly>
+
+                        <button type="button" id="increaseQuantity">+</button>
+                    </div>
+                </div>
+
+                <div class="order-divider"></div>
+
+                <div class="order-row total-row">
+                    <span class="total-label">Total</span>
+
+                    <span class="total-price" id="totalPrice" data-unit-price="{{ product.price }}">
+                        ${{ "%.2f"|format(product.price) }}
+                    </span>
+                </div>
+
+                <button type="submit" class="place-order-btn">
+                    Place Order
+                </button>
+
+            </form>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+    <script>
+        const quantityInput = document.getElementById("quantity");
+        const decreaseButton = document.getElementById("decreaseQuantity");
+        const increaseButton = document.getElementById("increaseQuantity");
+        const totalPrice = document.getElementById("totalPrice");
+
+        if (quantityInput && totalPrice) {
+            const unitPrice = Number(totalPrice.dataset.unitPrice);
+
+            function updateTotal() {
+                const quantity = Number(quantityInput.value);
+                totalPrice.textContent = "$" + (unitPrice * quantity).toFixed(2);
+            }
+
+            decreaseButton.addEventListener("click", () => {
+                const current = Number(quantityInput.value);
+
+                if (current > 1) {
+                    quantityInput.value = current - 1;
+                    updateTotal();
+                }
+            });
+
+            increaseButton.addEventListener("click", () => {
+                const current = Number(quantityInput.value);
+
+                if (current < 10) {
+                    quantityInput.value = current + 1;
+                    updateTotal();
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
