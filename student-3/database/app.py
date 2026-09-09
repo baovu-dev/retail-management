@@ -385,7 +385,7 @@ def register_customer():
 
 
 @app.route('/auth/customer-by-email', methods=['GET'])
-def get_customer_by_email():
+def get_auth_customer_by_email():
     email = request.args.get(
         'email',
         ''

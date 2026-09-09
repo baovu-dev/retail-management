@@ -263,52 +263,6 @@ def register():
     return jsonify(result), response.status_code
 
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json(silent=True) or {}
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-
-    try:
-        response = requests.get(
-            f'{DATABASE_URL}/auth/customer-by-email',
-            params={'email': email},
-            timeout=5,
-        )
-    except requests.exceptions.RequestException:
-        return jsonify({'error': 'Customer database service is unavailable'}), 503
-
-    if response.status_code != 200:
-        return jsonify({'error': 'Invalid email or password'}), 401
-
-    try:
-        customer = response.json()
-    except ValueError:
-        return jsonify({'error': 'Invalid response from customer database service'}), 500
-
-    password_hash = customer.get('password_hash')
-    if not password_hash or not check_password_hash(password_hash, password):
-        return jsonify({'error': 'Invalid email or password'}), 401
-
-    if customer.get('status', 'Active') != 'Active':
-        return jsonify({'error': 'Customer account is inactive'}), 403
-
-    safe_customer = {
-        'customer_id': customer.get('customer_id'),
-        'first_name': customer.get('first_name'),
-        'last_name': customer.get('last_name'),
-        'phone': customer.get('phone'),
-        'email': customer.get('email'),
-        'created_at': customer.get('created_at'),
-        'status': customer.get('status'),
-    }
-
-    return jsonify({'message': 'Login successful', 'customer': safe_customer}), 200
-
-
 @app.route('/account-assistant', methods=['POST'])
 def account_assistant():
     data = request.get_json(silent=True) or {}
