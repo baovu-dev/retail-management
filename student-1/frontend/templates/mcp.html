@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Reviews MCP Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <style>
+    .mcp-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .mcp-state {
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 3px 12px;
+      border-radius: 100px;
+    }
+
+    .mcp-state.on { background: rgba(0, 200, 120, 0.12); color: #0a9960; }
+    .mcp-state.off { background: rgba(255, 61, 154, 0.12); color: var(--pink); }
+
+    .tool-card {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tool-card h3 { margin: 0 0 4px; font-size: 1.05rem; }
+    .tool-card p { margin: 0 0 14px; color: var(--text-muted); font-size: 0.9rem; }
+
+    .lookup-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .lookup-row input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 1rem;
+      background: #fff;
+    }
+
+    .lookup-row input.limit { flex: 0 0 110px; }
+
+    .lookup-row input:focus {
+      outline: none;
+      border-color: var(--purple);
+    }
+
+    #mcp-result {
+      margin-top: 28px;
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    #mcp-result pre {
+      background: #f6f5fb;
+      border-radius: var(--radius);
+      padding: 14px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to Reviews</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder">
+    <div class="container">
+      <span class="section-tag">🧰 MCP Tools</span>
+      <h2 class="section-title">Run review tools</h2>
+      <p class="section-sub">Each action goes through the Reviews backend to the shared MCP server, which runs the tool and returns the result.</p>
+
+      <div class="mcp-toggle-row">
+        <label>
+          <input id="mcp-mode-toggle" type="checkbox" checked>
+          MCP mode
+        </label>
+        <span id="mcp-mode-state" class="mcp-state on">On</span>
+      </div>
+
+      <div class="tool-card">
+        <h3>Rating summary</h3>
+        <p>Review count and average rating for one product.</p>
+        <form class="lookup-row mcp-action"
+              hx-post="/mcp/rating-summary"
+              hx-target="#mcp-result">
+          <input type="number" name="product_id" min="1" placeholder="Product ID, e.g. 101" required>
+          <button type="submit" class="btn btn-gradient">Run tool</button>
+        </form>
+      </div>
+
+      <div class="tool-card">
+        <h3>Reviews for a product</h3>
+        <p>Up to 50 reviews for one product.</p>
+        <form class="lookup-row mcp-action"
+              hx-post="/mcp/reviews-by-product"
+              hx-target="#mcp-result">
+          <input type="number" name="product_id" min="1" placeholder="Product ID, e.g. 103" required>
+          <input class="limit" type="number" name="limit" min="1" max="50" value="10" aria-label="Limit">
+          <button type="submit" class="btn btn-gradient">Run tool</button>
+        </form>
+      </div>
+
+      <div class="tool-card">
+        <h3>Flagged reviews</h3>
+        <p>Reviews automatically flagged for moderation.</p>
+        <button type="button" class="btn btn-gradient mcp-action"
+                hx-post="/mcp/flagged-reviews"
+                hx-target="#mcp-result">Run tool</button>
+      </div>
+
+      <div id="mcp-result">Tool results will appear here.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Reviews & Ratings</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById("mcp-mode-toggle");
+    const stateLabel = document.getElementById("mcp-mode-state");
+    const resultPanel = document.getElementById("mcp-result");
+    const STORAGE_KEY = "reviews_mcp_mode_enabled";
+
+    function isOn() { return toggle.checked; }
+
+    function renderState() {
+      stateLabel.textContent = isOn() ? "On" : "Off";
+      stateLabel.className = "mcp-state " + (isOn() ? "on" : "off");
+    }
+
+    function showOffMessage() {
+      resultPanel.innerHTML = "<p>MCP mode is off. Turn it on to run tools.</p>";
+    }
+
+    // Remember the toggle between page loads
+    const saved = localStorage.getItem(STORAGE_KEY);
+    toggle.checked = saved === null ? true : saved === "true";
+    renderState();
+    if (!isOn()) showOffMessage();
+
+    toggle.addEventListener("change", () => {
+      localStorage.setItem(STORAGE_KEY, String(isOn()));
+      renderState();
+      if (!isOn()) showOffMessage();
+    });
+
+    // Tell the backend whether MCP mode is on (same header as the lab)
+    document.body.addEventListener("htmx:configRequest", (event) => {
+      if (event.detail.elt.classList.contains("mcp-action")) {
+        event.detail.headers["X-MCP-Mode"] = isOn() ? "on" : "off";
+      }
+    });
+
+    // Don't even send the request when MCP mode is off
+    document.body.addEventListener("htmx:beforeRequest", (event) => {
+      if (event.detail.elt.classList.contains("mcp-action") && !isOn()) {
+        event.preventDefault();
+        showOffMessage();
+      }
+    });
+
+    // HTMX hides 4xx/5xx responses by default, so show errors too
+    document.body.addEventListener("htmx:beforeSwap", (event) => {
+      if (event.detail.xhr.status >= 400) {
+        event.detail.shouldSwap = true;
+        event.detail.isError = false;
+      }
+    });
+  </script>
+
+</body>
+</html>

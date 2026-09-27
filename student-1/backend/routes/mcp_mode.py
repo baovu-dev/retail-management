@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timezone
 
-from flask import Blueprint, request
+from flask import Blueprint, request, render_template
 from markupsafe import escape
 
 from services.mcp_client import call_tool
@@ -45,6 +45,11 @@ def run_tool(tool_name, arguments):
     except Exception as exc:
         error = {"error": "Shared MCP server unreachable", "detail": repr(root_cause(exc))}
         return mcp_render_json(title, arguments, error), 503
+
+
+@mcp_bp.get("/mcp")
+def mcp_page():
+   return render_template("mcp.html")
 
 
 @mcp_bp.post("/mcp/rating-summary")
