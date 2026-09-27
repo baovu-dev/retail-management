@@ -28,6 +28,8 @@ services:
     environment:
       - DATABASE_URL=http://student1-database:6001
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+      - MCP_URL=http://host.docker.internal:8100/mcp
+      - MCP_ENABLED=true
     depends_on:
       student1-database:
         condition: service_healthy
