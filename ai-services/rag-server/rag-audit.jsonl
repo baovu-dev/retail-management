@@ -1,0 +1,1 @@
+{"request_id": "a6547321-d032-4061-96dc-d0dde96584fe", "action": "refresh_corpus", "input": {}, "output": {"status": "success", "chunk_count": 17, "tier_1_chunks": 11, "tier_2_chunks": 6, "collection": "kicklab_context"}, "outcome": "success", "timestamp": "2026-09-27T12:22:27+00:00", "duration_ms": 1483}
