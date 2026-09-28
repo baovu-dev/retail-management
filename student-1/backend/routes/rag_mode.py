@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, render_template, request
 import requests
 
 from services.rag_api import RAG_FEATURE, call_rag_service, rag_disabled_response, rag_mode_is_enabled
@@ -20,6 +20,9 @@ def _status_code(payload):
     # insufficient_context is a valid answer; only real errors are 500
     return 500 if payload.get("status") == "error" else 200
 
+@rag_bp.get("/rag")
+def rag_page():
+    return render_template("rag.html")
 
 @rag_bp.post("/rag/refresh")
 def rag_refresh():
