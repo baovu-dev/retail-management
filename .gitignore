@@ -15,3 +15,5 @@ __pycache__/
 **/*.db
 
 ai-services/rag-server/chroma/
+ai-services/rag-server/rag-audit.jsonl
+ai-services/agentic-loop/outputs/
