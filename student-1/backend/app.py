@@ -6,6 +6,12 @@ from prompt_loader import load_prompt
 
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/css', static_url_path='/static')
 
+from routes.mcp_mode import mcp_bp
+app.register_blueprint(mcp_bp)
+
+from routes.rag_mode import rag_bp
+app.register_blueprint(rag_bp)
+
 DATABASE_URL = os.getenv("DATABASE_URL", "http://localhost:6001")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Reviews Assistant (RAG)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .mode-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .pill { font-weight: 700; font-size: 0.78rem; padding: 3px 12px; border-radius: 100px; }
+    .pill.on, .pill.high { background: rgba(0, 200, 120, 0.12); color: #0a9960; }
+    .pill.medium { background: rgba(255, 170, 0, 0.14); color: #b37400; }
+    .pill.low, .pill.off, .pill.insufficient { background: rgba(255, 61, 154, 0.12); color: var(--pink); }
+
+    .tool-card {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .tool-card h3 { margin: 0 0 4px; font-size: 1.05rem; }
+    .tool-card p { margin: 0 0 14px; color: var(--text-muted); font-size: 0.9rem; }
+
+    .lookup-row { display: flex; gap: 12px; align-items: center; }
+    .lookup-row input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 1rem;
+      background: #fff;
+    }
+    .lookup-row input:focus { outline: none; border-color: var(--purple); }
+
+    #rag-result {
+      margin-top: 28px;
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    #rag-result .answer { font-size: 1.05rem; line-height: 1.6; margin: 8px 0 16px; }
+    #rag-result ol { padding-left: 20px; }
+    #rag-result li { margin-bottom: 6px; }
+    #rag-result .meta { color: var(--text-muted); font-size: 0.8rem; margin-top: 14px; }
+    #rag-result .chunk { border-top: 1px solid var(--border); padding: 10px 0; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to Reviews</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder">
+    <div class="container">
+      <span class="section-tag">📚 Reviews Assistant</span>
+      <h2 class="section-title">Ask about reviews and policies</h2>
+      <p class="section-sub">Answers come only from KICKLAB review data and documentation, with sources and a confidence level. If nothing relevant is found, the assistant says so instead of guessing.</p>
+
+      <div class="mode-row">
+        <label><input id="rag-mode-toggle" type="checkbox" checked> RAG mode</label>
+        <span id="rag-mode-state" class="pill on">On</span>
+      </div>
+
+      <div class="tool-card">
+        <h3>Ask a question</h3>
+        <p>Get a grounded answer with sources and confidence.</p>
+        <form id="rag-answer-form" class="lookup-row">
+          <input id="rag-answer-query" maxlength="300" placeholder="e.g. When does a review get flagged?" required>
+          <button type="submit" class="btn btn-gradient">Ask</button>
+        </form>
+      </div>
+
+      <div class="tool-card">
+        <h3>Retrieve context</h3>
+        <p>See which chunks the assistant would use, and how close each one is.</p>
+        <form id="rag-retrieve-form" class="lookup-row">
+          <input id="rag-retrieve-query" maxlength="300" placeholder="e.g. product 103 reviews" required>
+          <button type="submit" class="btn btn-gradient">Retrieve</button>
+        </form>
+      </div>
+
+      <div class="tool-card">
+        <h3>Refresh knowledge base</h3>
+        <p>Rebuild the index from the latest reviews and documents.</p>
+        <button id="rag-refresh-btn" type="button" class="btn btn-gradient">Refresh</button>
+      </div>
+
+      <div id="rag-result">Results will appear here.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Reviews & Ratings</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById("rag-mode-toggle");
+    const stateLabel = document.getElementById("rag-mode-state");
+    const result = document.getElementById("rag-result");
+    const STORAGE_KEY = "reviews_rag_mode_enabled";
+
+    function isOn() { return toggle.checked; }
+
+    function renderState() {
+      stateLabel.textContent = isOn() ? "On" : "Off";
+      stateLabel.className = "pill " + (isOn() ? "on" : "off");
+    }
+
+    // Build elements with textContent so answer text can never inject HTML
+    function el(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    function show(...nodes) {
+      result.replaceChildren(...nodes);
+    }
+
+    function showMessage(text) {
+      show(el("p", text));
+    }
+
+    async function post(path, data) {
+      if (!isOn()) {
+        showMessage("RAG mode is off. Turn it on to ask questions.");
+        return null;
+      }
+      showMessage("Working…");
+      try {
+        const res = await fetch(path, {
+          method: "POST",
+          headers: { "X-RAG-Mode": "on" },
+          body: new URLSearchParams(data),
+        });
+        return await res.json();
+      } catch (err) {
+        showMessage("Could not reach the Reviews backend: " + err);
+        return null;
+      }
+    }
+
+    function renderError(payload) {
+      show(el("h3", "Something went wrong"), el("p", payload.error || "Unknown error"));
+    }
+
+    function renderAnswer(p) {
+      if (p.status === "error") return renderError(p);
+
+      const confidence = p.confidence_category || "Unknown";
+      const header = el("h3", "Answer ");
+      header.appendChild(el("span", confidence, "pill " + confidence.toLowerCase()));
+
+      const nodes = [header, el("p", "Question: " + p.query), el("p", p.answer, "answer")];
+
+      if (p.citations && p.citations.length) {
+        nodes.push(el("strong", "Sources"));
+        const list = el("ol");
+        p.citations.forEach(c => {
+          list.appendChild(el("li", `[${c.ref}] ${c.source_id} (${c.authority_tier}, distance ${c.distance})`));
+        });
+        nodes.push(list);
+      } else {
+        nodes.push(el("p", "Sources: none"));
+      }
+
+      const s = p.retrieval_summary || {};
+      nodes.push(el("p",
+        `Best distance ${s.best_distance} · threshold ${s.threshold} · ` +
+        `retrieved ${s.retrieved_count}, relevant ${s.relevant_count}` +
+        (s.cited_count !== undefined ? `, cited ${s.cited_count}` : "") +
+        (s.reason ? ` · ${s.reason}` : ""),
+        "meta"));
+      show(...nodes);
+    }
+
+    function renderChunks(p) {
+      if (p.status === "error") return renderError(p);
+      const nodes = [el("h3", "Retrieved context"), el("p", "Query: " + p.query)];
+      (p.results || []).forEach(r => {
+        const chunk = el("div", undefined, "chunk");
+        chunk.appendChild(el("strong", `#${r.rank} · ${r.source_id} · distance ${r.distance}`));
+        chunk.appendChild(el("p", r.text));
+        nodes.push(chunk);
+      });
+      show(...nodes);
+    }
+
+    function renderRefresh(p) {
+      if (p.status === "error") return renderError(p);
+      show(
+        el("h3", "Knowledge base refreshed"),
+        el("p", `${p.chunk_count} chunks indexed (${p.tier_1_chunks} from live reviews, ${p.tier_2_chunks} from documents).`)
+      );
+    }
+
+    // Toggle, remembered between page loads
+    const saved = localStorage.getItem(STORAGE_KEY);
+    toggle.checked = saved === null ? true : saved === "true";
+    renderState();
+    toggle.addEventListener("change", () => {
+      localStorage.setItem(STORAGE_KEY, String(isOn()));
+      renderState();
+      if (!isOn()) showMessage("RAG mode is off. Turn it on to ask questions.");
+    });
+
+    document.getElementById("rag-answer-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("rag-answer-query").value.trim();
+      const payload = await post("/rag/answer", { query });
+      if (payload) renderAnswer(payload);
+    });
+
+    document.getElementById("rag-retrieve-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("rag-retrieve-query").value.trim();
+      const payload = await post("/rag/retrieve", { query, k: "5" });
+      if (payload) renderChunks(payload);
+    });
+
+    document.getElementById("rag-refresh-btn").addEventListener("click", async () => {
+      const payload = await post("/rag/refresh", {});
+      if (payload) renderRefresh(payload);
+    });
+  </script>
+
+</body>
+</html>

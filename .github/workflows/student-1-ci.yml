@@ -8,6 +8,11 @@ on:
     paths:
       - 'student-1/**'
 
+# Release 1: MCP and RAG are disabled during CI/CD
+env:
+  MCP_ENABLED: "false"
+  RAG_ENABLED: "false"
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -23,7 +28,7 @@ jobs:
 
       - name: Install test dependencies
         working-directory: student-1
-        run: pip install -r tests/requirements.txt
+        run: pip install -r tests/requirements.txt -r backend/requirements.txt
 
       - name: Run pytest
         working-directory: student-1
@@ -113,6 +118,8 @@ jobs:
           - Run ID: ${{ github.run_id }}
           - Commit SHA: ${{ github.sha }}
           - Branch: ${{ github.ref_name }}
+          - MCP enabled in CI: ${{ env.MCP_ENABLED }}
+          - RAG enabled in CI: ${{ env.RAG_ENABLED }}
           EOF
 
       - name: Generate run-view.md

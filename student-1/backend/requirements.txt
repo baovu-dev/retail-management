@@ -1,2 +1,3 @@
 flask
 requests
+mcp>=1.10,<2
