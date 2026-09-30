@@ -126,7 +126,9 @@ def test_backend_chat_respects_budget(backend_client, monkeypatch):
         assert item["product"]["price"] <= 120
 
 
-def test_rag_rejects_empty_and_long_queries(backend_client):
+def test_rag_rejects_empty_and_long_queries(backend_client, monkeypatch):
+    # CI sets RAG_ENABLED=false, which returns 403 before the query is checked.
+    monkeypatch.setenv("RAG_ENABLED", "true")
     empty = backend_client.post("/api/rag/answer", data={"query": "   "})
     assert empty.status_code == 400
     assert empty.get_json()["status"] == "error"
@@ -135,7 +137,9 @@ def test_rag_rejects_empty_and_long_queries(backend_client):
     assert too_long.status_code == 400
 
 
-def test_mcp_rejects_invalid_customer_id(backend_client):
+def test_mcp_rejects_invalid_customer_id(backend_client, monkeypatch):
+    # CI sets MCP_ENABLED=false, which returns 403 before the id is checked.
+    monkeypatch.setenv("MCP_ENABLED", "true")
     for value in ("0", "abc", "-3", ""):
         response = backend_client.post(
             "/api/mcp/customer-recommendations",
