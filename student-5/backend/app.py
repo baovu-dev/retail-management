@@ -7,7 +7,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from catalog import get_all_products, get_product
+from mcp_client import call_tool, mcp_mode_is_enabled
 from prompt_loader import load_prompt
+from rag_client import call_rag_service, rag_mode_is_enabled
 
 app = Flask(__name__)
 CORS(app)
@@ -651,6 +653,100 @@ def chat():
         "customer_id": customer_id,
         "recommendations": recommendations,
     })
+
+
+# ── Shared local MCP (not containerised) ──
+
+def _root_cause(exc):
+    while isinstance(exc, BaseExceptionGroup) and exc.exceptions:
+        exc = exc.exceptions[0]
+    return exc
+
+
+def _request_value(key):
+    """Read a form or JSON field without treating a form post as JSON."""
+    if key in request.form:
+        return request.form.get(key, "")
+    if request.is_json:
+        body = request.get_json(silent=True) or {}
+        return body.get(key, "")
+    return ""
+
+
+@app.route("/api/mcp/customer-recommendations", methods=["POST"])
+def mcp_customer_recommendations():
+    if not mcp_mode_is_enabled(request):
+        return jsonify({"error": "MCP Mode is disabled."}), 403
+    raw = str(_request_value("customer_id") or "").strip()
+    if not raw.isdigit() or int(raw) <= 0:
+        return jsonify({"error": "customer_id must be a positive number."}), 400
+    try:
+        result = call_tool("customer_recommendations", {"customer_id": int(raw)})
+    except Exception as exc:
+        return jsonify({"error": "Shared MCP server unreachable", "detail": repr(_root_cause(exc))}), 503
+    status = 400 if isinstance(result, dict) and result.get("error") else 200
+    return jsonify({"tool": "customer_recommendations", "input": {"customer_id": int(raw)}, "result": result}), status
+
+
+@app.route("/api/mcp/metrics", methods=["POST"])
+def mcp_recommendation_metrics():
+    if not mcp_mode_is_enabled(request):
+        return jsonify({"error": "MCP Mode is disabled."}), 403
+    try:
+        result = call_tool("recommendation_metrics", {})
+    except Exception as exc:
+        return jsonify({"error": "Shared MCP server unreachable", "detail": repr(_root_cause(exc))}), 503
+    status = 400 if isinstance(result, dict) and result.get("error") else 200
+    return jsonify({"tool": "recommendation_metrics", "input": {}, "result": result}), status
+
+
+@app.route("/api/mcp/browsing-history", methods=["POST"])
+def mcp_browsing_history():
+    if not mcp_mode_is_enabled(request):
+        return jsonify({"error": "MCP Mode is disabled."}), 403
+    raw = str(_request_value("customer_id") or "").strip()
+    if not raw.isdigit() or int(raw) <= 0:
+        return jsonify({"error": "customer_id must be a positive number."}), 400
+    try:
+        result = call_tool("customer_browsing_history", {"customer_id": int(raw)})
+    except Exception as exc:
+        return jsonify({"error": "Shared MCP server unreachable", "detail": repr(_root_cause(exc))}), 503
+    status = 400 if isinstance(result, dict) and result.get("error") else 200
+    return jsonify({"tool": "customer_browsing_history", "input": {"customer_id": int(raw)}, "result": result}), status
+
+
+# ── Shared local RAG (not containerised) ──
+
+@app.route("/api/rag/answer", methods=["POST"])
+def rag_answer():
+    if not rag_mode_is_enabled(request):
+        return jsonify({"status": "error", "error": "RAG Mode is disabled."}), 403
+    query = str(_request_value("query") or "").strip()
+    if not query:
+        return jsonify({"status": "error", "error": "query is required"}), 400
+    if len(query) > 300:
+        return jsonify({"status": "error", "error": "query must be under 300 characters"}), 400
+    try:
+        payload = call_rag_service("/answer", {"query": query, "k": 5})
+    except requests.RequestException as exc:
+        return jsonify({"status": "error", "error": f"Shared RAG server unreachable: {exc}"}), 503
+    status = 500 if payload.get("status") == "error" else 200
+    return jsonify(payload), status
+
+
+@app.route("/api/rag/retrieve", methods=["POST"])
+def rag_retrieve():
+    if not rag_mode_is_enabled(request):
+        return jsonify({"status": "error", "error": "RAG Mode is disabled."}), 403
+    query = str(_request_value("query") or "").strip()
+    if not query:
+        return jsonify({"status": "error", "error": "query is required"}), 400
+    try:
+        payload = call_rag_service("/retrieve", {"query": query, "k": 5})
+    except requests.RequestException as exc:
+        return jsonify({"status": "error", "error": f"Shared RAG server unreachable: {exc}"}), 503
+    status = 500 if payload.get("status") == "error" else 200
+    return jsonify(payload), status
 
 
 if __name__ == "__main__":

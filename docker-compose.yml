@@ -148,6 +148,10 @@ services:
     environment:
       - DATABASE_URL=http://student5-database:6005
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
+      - MCP_URL=http://host.docker.internal:8100/mcp
+      - MCP_ENABLED=true
+      - RAG_URL=http://host.docker.internal:8200
+      - RAG_ENABLED=true
     depends_on:
       student5-database:
         condition: service_healthy

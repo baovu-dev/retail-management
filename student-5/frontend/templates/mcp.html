@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Recommendation MCP tools</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .tool-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 16px; }
+    .tool-card h3 { margin: 0 0 6px; }
+    .tool-card p { margin: 0 0 14px; color: var(--text-muted); }
+    .lookup-row { display: flex; gap: 12px; }
+    .lookup-row input { flex: 1; padding: 14px 18px; border-radius: var(--radius); border: 1.5px solid var(--border); font-family: inherit; }
+    #mcp-result { margin-top: 20px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; white-space: pre-wrap; }
+    .pill { font-weight: 700; font-size: 0.78rem; padding: 3px 12px; border-radius: 100px; }
+    .pill.on { background: rgba(0, 200, 120, 0.12); color: #0a9960; }
+    .pill.off { background: rgba(255, 61, 154, 0.12); color: #c2185b; }
+  </style>
+</head>
+<body>
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo"><span class="logo-name">KICKLAB</span></a>
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to assistant</a>
+      </div>
+    </div>
+  </header>
+  <section class="finder">
+    <div class="container">
+      <span class="section-tag">MCP tools</span>
+      <h2 class="section-title">Run recommendation tools</h2>
+      <p class="section-sub">Each action goes through this feature's backend to the shared local MCP server. Tools are read-only.</p>
+      <div class="tool-card">
+        <label><input id="mcp-toggle" type="checkbox" checked> MCP mode</label>
+        <span id="mcp-state" class="pill on">On</span>
+      </div>
+      <div class="tool-card">
+        <h3>Customer recommendations</h3>
+        <p>Saved picks for one customer.</p>
+        <form id="recs-form" class="lookup-row">
+          <input id="recs-customer" type="number" min="1" value="1" required>
+          <button class="btn btn-gradient" type="submit">Run tool</button>
+        </form>
+      </div>
+      <div class="tool-card">
+        <h3>Browsing history</h3>
+        <p>Products this customer has viewed.</p>
+        <form id="history-form" class="lookup-row">
+          <input id="history-customer" type="number" min="1" value="1" required>
+          <button class="btn btn-gradient" type="submit">Run tool</button>
+        </form>
+      </div>
+      <div class="tool-card">
+        <h3>Recommendation metrics</h3>
+        <p>Counts, average feedback rating, and helpful rate.</p>
+        <button id="metrics-btn" class="btn btn-gradient" type="button">Run tool</button>
+      </div>
+      <div id="mcp-result">Tool results will appear here.</div>
+    </div>
+  </section>
+  <script>
+    const API_BASE = '{{ api_base }}';
+    const toggle = document.getElementById('mcp-toggle');
+    const state = document.getElementById('mcp-state');
+    const result = document.getElementById('mcp-result');
+
+    function renderState() {
+      state.textContent = toggle.checked ? 'On' : 'Off';
+      state.className = 'pill ' + (toggle.checked ? 'on' : 'off');
+    }
+    renderState();
+    toggle.addEventListener('change', renderState);
+
+    async function run(path, data) {
+      if (!toggle.checked) {
+        result.textContent = 'MCP mode is off. Turn it on to run tools.';
+        return;
+      }
+      result.textContent = 'Working…';
+      const response = await fetch(`${API_BASE}${path}`, {
+        method: 'POST',
+        headers: { 'X-MCP-Mode': 'on' },
+        body: new URLSearchParams(data)
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        result.textContent = payload.error || 'The MCP tool rejected this request.';
+        return;
+      }
+      result.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    document.getElementById('recs-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      run('/api/mcp/customer-recommendations', { customer_id: document.getElementById('recs-customer').value });
+    });
+    document.getElementById('history-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      run('/api/mcp/browsing-history', { customer_id: document.getElementById('history-customer').value });
+    });
+    document.getElementById('metrics-btn').addEventListener('click', () => run('/api/mcp/metrics', {}));
+  </script>
+</body>
+</html>
