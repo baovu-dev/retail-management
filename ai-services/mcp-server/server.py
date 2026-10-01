@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 from tools.student1_reviews import get_rating_summary, get_reviews_by_product, get_flagged_reviews
+from tools.student3_customers import get_customer_summary
 
 mcp = FastMCP("KICKLAB Shared MCP", host="0.0.0.0", port=8100)
 
@@ -21,6 +22,11 @@ def flagged_reviews() -> dict:
     """Return a list of all flagged reviews. Read-only."""
     return get_flagged_reviews()
 
+
+@mcp.tool()
+def customer_summary(customer_id: int) -> dict:
+    """Return safe account details for one KICKLAB customer. Read-only."""
+    return get_customer_summary(customer_id)
 
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")

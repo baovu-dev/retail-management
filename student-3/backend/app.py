@@ -17,6 +17,12 @@ app = Flask(
 )
 CORS(app)
 
+from routes.mcp_mode import mcp_bp
+app.register_blueprint(mcp_bp)
+
+from routes.rag_mode import rag_bp
+app.register_blueprint(rag_bp)
+
 DATABASE_URL = os.getenv('DATABASE_URL', 'http://localhost:6003')
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434/api/generate')
 OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'llama3.1:8b')

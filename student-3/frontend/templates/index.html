@@ -46,6 +46,8 @@
             <ul class="main-nav">
                 <li><a href="#account">Account</a></li>
                 <li><a href="#assistant">AI Assistant</a></li>
+                <li><a href="/mcp">MCP Tools</a></li>
+                <li><a href="/rag">RAG Assistant</a></li>
             </ul>
 
             <a href="http://localhost:5000/logout" class="btn btn-login" onclick="sessionStorage.removeItem('customer_id')">Log out</a>
@@ -400,7 +402,7 @@ const customerId =
             const result = await response.json();
 
             document.getElementById("aiResponse").textContent =
-                result.response;
+                result.answer;
         });
 
 
