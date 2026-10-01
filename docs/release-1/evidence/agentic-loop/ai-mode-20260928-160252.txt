@@ -1,0 +1,6 @@
+=== KICKLAB agentic loop: ai-mode ===
+[16:02:49] PLAN     Test AI-Mode sentiment scoring on: 'Great quality, fast shipping!'
+[16:02:49] ACT      Calling Ollama
+[16:02:52] OBSERVE  Reply: '1'
+[16:02:52] ADAPT    PASS: score=1.0 (expected a positive number between -1 and 1)
+=== Result: PASS ===

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Recommendation assistant (RAG)</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .tool-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 16px; }
+    .lookup-row { display: flex; gap: 12px; }
+    .lookup-row input { flex: 1; padding: 14px 18px; border-radius: var(--radius); border: 1.5px solid var(--border); font-family: inherit; }
+    #rag-result { margin-top: 20px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 24px; }
+    .answer { font-size: 1.05rem; line-height: 1.6; }
+    .pill { font-weight: 700; font-size: 0.78rem; padding: 3px 12px; border-radius: 100px; }
+    .pill.on, .pill.high { background: rgba(0, 200, 120, 0.12); color: #0a9960; }
+    .pill.medium { background: rgba(255, 170, 0, 0.14); color: #b37400; }
+    .pill.low, .pill.off, .pill.insufficient { background: rgba(255, 61, 154, 0.12); color: #c2185b; }
+    .meta { color: var(--text-muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo"><span class="logo-name">KICKLAB</span></a>
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to assistant</a>
+      </div>
+    </div>
+  </header>
+  <section class="finder">
+    <div class="container">
+      <span class="section-tag">RAG</span>
+      <h2 class="section-title">Ask about recommendations</h2>
+      <p class="section-sub">Answers use retrieved KICKLAB documents, with sources and a confidence category. Unrelated questions return an insufficient-context response.</p>
+      <div class="tool-card">
+        <label><input id="rag-toggle" type="checkbox" checked> RAG mode</label>
+        <span id="rag-state" class="pill on">On</span>
+      </div>
+      <div class="tool-card">
+        <h3>Ask a question</h3>
+        <form id="answer-form" class="lookup-row">
+          <input id="query" maxlength="300" placeholder="e.g. How are sneaker recommendations scored?" required>
+          <button class="btn btn-gradient" type="submit">Ask</button>
+        </form>
+      </div>
+      <div id="rag-result"><p>Answers will appear here.</p></div>
+    </div>
+  </section>
+  <script>
+    const API_BASE = '{{ api_base }}';
+    const toggle = document.getElementById('rag-toggle');
+    const state = document.getElementById('rag-state');
+    const result = document.getElementById('rag-result');
+
+    function el(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    function renderState() {
+      state.textContent = toggle.checked ? 'On' : 'Off';
+      state.className = 'pill ' + (toggle.checked ? 'on' : 'off');
+    }
+    renderState();
+    toggle.addEventListener('change', renderState);
+
+    document.getElementById('answer-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!toggle.checked) {
+        result.replaceChildren(el('p', 'RAG mode is off. Turn it on to ask questions.'));
+        return;
+      }
+      result.replaceChildren(el('p', 'Working…'));
+      const response = await fetch(`${API_BASE}/api/rag/answer`, {
+        method: 'POST',
+        headers: { 'X-RAG-Mode': 'on' },
+        body: new URLSearchParams({ query: document.getElementById('query').value.trim() })
+      });
+      const payload = await response.json();
+      if (payload.status === 'error') {
+        result.replaceChildren(el('h3', 'Something went wrong'), el('p', payload.error || 'Unknown error'));
+        return;
+      }
+      if (payload.status === 'insufficient_context' || payload.confidence_category === 'Insufficient') {
+        result.replaceChildren(
+          el('h3', 'Insufficient context'),
+          el('p', payload.answer || 'No relevant KICKLAB information was found for this question.', 'answer'),
+          el('p', 'Sources: none. The assistant will not guess an answer.', 'meta')
+        );
+        return;
+      }
+      const confidence = payload.confidence_category || 'Unknown';
+      const header = el('h3', 'Answer ');
+      header.appendChild(el('span', confidence, 'pill ' + confidence.toLowerCase()));
+      const nodes = [header, el('p', payload.answer, 'answer')];
+      if (payload.citations && payload.citations.length) {
+        nodes.push(el('strong', 'Sources'));
+        const list = el('ol');
+        payload.citations.forEach((citation) => {
+          list.appendChild(el('li', `[${citation.ref}] ${citation.source_id} (${citation.authority_tier})`));
+        });
+        nodes.push(list);
+      } else {
+        nodes.push(el('p', 'Sources: none'));
+      }
+      const summary = payload.retrieval_summary || {};
+      nodes.push(el('p', `Best distance ${summary.best_distance} · threshold ${summary.threshold}`, 'meta'));
+      result.replaceChildren(...nodes);
+    });
+  </script>
+</body>
+</html>

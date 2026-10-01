@@ -6,10 +6,10 @@ from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
 MCP_URL = os.getenv("MCP_URL", "http://localhost:8100/mcp")
-
+MCP_TIMEOUT = float(os.getenv("MCP_TIMEOUT", "10"))
 
 async def _call_tool(name, arguments):
-    async with streamablehttp_client(MCP_URL) as (read, write, _):
+    async with streamablehttp_client(MCP_URL, timeout=5) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()
             result = await session.call_tool(name, arguments)
@@ -23,4 +23,6 @@ async def _call_tool(name, arguments):
 
 
 def call_tool(name, arguments=None):
-    return asyncio.run(_call_tool(name, arguments or {}))
+    return asyncio.run(
+        asyncio.wait_for(_call_tool(name, arguments or {}), timeout=MCP_TIMEOUT)
+    )
