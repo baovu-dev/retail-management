@@ -30,9 +30,11 @@ Leave `ollama serve` running in its own terminal, anything AI-related will fail 
 docker compose up --build
 ```
 
-This should spin up all 5 features plus the shared login/dashboard stuff.
-Still a work in progress - not every service is wired into this file yet,
-check with whoever owns a feature if theirs isn't showing up.
+This starts the feature services currently listed in Compose. The shared
+login/dashboard service is not yet active in root Compose and must be launched
+separately. Check each feature owner's setup before a full integration run.
+For existing data, inspect the database initializers before starting the stack;
+use isolated validation copies when preservation is required.
 
 You can also just run each individual feature on its own instead of the whole thing:
 
@@ -65,4 +67,12 @@ a bit different per student.
 - `docs/` - reports and diagrams
 - `docker-compose.yml` - runs the whole thing together
 
-Still Release 0, more to come.
+Release 1 integration is in progress; see the Orders handoff below.
+
+## Release 1 Orders
+
+See [current runbooks and submission drafts](docs/release-1/student-4/README.md).
+AI Mode/Ollama, MCP, RAG and the agentic loop run locally outside Docker.
+Root Compose still lacks an active shared homepage service. Its default database
+startup commands can reset existing data; use the documented isolated validation
+procedure instead when preserving data.

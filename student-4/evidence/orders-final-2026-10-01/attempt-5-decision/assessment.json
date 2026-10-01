@@ -1,0 +1,19 @@
+{
+  "required_pass": 8,
+  "required_fail": [
+    "confirmed_cancel"
+  ],
+  "optional_pass": [
+    "refund_delay_korean"
+  ],
+  "optional_fail": [
+    "refund_korean"
+  ],
+  "ui_contract": "11/11 PASS; semantic correctness reviewed separately",
+  "student1": {
+    "transport": "3/3",
+    "semantics": "flag condition omitted; purchase rule and weather abstention supported"
+  },
+  "outage": "PASS real HTTP 503",
+  "interrupted_followup": "After this capture, a line-format 3B probe selected generic status sentences rather than explicit CONFIRMED eligibility. Its temporary raw file and an unfinished 8B probe were lost on host restart. Neither is counted as a pass."
+}

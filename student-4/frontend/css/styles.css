@@ -560,6 +560,26 @@ header {
     display: none;
 }
 
+#ragResult {
+    display: block;
+}
+
+#ragResult[hidden] {
+    display: none;
+}
+
+#ragAnswer {
+    white-space: pre-wrap;
+}
+
+#ragSources {
+    overflow-wrap: anywhere;
+}
+
+#ragForm .field-question {
+    flex: 1;
+}
+
 .assistant-avatar {
     width: 48px;
     height: 48px;

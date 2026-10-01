@@ -1,0 +1,14 @@
+=== KICKLAB agentic loop: mcp ===
+[13:16:05] PLAN     Orders MCP with existing private test credentials; preserve Student 1 tools
+[13:16:08] OBSERVE  PASS existing Reviews and Orders tool registry: ['flagged_reviews', 'get_order_status', 'rating_summary', 'reviews_by_product']
+[13:16:08] ACT      owned order (authentication omitted)
+[13:16:08] OBSERVE  PASS owned order: {"order_id": 13, "status": "PENDING"}
+[13:16:08] ACT      other customer denied at direct MCP (authentication omitted)
+[13:16:08] OBSERVE  PASS other customer denied at direct MCP: {"code": "forbidden"}
+[13:16:08] ACT      invalid ID rejected (authentication omitted)
+[13:16:09] OBSERVE  PASS invalid ID rejected: {"code": "invalid_input"}
+[13:16:09] ACT      forged token denied (authentication omitted)
+[13:16:09] OBSERVE  PASS forged token denied: {"code": "unauthorized"}
+[13:16:19] OBSERVE  PASS Orders backend to actual MCP
+[13:16:19] ADAPT    6/6 Orders MCP checks passed; no writes requested
+=== Result: PASS ===

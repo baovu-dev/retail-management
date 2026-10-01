@@ -1,0 +1,61 @@
+{
+  "image": "student4-orders:release1-local",
+  "image_id": "sha256:c217f786ea72197f316f92f8cef5c9411c87219688c9f7eab1bd4971e3b86655",
+  "python_ci": "passed",
+  "compose": "passed",
+  "image_integration": [
+    {
+      "check": "built backend connects to built database",
+      "result": "PASS"
+    },
+    {
+      "check": "new isolated order starts PENDING",
+      "result": "PASS"
+    },
+    {
+      "check": "order total and items",
+      "result": "PASS"
+    },
+    {
+      "check": "PENDING to CONFIRMED",
+      "result": "PASS"
+    },
+    {
+      "check": "unimplemented shipping status rejected",
+      "result": "PASS"
+    },
+    {
+      "check": "CONFIRMED can be cancelled",
+      "result": "PASS"
+    },
+    {
+      "check": "cancel preserves order and exact item records",
+      "result": "PASS"
+    },
+    {
+      "check": "missing order remains 404",
+      "result": "PASS"
+    },
+    {
+      "check": "AI disabled without contacting local AI services",
+      "result": "PASS"
+    },
+    {
+      "check": "MCP disabled without contacting local AI services",
+      "result": "PASS"
+    },
+    {
+      "check": "RAG disabled without contacting local AI services",
+      "result": "PASS"
+    },
+    {
+      "check": "built frontend contains MCP/RAG and browser API origin",
+      "result": "PASS"
+    },
+    {
+      "check": "staff dashboard uses shared origin",
+      "result": "PASS"
+    }
+  ],
+  "remote_ci": "not run"
+}

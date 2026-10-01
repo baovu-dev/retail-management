@@ -1,0 +1,403 @@
+{
+  "feature": "student-4",
+  "created_at": "2026-09-30T03:16:03.446890+00:00",
+  "rag_url": "http://localhost:8200",
+  "orders_url": "http://localhost:5004",
+  "cases": [
+    {
+      "id": "statuses",
+      "query": "What are the three supported order statuses?",
+      "http": 200,
+      "transport_ok": true,
+      "response": {
+        "answer": "The three supported order statuses are:\n1. PENDING\n2. CONFIRMED\n3. CANCELLED",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "ref": 1,
+            "source_id": "knowledge/student-4/order-statuses.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "ref": 2,
+            "source_id": "knowledge/student-4/order-lookup.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "ref": 3,
+            "source_id": "knowledge/student-4/order-guide-scope.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "ref": 4,
+            "source_id": "knowledge/student-4/order-cancellation.md"
+          }
+        ],
+        "confidence_category": "High",
+        "feature": "student-4",
+        "query": "What are the three supported order statuses?",
+        "status": "success"
+      },
+      "retrieval": {
+        "status": "success",
+        "query": "What are the three supported order statuses?",
+        "k": 5,
+        "feature": "student-4",
+        "results": [
+          {
+            "rank": 1,
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "source_id": "knowledge/student-4/order-statuses.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.1887,
+            "text": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. Source: student-4/database/schema.sql; student-4/database/app.py; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 2,
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "source_id": "knowledge/student-4/order-lookup.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3282,
+            "text": "# KICKLAB Orders: viewing an order Log in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. Source: shared/backend/app.py; student-4/backend/orders_auth.py; student-4/frontend/templates/index.html."
+          },
+          {
+            "rank": 3,
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "source_id": "knowledge/student-4/order-guide-scope.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3474,
+            "text": "# KICKLAB Orders guide scope The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. Source: student-4/database/app.py; student-4/backend/orders_rag.py."
+          },
+          {
+            "rank": 4,
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "source_id": "knowledge/student-4/order-cancellation.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3509,
+            "text": "# KICKLAB Orders: cancellation behavior The Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html."
+          }
+        ]
+      }
+    },
+    {
+      "id": "confirmed_cancel",
+      "query": "Can a CONFIRMED order be cancelled?",
+      "http": 200,
+      "transport_ok": true,
+      "response": {
+        "answer": "[1] # KICKLAB Orders: supported statuses\nA newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. Source: student-4/database/schema.sql; student-4/database/app.py; student-4/frontend/templates/admin.html.\n\n[2] # KICKLAB Orders: cancellation behavior\nThe Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html.\n\n[3] # KICKLAB Orders: viewing an order\nLog in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. Source: shared/backend/app.py; student-4/backend/orders_auth.py; student-4/frontend/templates/index.html.\n\n[4] # KICKLAB Orders guide scope\nThe Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. Source: student-4/database/app.py; student-4/backend/orders_rag.py.",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "ref": 1,
+            "source_id": "knowledge/student-4/order-statuses.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "ref": 2,
+            "source_id": "knowledge/student-4/order-cancellation.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "ref": 3,
+            "source_id": "knowledge/student-4/order-lookup.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "ref": 4,
+            "source_id": "knowledge/student-4/order-guide-scope.md"
+          }
+        ],
+        "confidence_category": "High",
+        "feature": "student-4",
+        "query": "Can a CONFIRMED order be cancelled?",
+        "status": "success"
+      },
+      "retrieval": {
+        "status": "success",
+        "query": "Can a CONFIRMED order be cancelled?",
+        "k": 5,
+        "feature": "student-4",
+        "results": [
+          {
+            "rank": 1,
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "source_id": "knowledge/student-4/order-statuses.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.2425,
+            "text": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. Source: student-4/database/schema.sql; student-4/database/app.py; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 2,
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "source_id": "knowledge/student-4/order-cancellation.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.2509,
+            "text": "# KICKLAB Orders: cancellation behavior The Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 3,
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "source_id": "knowledge/student-4/order-lookup.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3671,
+            "text": "# KICKLAB Orders: viewing an order Log in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. Source: shared/backend/app.py; student-4/backend/orders_auth.py; student-4/frontend/templates/index.html."
+          },
+          {
+            "rank": 4,
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "source_id": "knowledge/student-4/order-guide-scope.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3747,
+            "text": "# KICKLAB Orders guide scope The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. Source: student-4/database/app.py; student-4/backend/orders_rag.py."
+          }
+        ]
+      }
+    },
+    {
+      "id": "records",
+      "query": "After cancellation, are the order record and its items preserved or deleted?",
+      "http": 200,
+      "transport_ok": true,
+      "response": {
+        "answer": "[1] # KICKLAB Orders: cancellation behavior\n- The Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. [1]\n\n[2] # KICKLAB Orders: supported statuses\n- Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. [2]\n\n[3] # KICKLAB Orders guide scope\n- The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. [3]\n\n[4] # KICKLAB Orders: viewing an order\n- Log in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. [4]",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "ref": 1,
+            "source_id": "knowledge/student-4/order-cancellation.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "ref": 2,
+            "source_id": "knowledge/student-4/order-statuses.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "ref": 3,
+            "source_id": "knowledge/student-4/order-guide-scope.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "ref": 4,
+            "source_id": "knowledge/student-4/order-lookup.md"
+          }
+        ],
+        "confidence_category": "High",
+        "feature": "student-4",
+        "query": "After cancellation, are the order record and its items preserved or deleted?",
+        "status": "success"
+      },
+      "retrieval": {
+        "status": "success",
+        "query": "After cancellation, are the order record and its items preserved or deleted?",
+        "k": 5,
+        "feature": "student-4",
+        "results": [
+          {
+            "rank": 1,
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "source_id": "knowledge/student-4/order-cancellation.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.2646,
+            "text": "# KICKLAB Orders: cancellation behavior The Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 2,
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "source_id": "knowledge/student-4/order-statuses.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.2893,
+            "text": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. Source: student-4/database/schema.sql; student-4/database/app.py; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 3,
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "source_id": "knowledge/student-4/order-guide-scope.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3352,
+            "text": "# KICKLAB Orders guide scope The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. Source: student-4/database/app.py; student-4/backend/orders_rag.py."
+          },
+          {
+            "rank": 4,
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "source_id": "knowledge/student-4/order-lookup.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3593,
+            "text": "# KICKLAB Orders: viewing an order Log in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. Source: shared/backend/app.py; student-4/backend/orders_auth.py; student-4/frontend/templates/index.html."
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery_unknown",
+      "query": "Exactly what date will my CONFIRMED order be delivered?",
+      "http": 200,
+      "transport_ok": true,
+      "response": {
+        "answer": "[1] # KICKLAB Orders: supported statuses\n- PENDING\n- CONFIRMED\n- CANCELLED\n\n[2] # KICKLAB Orders: viewing an order\n- Log in through the shared store and select My Orders\n- View Details shows an order's items, quantities, total and status\n- Check with MCP performs a read-only status lookup using the store login\n- The Orders guide answers general documentation questions; use MCP for a particular order's current status\n\n[3] # KICKLAB Orders: cancellation behavior\n- The Orders screen offers Cancel for orders whose status is not CANCELLED.\n- Customers and staff confirm a dialog before cancellation.\n- The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED.\n- It preserves the order and its items instead of deleting them.\n- Cancelling an unknown order returns Order not found.\n- No refund amount or refund processing is implemented by this operation.\n\n[4] # KICKLAB Orders guide scope\n- The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders.\n- It does not search customer records, addresses or individual order data.\n- It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome.\n- These features are not implemented in the Orders service.\n- Answers must use the retrieved documentation.\n- When documentation cannot support an answer, the guide reports insufficient context.\n- Service failures are reported separately.\n- Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html.",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "ref": 1,
+            "source_id": "knowledge/student-4/order-statuses.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "ref": 2,
+            "source_id": "knowledge/student-4/order-lookup.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "ref": 3,
+            "source_id": "knowledge/student-4/order-cancellation.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "ref": 4,
+            "source_id": "knowledge/student-4/order-guide-scope.md"
+          }
+        ],
+        "confidence_category": "High",
+        "feature": "student-4",
+        "query": "Exactly what date will my CONFIRMED order be delivered?",
+        "status": "success"
+      },
+      "retrieval": {
+        "status": "success",
+        "query": "Exactly what date will my CONFIRMED order be delivered?",
+        "k": 5,
+        "feature": "student-4",
+        "results": [
+          {
+            "rank": 1,
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "source_id": "knowledge/student-4/order-statuses.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.2717,
+            "text": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. Source: student-4/database/schema.sql; student-4/database/app.py; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 2,
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "source_id": "knowledge/student-4/order-lookup.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3579,
+            "text": "# KICKLAB Orders: viewing an order Log in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. Source: shared/backend/app.py; student-4/backend/orders_auth.py; student-4/frontend/templates/index.html."
+          },
+          {
+            "rank": 3,
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "source_id": "knowledge/student-4/order-cancellation.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3697,
+            "text": "# KICKLAB Orders: cancellation behavior The Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 4,
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "source_id": "knowledge/student-4/order-guide-scope.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3863,
+            "text": "# KICKLAB Orders guide scope The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. Source: student-4/database/app.py; student-4/backend/orders_rag.py."
+          }
+        ]
+      }
+    },
+    {
+      "id": "refund_unknown",
+      "query": "How many business days after cancelling my CONFIRMED order will the refund reach my bank?",
+      "http": 200,
+      "transport_ok": true,
+      "response": {
+        "answer": "[1] # KICKLAB Orders: cancellation behavior\nThe Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. [1]\n\n[2] # KICKLAB Orders: supported statuses\nOrders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. [2]\n\n[3] # KICKLAB Orders: viewing an order\nLog in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. [3]\n\n[4] # KICKLAB Orders guide scope\nThe Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. [4]",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "ref": 1,
+            "source_id": "knowledge/student-4/order-cancellation.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "ref": 2,
+            "source_id": "knowledge/student-4/order-statuses.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "ref": 3,
+            "source_id": "knowledge/student-4/order-lookup.md"
+          },
+          {
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "ref": 4,
+            "source_id": "knowledge/student-4/order-guide-scope.md"
+          }
+        ],
+        "confidence_category": "Medium",
+        "feature": "student-4",
+        "query": "How many business days after cancelling my CONFIRMED order will the refund reach my bank?",
+        "status": "success"
+      },
+      "retrieval": {
+        "status": "success",
+        "query": "How many business days after cancelling my CONFIRMED order will the refund reach my bank?",
+        "k": 5,
+        "feature": "student-4",
+        "results": [
+          {
+            "rank": 1,
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "source_id": "knowledge/student-4/order-cancellation.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.317,
+            "text": "# KICKLAB Orders: cancellation behavior The Orders screen offers Cancel for orders whose status is not CANCELLED. Customers and staff confirm a dialog before cancellation. The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them. Cancelling an unknown order returns Order not found. No refund amount or refund processing is implemented by this operation. Source: student-4/database/app.py; student-4/frontend/templates/index.html; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 2,
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "source_id": "knowledge/student-4/order-statuses.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.32,
+            "text": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. A newly created order starts as PENDING. Staff can select Confirm on a PENDING order to set CONFIRMED. Cancellation sets CANCELLED and keeps the order record. CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. The update API accepts only these three status values. Source: student-4/database/schema.sql; student-4/database/app.py; student-4/frontend/templates/admin.html."
+          },
+          {
+            "rank": 3,
+            "chunk_id": "knowledge/student-4/order-lookup.md#1",
+            "source_id": "knowledge/student-4/order-lookup.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.3895,
+            "text": "# KICKLAB Orders: viewing an order Log in through the shared store and select My Orders. View Details shows an order's items, quantities, total and status. Check with MCP performs a read-only status lookup using the store login. It permits the owning customer or authenticated staff. If its authentication expires, select Check with MCP again to obtain fresh authentication. The Orders guide answers general documentation questions; use MCP for a particular order's current status. Source: shared/backend/app.py; student-4/backend/orders_auth.py; student-4/frontend/templates/index.html."
+          },
+          {
+            "rank": 4,
+            "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+            "source_id": "knowledge/student-4/order-guide-scope.md",
+            "authority_tier": "tier_2",
+            "feature": "student-4",
+            "distance": 0.394,
+            "text": "# KICKLAB Orders guide scope The Orders guide searches public documentation about order statuses, cancellation behavior and viewing orders. It does not search customer records, addresses or individual order data. It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome. These features are not implemented in the Orders service. Answers must use the retrieved documentation. When documentation cannot support an answer, the guide reports insufficient context. Service failures are reported separately. Source: student-4/database/app.py; student-4/backend/orders_rag.py."
+          }
+        ]
+      }
+    }
+  ]
+}

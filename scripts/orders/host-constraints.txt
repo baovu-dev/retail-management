@@ -1,0 +1,3 @@
+# Intel macOS has a prebuilt cryptography 46 wheel. Unconstrained 47 attempted
+# an OpenSSL-dependent source build on the 2026-10-01 validation host.
+cryptography<47; sys_platform == "darwin" and platform_machine == "x86_64"

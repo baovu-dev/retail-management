@@ -19,16 +19,16 @@
     <header>
         <div class="container header-inner">
 
-            <a href="http://localhost:5000/staff-dashboard" class="logo">
+            <a href="{{ shared_base }}/staff_dashboard" class="logo">
                 <span class="logo-name">KICKLAB</span>
             </a>
 
             <div class="header-actions">
-                <a href="http://localhost:5000/staff-dashboard" class="btn btn-glass">
+                <a href="{{ shared_base }}/staff_dashboard" class="btn btn-glass">
                     Staff Dashboard
                 </a>
 
-                <a href="http://localhost:5000/" class="btn btn-glass">
+                <a href="{{ shared_base }}/" class="btn btn-glass">
                     View Store
                 </a>
             </div>
@@ -144,7 +144,7 @@
 
     <script>
 
-        const API_BASE = "{{ api_base }}";
+        const API_BASE = {{ api_base | tojson }};
 
         const ordersContainer =
             document.getElementById("ordersContainer");

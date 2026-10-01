@@ -1,0 +1,10 @@
+**/__pycache__
+**/*.pyc
+**/*.db
+**/*.sqlite*
+.env*
+**/runtime.json
+**/compose.env
+**/login.txt
+evidence/
+.pytest_cache/

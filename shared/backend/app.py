@@ -1,7 +1,8 @@
 import os
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, session
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
+from itsdangerous import URLSafeTimedSerializer
 import requests
 
 
@@ -28,6 +29,38 @@ ORDERS_API = os.getenv("ORDERS_API", "http://localhost:5004")
 
 STAFF_EMAIL = os.getenv("STAFF_EMAIL", "admin@kicklab.com")
 STAFF_PASSWORD = os.getenv("STAFF_PASSWORD", "Admin1234")
+ORDERS_FRONTEND_ORIGIN = os.getenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004").rstrip("/")
+
+
+@app.post("/api/orders/mcp-token")
+@cross_origin(origins=[ORDERS_FRONTEND_ORIGIN], supports_credentials=True)
+def orders_mcp_token():
+    # Reject cross-site token minting; CORS alone does not prevent a POST.
+    if request.headers.get("Origin") != ORDERS_FRONTEND_ORIGIN:
+        return jsonify(error="Orders frontend origin is required."), 403
+    secret = os.getenv("ORDERS_MCP_SECRET", "")
+    if len(secret) < 32 or len(app.secret_key or "") < 32:
+        return jsonify(error="Orders authentication is not configured."), 503
+    customer = session.get("customer")
+    if session.get("is_staff") is True:
+        if STAFF_PASSWORD == "Admin1234":
+            return jsonify(error="Configure a private staff password before using Orders MCP."), 503
+        identity = {"role": "staff", "staff_email": session.get("staff_email")}
+    elif isinstance(customer, dict) and type(customer.get("customer_id")) is int and customer["customer_id"] > 0:
+        identity = {"role": "customer", "customer_id": customer["customer_id"]}
+    else:
+        return jsonify(error="Please log in to the shared store first."), 401
+    data = request.get_json(silent=True)
+    order_id = data.get("order_id") if isinstance(data, dict) else None
+    if type(order_id) is not int or not 0 < order_id <= 2147483647:
+        return jsonify(error="order_id must be a positive integer."), 400
+    # Customer ID / role in the request body are deliberately ignored.
+    claims = {**identity, "aud": "orders-mcp", "scope": "order:status", "order_id": order_id}
+    token = URLSafeTimedSerializer(secret, salt="orders-mcp-status-v1").dumps(claims)
+    response = jsonify(access_token=token, expires_in=120)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 FALLBACK_STATS = {
@@ -140,9 +173,11 @@ def login():
             email=email
         ), response.status_code
 
-    customer = result.get("customer")
+    # Student 3 /login returns the customer fields at the top level. Also
+    # accept the nested shape used by other existing authentication callers.
+    customer = result.get("customer") or result
 
-    if not customer:
+    if not isinstance(customer, dict) or type(customer.get("customer_id")) is not int or customer["customer_id"] <= 0:
         return render_template(
             "login.html",
             error="Customer account information was not returned.",

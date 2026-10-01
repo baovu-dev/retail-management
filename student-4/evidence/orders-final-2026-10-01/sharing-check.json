@@ -1,0 +1,22 @@
+{
+  "candidate_count": 221,
+  "private_path_hits": [],
+  "credential_pattern_hits": [],
+  "python_syntax_count": 38,
+  "local_links_checked": 50,
+  "broken_links": [],
+  "korean_files": [
+    "scripts/orders/rag_followup.py",
+    "student-4/evidence/orders-agentic-ci-2026-09-30/REPORT.md",
+    "student-4/evidence/orders-agentic-ci-2026-09-30/orders-agentic-rag-review-1.json",
+    "student-4/evidence/orders-agentic-ci-2026-09-30/student-4-rag-20260930-132248-641437.txt",
+    "student-4/evidence/orders-final-2026-10-01/attempt-2-qwen05/browser-evidence.json",
+    "student-4/evidence/orders-final-2026-10-01/attempt-3-qwen3b/browser-evidence.json",
+    "student-4/evidence/orders-final-2026-10-01/attempt-4-assessed/browser-evidence.json",
+    "student-4/evidence/orders-final-2026-10-01/attempt-5-decision/browser-evidence.json",
+    "student-4/evidence/orders-mcp-2026-09-30/REPORT.md",
+    "student-4/evidence/orders-mcp-browser-2026-09-29/REPORT.md",
+    "student-4/evidence/orders-rag-2026-09-30/REPORT.md"
+  ],
+  "scope": "Reviewed modified/untracked share candidates. Korean is confined to optional test inputs and preserved historical captures/responses. No English-only assessment requirement was found."
+}

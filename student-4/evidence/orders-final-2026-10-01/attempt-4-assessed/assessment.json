@@ -1,0 +1,13 @@
+{
+  "verdict": "FAIL",
+  "required_pass": 7,
+  "required_fail": 2,
+  "failures": {
+    "confirmed_cancel": "Selected generic cancellation sentence does not explicitly establish CONFIRMED eligibility; assessment misattributes another statement to that ID.",
+    "refund_implemented": "Assessment correctly finds no refund processing implemented, but boolean answerable=false conflates a negative answer with missing evidence."
+  },
+  "optional_fail": 1,
+  "optional_pass": 1,
+  "ui_contracts_pass": 11,
+  "outage_ui": "PASS"
+}

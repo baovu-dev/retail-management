@@ -1,0 +1,226 @@
+{
+  "collector_exit": 1,
+  "collector_meaning": "REVIEW_REQUIRED; independent complete-answer review below",
+  "required_verdict": "9/9 PASS",
+  "cases": [
+    {
+      "id": "statuses",
+      "verdict": "supported",
+      "answer_quote": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. [1]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The complete answer lists exactly PENDING, CONFIRMED and CANCELLED, as documented and accepted by the existing API."
+    },
+    {
+      "id": "confirmed_cancel",
+      "verdict": "supported",
+      "answer_quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. [2]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The selected sentence explicitly includes CONFIRMED among previous statuses that can be set to CANCELLED; it answers the qualified case."
+    },
+    {
+      "id": "records",
+      "verdict": "supported",
+      "answer_quote": "It preserves the order and its items instead of deleting them. [1]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "It preserves the order and its items instead of deleting them."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The selected cancellation sentence explicitly preserves both the order and its items, matching the existing cancellation operation."
+    },
+    {
+      "id": "delivery_unknown",
+      "verdict": "correct_abstention",
+      "answer_quote": "Insufficient context: the Orders documentation cannot answer this question.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The documentation does not provide an individual delivery date. A statement that delivery is unimplemented would not answer the requested date; abstention is correct."
+    },
+    {
+      "id": "refund_unknown",
+      "verdict": "correct_abstention",
+      "answer_quote": "Insufficient context: the Orders documentation cannot answer this question.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "No refund amount or refund processing is implemented by this operation."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "No processing or bank timing is documented; the requested business-day count cannot be established."
+    },
+    {
+      "id": "delivery_paraphrase",
+      "verdict": "correct_abstention",
+      "answer_quote": "Insufficient context: the Orders documentation cannot answer this question.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "Changing the wording still requests an arrival day, absent from all four Orders documents; abstention is correct."
+    },
+    {
+      "id": "refund_paraphrase",
+      "verdict": "correct_abstention",
+      "answer_quote": "Insufficient context: the Orders documentation cannot answer this question.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "No refund amount or refund processing is implemented by this operation."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The question requests elapsed bank-refund time, not whether refund code exists; no such duration is documented."
+    },
+    {
+      "id": "refund_implemented",
+      "verdict": "supported",
+      "answer_quote": "No refund amount or refund processing is implemented by this operation. [1]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "No refund amount or refund processing is implemented by this operation."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The explicit absence of refund amount/processing directly answers the implementation question with a supported negative fact."
+    },
+    {
+      "id": "delivery_implemented",
+      "verdict": "supported",
+      "answer_quote": "CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented. [1]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The explicit statement that CONFIRMED does not mean shipped or delivered answers the question with a supported negative fact."
+    }
+  ],
+  "ui": "9/9 PASS",
+  "outage": {
+    "http": 503,
+    "response": {
+      "code": "unavailable",
+      "error": "Orders guide service is unavailable. Please try again.",
+      "status": "error"
+    },
+    "ui_passed": true
+  },
+  "optional_multilingual": "excluded",
+  "timing": [
+    {
+      "id": "statuses",
+      "ui_elapsed_seconds": 51.56,
+      "model_calls": 2,
+      "model_elapsed_seconds": 48.542,
+      "call_timeouts_seconds": [
+        90.0,
+        43.987
+      ]
+    },
+    {
+      "id": "confirmed_cancel",
+      "ui_elapsed_seconds": 26.032,
+      "model_calls": 2,
+      "model_elapsed_seconds": 23.933,
+      "call_timeouts_seconds": [
+        90.0,
+        67.975
+      ]
+    },
+    {
+      "id": "records",
+      "ui_elapsed_seconds": 20.386,
+      "model_calls": 2,
+      "model_elapsed_seconds": 18.897,
+      "call_timeouts_seconds": [
+        90.0,
+        72.933
+      ]
+    },
+    {
+      "id": "delivery_unknown",
+      "ui_elapsed_seconds": 21.804,
+      "model_calls": 1,
+      "model_elapsed_seconds": 20.342,
+      "call_timeouts_seconds": [
+        90.0
+      ]
+    },
+    {
+      "id": "refund_unknown",
+      "ui_elapsed_seconds": 30.957,
+      "model_calls": 1,
+      "model_elapsed_seconds": 28.896,
+      "call_timeouts_seconds": [
+        90.0
+      ]
+    },
+    {
+      "id": "delivery_paraphrase",
+      "ui_elapsed_seconds": 10.938,
+      "model_calls": 1,
+      "model_elapsed_seconds": 9.965,
+      "call_timeouts_seconds": [
+        90.0
+      ]
+    },
+    {
+      "id": "refund_paraphrase",
+      "ui_elapsed_seconds": 32.65,
+      "model_calls": 1,
+      "model_elapsed_seconds": 31.842,
+      "call_timeouts_seconds": [
+        90.0
+      ]
+    },
+    {
+      "id": "refund_implemented",
+      "ui_elapsed_seconds": 16.729,
+      "model_calls": 2,
+      "model_elapsed_seconds": 15.296,
+      "call_timeouts_seconds": [
+        90.0,
+        75.75
+      ]
+    },
+    {
+      "id": "delivery_implemented",
+      "ui_elapsed_seconds": 14.525,
+      "model_calls": 2,
+      "model_elapsed_seconds": 13.85,
+      "call_timeouts_seconds": [
+        90.0,
+        78.148
+      ]
+    }
+  ],
+  "pipeline_sha256": "ceccc93d0302bae6b56fb7b9d7ac185da63fb12eddd952fb00b33e1d0fee4868",
+  "student1": "Real route preserved; existing 0.5B flagging-answer omission is not an Orders regression (see student1-regression-replay.json).",
+  "limitations": "This finite local question set is not a proof for all queries or whole-team integration."
+}

@@ -113,6 +113,12 @@ services:
       - DATABASE_URL=http://student4-database:6004
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - OLLAMA_MODEL=qwen2.5:0.5b
+      - AI_ENABLED=${AI_ENABLED:-true}
+      - MCP_URL=http://host.docker.internal:8100/mcp
+      - MCP_ENABLED=${MCP_ENABLED:-false}
+      - ORDERS_MCP_SECRET=${ORDERS_MCP_SECRET:-}
+      - RAG_URL=http://host.docker.internal:8200
+      - RAG_ENABLED=${RAG_ENABLED:-false}
     depends_on:
       student4-database:
         condition: service_healthy
@@ -123,7 +129,8 @@ services:
     ports:
       - "3004:3004"
     environment:
-      - API_BASE=http://student4-backend:5004
+      - API_BASE=http://localhost:5004
+      - SHARED_BASE=http://localhost:5000
     depends_on:
       - student4-backend
 
@@ -162,5 +169,5 @@ services:
     depends_on:
       - student5-backend
 
-  # ── Shared AI services (Release 1+) ──
-  # TODO: whoever's building ai-mode/mcp-server/rag-server — add here late
+  # Release 1: AI/Ollama, common MCP/RAG and agentic loop run on the host.
+  # Do not add them as Compose services; see docs/release-1/student-4/.

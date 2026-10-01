@@ -1,0 +1,104 @@
+ M .github/workflows/student-4-ci.yml
+ M .gitignore
+ M README.md
+ M ai-services/agentic-loop/main.py
+ M ai-services/mcp-server/server.py
+ M ai-services/rag-server/rag_pipeline.py
+ M docker-compose.yml
+ M shared/backend/app.py
+ M shared/backend/requirements.txt
+ M student-4/backend/app.py
+ M student-4/backend/requirements.txt
+ M student-4/docker-compose.yml
+ M student-4/frontend/app.py
+ M student-4/frontend/css/styles.css
+ M student-4/frontend/templates/admin.html
+ M student-4/frontend/templates/index.html
+ M student-4/tests/requirements.txt
+ M student-4/tests/test_backend.py
+?? RELEASE1_ORDERS_PLAN.md
+?? ai-services/agentic-loop/modes/orders_mode.py
+?? ai-services/mcp-server/tools/student4_orders.py
+?? ai-services/rag-server/knowledge/student-4/order-cancellation.md
+?? ai-services/rag-server/knowledge/student-4/order-guide-scope.md
+?? ai-services/rag-server/knowledge/student-4/order-lookup.md
+?? ai-services/rag-server/knowledge/student-4/order-statuses.md
+?? docs/release-1/student-4/CONTRIBUTIONS.md
+?? docs/release-1/student-4/DEMO_QA.md
+?? docs/release-1/student-4/GITHUB_PREPARATION.md
+?? docs/release-1/student-4/ORDERS_AGENTIC.md
+?? docs/release-1/student-4/ORDERS_MCP.md
+?? docs/release-1/student-4/ORDERS_RAG.md
+?? docs/release-1/student-4/README.md
+?? docs/release-1/student-4/REPORT_DRAFT.md
+?? docs/release-1/student-4/STRUCTURE.md
+?? docs/release-1/student-4/TEAM_INTEGRATION.md
+?? scripts/README.md
+?? student-4/.dockerignore
+?? student-4/ORDERS_AGENTIC.md
+?? student-4/ORDERS_MCP.md
+?? student-4/ORDERS_RAG.md
+?? student-4/backend/orders_auth.py
+?? student-4/backend/orders_mcp_client.py
+?? student-4/backend/orders_rag.py
+?? student-4/evidence/orders-agentic-ci-2026-09-30/REPORT.md
+?? student-4/evidence/orders-agentic-ci-2026-09-30/SUMMARY.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/ai-default-enabled.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/ci-python311-final.log
+?? student-4/evidence/orders-agentic-ci-2026-09-30/ci-python311.log
+?? student-4/evidence/orders-agentic-ci-2026-09-30/image-contents.log
+?? student-4/evidence/orders-agentic-ci-2026-09-30/image-id.txt
+?? student-4/evidence/orders-agentic-ci-2026-09-30/image-integration.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/local-ci-result.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/orders-agentic-rag-1.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/orders-agentic-rag-review-1.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/preservation-results.json
+?? student-4/evidence/orders-agentic-ci-2026-09-30/student-4-mcp-20260930-131619-459844.txt
+?? student-4/evidence/orders-agentic-ci-2026-09-30/student-4-rag-20260930-131754-545266.txt
+?? student-4/evidence/orders-agentic-ci-2026-09-30/student-4-rag-20260930-132248-641437.txt
+?? student-4/evidence/orders-followup-2026-10-01/REPORT.md
+?? student-4/evidence/orders-followup-2026-10-01/SUMMARY.json
+?? student-4/evidence/orders-followup-2026-10-01/change-manifest.txt
+?? student-4/evidence/orders-followup-2026-10-01/ci-python311.log
+?? student-4/evidence/orders-followup-2026-10-01/historical-review-check.json
+?? student-4/evidence/orders-followup-2026-10-01/host-packages.txt
+?? student-4/evidence/orders-followup-2026-10-01/image-source-check.json
+?? student-4/evidence/orders-followup-2026-10-01/preservation-results.json
+?? student-4/evidence/orders-followup-2026-10-01/remote-comparison.json
+?? student-4/evidence/orders-followup-2026-10-01/sharing-check.json
+?? student-4/evidence/orders-followup-2026-10-01/static-checks.json
+?? student-4/evidence/orders-mcp-2026-09-30/REPORT.md
+?? student-4/evidence/orders-mcp-2026-09-30/browser-results.json
+?? student-4/evidence/orders-mcp-2026-09-30/mcp-outage.png
+?? student-4/evidence/orders-mcp-2026-09-30/mcp-success.png
+?? student-4/evidence/orders-mcp-2026-09-30/preservation-results.json
+?? student-4/evidence/orders-mcp-browser-2026-09-29/REPORT.md
+?? student-4/evidence/orders-mcp-browser-2026-09-29/browser-results.json
+?? student-4/evidence/orders-mcp-browser-2026-09-29/mcp-outage.png
+?? student-4/evidence/orders-mcp-browser-2026-09-29/mcp-success.png
+?? student-4/evidence/orders-mcp-browser-2026-09-29/preservation-results.json
+?? student-4/evidence/orders-rag-2026-09-30/REPORT.md
+?? student-4/evidence/orders-rag-2026-09-30/initial-ui-assertion-failure.json
+?? student-4/evidence/orders-rag-2026-09-30/preservation-results.json
+?? student-4/evidence/orders-rag-2026-09-30/rag-insufficient.png
+?? student-4/evidence/orders-rag-2026-09-30/rag-outage.png
+?? student-4/evidence/orders-rag-2026-09-30/rag-results.json
+?? student-4/evidence/orders-rag-2026-09-30/rag-success.png
+?? student-4/scripts/README.md
+?? student-4/scripts/audit.py
+?? student-4/scripts/browser_check.py
+?? student-4/scripts/host-constraints.txt
+?? student-4/scripts/host_servers.py
+?? student-4/scripts/image_check.py
+?? student-4/scripts/local_ci.py
+?? student-4/scripts/prepare.py
+?? student-4/scripts/rag_check.py
+?? student-4/scripts/rag_followup.py
+?? student-4/scripts/serve_rag.py
+?? student-4/scripts/validation_checks.py
+?? student-4/tests/test_orders_agentic.py
+?? student-4/tests/test_orders_evidence.py
+?? student-4/tests/test_orders_mcp.py
+?? student-4/tests/test_orders_mcp_live.py
+?? student-4/tests/test_orders_rag.py
+?? student-4/tests/test_validation_checks.py

@@ -1,0 +1,118 @@
+[
+  {
+    "check": "RAG health",
+    "result": "PASS",
+    "detail": "local shared RAG"
+  },
+  {
+    "check": "corpus refresh",
+    "result": "PASS",
+    "detail": {
+      "status": "success",
+      "chunk_count": 10,
+      "tier_1_chunks": 0,
+      "tier_2_chunks": 10,
+      "collection": "kicklab_context"
+    }
+  },
+  {
+    "check": "student-4 retrieval",
+    "result": "PASS",
+    "detail": [
+      {
+        "source": "knowledge/student-4/order-statuses.md",
+        "distance": 0.1887
+      },
+      {
+        "source": "knowledge/student-4/order-lookup.md",
+        "distance": 0.3282
+      },
+      {
+        "source": "knowledge/student-4/order-guide-scope.md",
+        "distance": 0.3474
+      },
+      {
+        "source": "knowledge/student-4/order-cancellation.md",
+        "distance": 0.3509
+      }
+    ]
+  },
+  {
+    "check": "student-1 docs preserved",
+    "result": "PASS",
+    "detail": [
+      "knowledge/student-1/sentiment-scoring.md",
+      "knowledge/student-1/review-policy.md",
+      "knowledge/student-1/review-policy.md"
+    ]
+  },
+  {
+    "check": "browser grounded answer",
+    "result": "PASS",
+    "detail": {
+      "answer": "The three supported order statuses are:\n1. PENDING\n2. CONFIRMED\n3. CANCELLED",
+      "citations": [
+        {
+          "chunk_id": "knowledge/student-4/order-statuses.md#1",
+          "ref": 1,
+          "source_id": "knowledge/student-4/order-statuses.md"
+        },
+        {
+          "chunk_id": "knowledge/student-4/order-lookup.md#1",
+          "ref": 2,
+          "source_id": "knowledge/student-4/order-lookup.md"
+        },
+        {
+          "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+          "ref": 3,
+          "source_id": "knowledge/student-4/order-guide-scope.md"
+        },
+        {
+          "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+          "ref": 4,
+          "source_id": "knowledge/student-4/order-cancellation.md"
+        }
+      ],
+      "confidence_category": "High",
+      "feature": "student-4",
+      "query": "What are the three supported order statuses?",
+      "status": "success"
+    }
+  },
+  {
+    "check": "citations point to real Orders docs",
+    "result": "PASS",
+    "detail": [
+      {
+        "chunk_id": "knowledge/student-4/order-statuses.md#1",
+        "ref": 1,
+        "source_id": "knowledge/student-4/order-statuses.md"
+      },
+      {
+        "chunk_id": "knowledge/student-4/order-lookup.md#1",
+        "ref": 2,
+        "source_id": "knowledge/student-4/order-lookup.md"
+      },
+      {
+        "chunk_id": "knowledge/student-4/order-guide-scope.md#1",
+        "ref": 3,
+        "source_id": "knowledge/student-4/order-guide-scope.md"
+      },
+      {
+        "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+        "ref": 4,
+        "source_id": "knowledge/student-4/order-cancellation.md"
+      }
+    ]
+  },
+  {
+    "check": "answer/source/confidence UI",
+    "result": "FAIL",
+    "detail": "High"
+  },
+  {
+    "check": "exception",
+    "result": "FAIL",
+    "detail": "RuntimeError"
+  }
+]

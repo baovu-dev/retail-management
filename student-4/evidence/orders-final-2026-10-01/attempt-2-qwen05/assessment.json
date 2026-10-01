@@ -1,0 +1,6 @@
+{
+  "verdict": "FAIL",
+  "cause": "Small model copied entire chunks, hit 384-token limit, incorrectly marked related unknowns answerable, and failed supported implementation questions. Multilingual retrieval also lacks relevant chunks.",
+  "student1": "Three existing HTTP cases executed; full review stored separately.",
+  "outage_ui": "PASS"
+}
