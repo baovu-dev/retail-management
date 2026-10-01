@@ -133,23 +133,9 @@
 
     #query:focus { outline: none; border-color: var(--purple); }
 
-    .prompts { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-
-    .prompts button {
-      border: 1px solid var(--border);
-      background: #faf9fd;
-      color: var(--text);
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-family: inherit;
-      font-size: 0.82rem;
-      cursor: pointer;
-    }
-
-    .prompts button:hover { border-color: var(--purple); color: var(--purple); }
-
     #answer-form button[type="submit"] {
       width: 100%;
+      margin-top: 14px;
       border: 0;
       border-radius: 12px;
       padding: 12px 14px;
@@ -254,11 +240,6 @@
         <h2>Your question</h2>
         <form id="answer-form">
           <textarea id="query" maxlength="300" placeholder="Ask how scoring, budgets, or the chatbot policy work" required></textarea>
-          <div class="prompts">
-            <button type="button" data-prompt="How are sneaker recommendations scored?">Scoring</button>
-            <button type="button" data-prompt="What happens when I set a budget?">Budget filter</button>
-            <button type="button" data-prompt="Which MCP tools exist for recommendations?">MCP tools</button>
-          </div>
           <button type="submit">Get a grounded answer</button>
         </form>
       </section>
@@ -304,13 +285,6 @@
     }
     renderState();
     toggle.addEventListener('change', renderState);
-
-    document.querySelectorAll('.prompts button').forEach((button) => {
-      button.addEventListener('click', () => {
-        query.value = button.dataset.prompt;
-        query.focus();
-      });
-    });
 
     document.getElementById('answer-form').addEventListener('submit', async (event) => {
       event.preventDefault();
