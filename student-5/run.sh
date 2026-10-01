@@ -47,6 +47,8 @@ echo "  Frontend:  http://localhost:3005"
 echo "  Backend:   http://localhost:5005"
 echo "  Database:  http://localhost:6005"
 echo "  Store home: http://localhost:5000  (run shared/backend separately for Store Home link)"
+echo "  MCP page:  http://localhost:3005/mcp   (shared MCP server must be on port 8100)"
+echo "  RAG page:  http://localhost:3005/rag   (shared RAG server must be on port 8200)"
 echo ""
 echo "Press Ctrl+C to stop all services."
 

@@ -126,6 +126,43 @@ def test_backend_chat_respects_budget(backend_client, monkeypatch):
         assert item["product"]["price"] <= 120
 
 
+def test_rag_rejects_empty_and_long_queries(backend_client, monkeypatch):
+    # CI sets RAG_ENABLED=false, which returns 403 before the query is checked.
+    monkeypatch.setenv("RAG_ENABLED", "true")
+    empty = backend_client.post("/api/rag/answer", data={"query": "   "})
+    assert empty.status_code == 400
+    assert empty.get_json()["status"] == "error"
+
+    too_long = backend_client.post("/api/rag/answer", data={"query": "a" * 301})
+    assert too_long.status_code == 400
+
+
+def test_mcp_rejects_invalid_customer_id(backend_client, monkeypatch):
+    # CI sets MCP_ENABLED=false, which returns 403 before the id is checked.
+    monkeypatch.setenv("MCP_ENABLED", "true")
+    for value in ("0", "abc", "-3", ""):
+        response = backend_client.post(
+            "/api/mcp/customer-recommendations",
+            data={"customer_id": value},
+        )
+        assert response.status_code == 400
+        assert "positive" in response.get_json()["error"]
+
+
+def test_mcp_and_rag_disabled_during_ci(backend_client, monkeypatch):
+    monkeypatch.setenv("MCP_ENABLED", "false")
+    monkeypatch.setenv("RAG_ENABLED", "false")
+    mcp_response = backend_client.post("/api/mcp/metrics")
+    rag_response = backend_client.post("/api/rag/answer", data={"query": "How are recommendations scored?"})
+    assert mcp_response.status_code == 403
+    assert rag_response.status_code == 403
+
+
+def test_frontend_mcp_and_rag_pages(frontend_client):
+    assert frontend_client.get("/mcp").status_code == 200
+    assert frontend_client.get("/rag").status_code == 200
+
+
 def test_frontend_index_loads(frontend_client):
     response = frontend_client.get("/")
     assert response.status_code == 200

@@ -18,6 +18,16 @@ def index():
     return render_template("index.html", api_base=API_BASE)
 
 
+@app.route("/mcp")
+def mcp_page():
+    return render_template("mcp.html", api_base=API_BASE)
+
+
+@app.route("/rag")
+def rag_page():
+    return render_template("rag.html", api_base=API_BASE)
+
+
 if __name__ == "__main__":
     print("Student 5 frontend running on http://localhost:3005")
     print("API backend expected at http://localhost:5005")
