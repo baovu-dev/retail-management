@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 from tools.student1_reviews import get_rating_summary, get_reviews_by_product, get_flagged_reviews
+from tools.student2_products import get_product_by_id
 from tools.student5_recommendations import (
     get_customer_browsing_history,
     get_customer_recommendations,
@@ -26,6 +27,10 @@ def flagged_reviews() -> dict:
     """Return a list of all flagged reviews. Read-only."""
     return get_flagged_reviews()
 
+@mcp.tool()
+def product_by_id(product_id: int) -> dict:
+    """Return product information for one KICKLAB product. Read-only."""
+    return get_product_by_id(product_id)
 
 @mcp.tool()
 def customer_recommendations(customer_id: int) -> dict:

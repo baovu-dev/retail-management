@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from mcp_client import call_tool
 import requests
+from rag_client import call_rag_service, RAG_FEATURE
 import os
 
 app = Flask(__name__)
@@ -112,6 +114,53 @@ Return only the product description.
         "product_id": product_id,
         "description": result["response"]
     })
+
+@app.route("/mcp/product/<int:product_id>", methods=["GET"])
+def mcp_get_product(product_id):
+    try:
+        result = call_tool(
+            "product_by_id", 
+            {"product_id": product_id}
+        )
+        if "error" in result:
+          return jsonify(result), 400
+
+        return jsonify(result), 200
+
+    except Exception as exc:
+        return jsonify({
+        "error": "Shared MCP server unreachable",
+        "detail": str(exc)
+    }), 503
+
+@app.route("/rag/ask", methods=["POST"])
+def rag_ask():
+    data = request.get_json() or {}
+    query = data.get("query", "").strip()
+
+    if not query:
+        return jsonify({
+            "status": "error",
+            "error": "query is required"
+            }), 400
+
+    try:
+        result = call_rag_service(
+            "/answer", 
+            {
+                "query": query,
+                "feature": RAG_FEATURE,
+                "k": 5
+            }
+        )
+        return jsonify(result), 200
+    
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error": "Shared RAG server unreachable",
+            "detail": str(exc)
+        }), 503
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002, debug=True)
