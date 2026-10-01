@@ -106,7 +106,7 @@
                             Order ID
                         </label>
 
-                        <input id="assistantOrderId" type="number" min="1" placeholder="e.g. 2">
+                        <input id="assistantOrderId" type="number" min="1" placeholder="e.g. 1">
 
                     </div>
 
@@ -198,6 +198,9 @@
 
         const API_BASE = "{{ api_base }}";
 
+        const params = new URLSearchParams(window.location.search);
+        const customerId = params.get("customer_id");
+
         const ordersContainer =
             document.getElementById("ordersContainer");
 
@@ -215,8 +218,12 @@
 
             try {
 
+                const ordersUrl = customerId
+                    ? `${API_BASE}/api/orders?customer_id=${encodeURIComponent(customerId)}`
+                    : `${API_BASE}/api/orders`;
+
                 const response =
-                    await fetch(`${API_BASE}/api/orders`);
+                    await fetch(ordersUrl);
 
                 if (!response.ok) {
                     throw new Error("Could not load orders");

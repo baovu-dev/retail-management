@@ -7,8 +7,8 @@ COPY database/requirements.txt database/requirements.txt
 COPY frontend/requirements.txt frontend/requirements.txt
 
 RUN pip install --no-cache-dir -r backend/requirements.txt \
-&& pip install --no-cache-dir -r database/requirements.txt \
-&& pip install --no-cache-dir -r frontend/requirements.txt
+    && pip install --no-cache-dir -r database/requirements.txt \
+    && pip install --no-cache-dir -r frontend/requirements.txt
 
 COPY backend backend
 COPY database database

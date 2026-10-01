@@ -1,6 +1,6 @@
 name: Student 2 CI - Product Management
 
-on: 
+on:
   push:
     paths:
       - 'student-2/**'
@@ -40,6 +40,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker image 
+      - name: Build Docker image
         working-directory: student-2
         run: docker build -t student2-product-management .

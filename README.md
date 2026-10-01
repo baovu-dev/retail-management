@@ -1,6 +1,6 @@
 # KICKLAB
 
-ASD 2026 Group 26 project - retail/shopping domain. 
+ASD 2026 Group 26 project - retail/shopping domain.
 
 ## Team
 - Bao Vu - Reviews & Ratings
@@ -10,9 +10,9 @@ ASD 2026 Group 26 project - retail/shopping domain.
 - Aiden Phan - Chatbot/Recommendations
 
 ## Setup
- 
+
 You'll need Docker Desktop and Ollama installed.
- 
+
 1. Open Docker Desktop and make sure it's actually running (check for the
    whale icon in your menu bar) - `docker` commands will fail with a
    confusing error otherwise.

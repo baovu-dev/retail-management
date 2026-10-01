@@ -1,0 +1,23 @@
+=== KICKLAB agentic loop: rag ===
+[16:05:26] PLAN     7 checks against the shared RAG server at http://localhost:8200
+[16:05:26] OBSERVE  RAG server health check passed
+[16:05:26] ACT      POST /answer {"query": "When does a review get flagged?"}
+[16:05:27] OBSERVE  PASS - Grounded: policy question answered with a citation -> status=success confidence=High sources=['knowledge/student-1/sentiment-scoring.md'] answer='A review gets flagged for moderation when its sentiment score is below'
+[16:05:27] ACT      POST /answer {"query": "What do customers say about product 103?"}
+[16:05:28] OBSERVE  PASS - Grounded: review question cites product 103 reviews -> status=success confidence=Medium sources=['reviews-db:review/5', 'reviews-db:review/6'] answer='Customers have given mixed reviews for product 103. One customer gave '
+[16:05:28] ACT      POST /answer {"query": "Can I review a product I did not buy?"}
+[16:05:29] OBSERVE  PASS - Confidence: grounded answer has a category -> status=success confidence=High sources=['knowledge/student-1/review-policy.md'] answer='No, you cannot review a product you did not buy. According to the revi'
+[16:05:29] ACT      POST /retrieve {"query": "product 103 reviews", "k": 5}
+[16:05:29] OBSERVE  PASS - Retrieval: top result for 'product 103 reviews' is about product 103 -> top=reviews-db:review/5 distance=0.3203
+[16:05:29] ACT      POST /answer {"query": "What is the weather in Sydney?"}
+[16:05:29] OBSERVE  PASS - Insufficient context: off-topic weather question -> status=insufficient_context confidence=Insufficient sources=[] answer='Insufficient context: no relevant KICKLAB information was found for th'
+[16:05:29] ACT      POST /answer {"query": "How do I reset my router?"}
+[16:05:29] OBSERVE  PASS - Insufficient context: off-topic tech support question -> status=insufficient_context confidence=Insufficient sources=[] answer='Insufficient context: no relevant KICKLAB information was found for th'
+[16:05:29] ACT      POST /answer {"query": ""}
+[16:05:29] OBSERVE  PASS - Boundary: empty query is rejected -> status=error confidence=None sources=[] answer='query is required'
+[16:05:29] ADAPT    Asking Ollama to review the evidence
+[16:05:31] REVIEW   Risk: Unsupported claims and off-topic questions may be passed, compromising retrieval quality and citation quality.
+[16:05:31] REVIEW   Correction: Implement stricter checks for topic relevance and enforce minimum context requirements.
+[16:05:31] REVIEW   Retest: Manually evaluate 5-10 queries for off-topic answers and ensure all queries have sufficient context.
+[16:05:31] ADAPT    7/7 checks passed
+=== Result: PASS ===

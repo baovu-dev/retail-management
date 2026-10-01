@@ -26,14 +26,35 @@ def health():
 
 @app.route("/orders", methods=["GET"])
 def get_orders():
+    customer_id = request.args.get("customer_id")
+
     connection = get_db_connection()
-    rows = connection.execute(
-        "SELECT * FROM orders ORDER BY order_id DESC"
-    ).fetchall()
+
+    if customer_id:
+        rows = connection.execute(
+            """
+            SELECT *
+            FROM orders
+            WHERE customer_id = ?
+            ORDER BY order_id DESC
+            """,
+            (customer_id,)
+        ).fetchall()
+
+    else:
+        rows = connection.execute(
+            """
+            SELECT *
+            FROM orders
+            ORDER BY order_id DESC
+            """
+        ).fetchall()
+
     connection.close()
 
-    return jsonify([dict(row) for row in rows]), 200
-
+    return jsonify(
+        [dict(row) for row in rows]
+    ), 200
 
 @app.route("/orders/<int:order_id>", methods=["GET"])
 def get_order(order_id):

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | KICKLAB</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <style>
+        .success-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 140px 24px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .success-card {
+            width: 100%;
+            max-width: 620px;
+            padding: 44px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 24px 70px rgba(71, 44, 103, 0.12);
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            background: linear-gradient(135deg, #ff4fb8, #8b5cf6);
+            box-shadow: 0 12px 30px rgba(164, 85, 210, 0.25);
+        }
+
+        .success-card h1 {
+            margin: 0 0 12px;
+            font-size: 2.35rem;
+        }
+
+        .success-subtitle {
+            margin: 0 0 32px;
+            opacity: 0.68;
+            line-height: 1.6;
+        }
+
+        .order-summary {
+            margin: 0 0 30px;
+            padding: 24px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.52);
+            border: 1px solid rgba(45, 31, 59, 0.08);
+            text-align: left;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 10px 0;
+        }
+
+        .summary-label {
+            opacity: 0.6;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(255, 183, 0, 0.13);
+            color: #a36b00;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 600px) {
+            .success-card {
+                padding: 30px;
+            }
+
+            .success-actions {
+                flex-direction: column;
+            }
+
+            .success-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-effects" aria-hidden="true">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <header id="header">
+        <div class="container header-inner">
+
+            <a href="/" class="logo">
+                <span class="logo-mark">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 18h20l-2-9H4L2 18z" />
+                        <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3" />
+                    </svg>
+                </span>
+                <span class="logo-name">KICKLAB</span>
+            </a>
+
+            <ul class="main-nav">
+                <li><a href="/#finder">Get Started</a></li>
+                <li><a href="/shop">Shop</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <a href="/shop" class="btn btn-glass">Browse</a>
+                <a href="http://localhost:3005/" class="btn btn-gradient">Help Me Choose</a>
+                <a href="http://localhost:5003/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My
+                    Account</a>
+                <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Orders</a>
+                <a href="/logout" class="btn btn-login">Logout</a>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="success-page">
+
+        <section class="success-card">
+
+            <div class="success-icon">✓</div>
+
+            <h1>Order placed.</h1>
+
+            <p class="success-subtitle">
+                Your order has been created successfully and is now waiting for confirmation.
+            </p>
+
+            {% if order %}
+
+            <div class="order-summary">
+
+                <div class="summary-row">
+                    <span class="summary-label">Order ID</span>
+                    <span class="summary-value">#{{ order.order_id }}</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Customer ID</span>
+                    <span class="summary-value">{{ order.customer_id }}</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value">
+                        ${{ "%.2f"|format(order.total_amount) }}
+                    </span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Status</span>
+                    <span class="summary-value">
+                        <span class="status-badge">
+                            {{ order.status }}
+                        </span>
+                    </span>
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <p class="success-subtitle">
+                Your order was created, but the order details could not be loaded.
+            </p>
+
+            {% endif %}
+
+            <div class="success-actions">
+                <a href="/shop" class="btn btn-glass">
+                    Continue Shopping
+                </a>
+
+                <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-gradient">
+                    View My Orders
+                </a>
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
