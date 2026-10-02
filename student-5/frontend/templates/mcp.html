@@ -4,80 +4,339 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KICKLAB — Recommendation MCP tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
   <style>
-    .tool-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 16px; }
-    .tool-card h3 { margin: 0 0 6px; }
-    .tool-card p { margin: 0 0 14px; color: var(--text-muted); }
-    .lookup-row { display: flex; gap: 12px; }
-    .lookup-row input { flex: 1; padding: 14px 18px; border-radius: var(--radius); border: 1.5px solid var(--border); font-family: inherit; }
-    #mcp-result { margin-top: 20px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; white-space: pre-wrap; }
-    .pill { font-weight: 700; font-size: 0.78rem; padding: 3px 12px; border-radius: 100px; }
-    .pill.on { background: rgba(0, 200, 120, 0.12); color: #0a9960; }
-    .pill.off { background: rgba(255, 61, 154, 0.12); color: #c2185b; }
+    .bench {
+      width: min(1100px, 92vw);
+      margin: 108px auto 64px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .bench-intro {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .bench-kicker {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 8px;
+    }
+
+    .bench-intro h1 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .bench-intro p {
+      max-width: 46ch;
+      color: var(--text-muted);
+    }
+
+    .mode-switch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      border-radius: 999px;
+      padding: 8px 8px 8px 16px;
+      flex-shrink: 0;
+    }
+
+    .mode-switch span { font-size: 0.85rem; font-weight: 600; }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 30px;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .switch-track {
+      display: block;
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      background: #ddd9e8;
+      transition: background 0.2s;
+    }
+
+    .switch-track::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(26, 21, 40, 0.2);
+      transition: transform 0.2s;
+    }
+
+    .switch input:checked + .switch-track { background: var(--cyan); }
+    .switch input:checked + .switch-track::after { transform: translateX(22px); }
+    .switch input:focus-visible + .switch-track { outline: 2px solid var(--purple); outline-offset: 2px; }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .tile {
+      background: #fff;
+      border-radius: 20px;
+      padding: 22px 20px 18px;
+      box-shadow: var(--shadow-sm);
+      border-top: 4px solid var(--tile, var(--orange));
+      display: flex;
+      flex-direction: column;
+      min-height: 240px;
+    }
+
+    .tile-recs { --tile: var(--orange); }
+    .tile-history { --tile: var(--purple); }
+    .tile-metrics { --tile: var(--cyan); }
+
+    .tile-index {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--tile);
+    }
+
+    .tile h2 {
+      font-size: 1.15rem;
+      margin: 8px 0 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .tile p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      flex: 1;
+    }
+
+    .tile label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .tile input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      background: #faf9fd;
+    }
+
+    .tile input:focus {
+      outline: none;
+      border-color: var(--tile);
+    }
+
+    .tile button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-weight: 700;
+      color: #fff;
+      background: var(--gradient);
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .tile button:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    .bench.is-off .tile { opacity: 0.55; }
+    .bench.is-off .tile button { cursor: not-allowed; }
+
+    .readout {
+      margin-top: 18px;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      border-radius: 20px;
+      overflow: hidden;
+      min-height: 180px;
+    }
+
+    .readout-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #faf9fd;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .readout pre {
+      margin: 0;
+      padding: 18px 20px 22px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .readout.is-error pre { color: #c2185b; }
+
+    @media (max-width: 860px) {
+      .bench-intro { flex-direction: column; align-items: flex-start; }
+      .tool-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
   <header id="header" class="scrolled">
     <div class="container header-inner">
-      <a href="/" class="logo"><span class="logo-name">KICKLAB</span></a>
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M2 18h20l-2-9H4L2 18z"/><path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+      <ul class="main-nav">
+        <li><a href="/#chatbot">Chat</a></li>
+        <li><a href="/mcp">MCP</a></li>
+        <li><a href="/rag">RAG</a></li>
+      </ul>
       <div class="header-actions">
         <a href="/" class="btn btn-glass">Back to assistant</a>
       </div>
     </div>
   </header>
-  <section class="finder">
-    <div class="container">
-      <span class="section-tag">MCP tools</span>
-      <h2 class="section-title">Run recommendation tools</h2>
-      <p class="section-sub">Each action goes through this feature's backend to the shared local MCP server. Tools are read-only.</p>
-      <div class="tool-card">
-        <label><input id="mcp-toggle" type="checkbox" checked> MCP mode</label>
-        <span id="mcp-state" class="pill on">On</span>
+
+  <main class="bench">
+    <div class="bench-intro">
+      <div>
+        <span class="bench-kicker">Read-only lookup</span>
+        <h1>Recommendation console</h1>
+        <p>Saved picks, viewed shoes, and store metrics. Each lookup goes through this feature's backend to the shared MCP server.</p>
       </div>
-      <div class="tool-card">
-        <h3>Customer recommendations</h3>
-        <p>Saved picks for one customer.</p>
-        <form id="recs-form" class="lookup-row">
-          <input id="recs-customer" type="number" min="1" value="1" required>
-          <button class="btn btn-gradient" type="submit">Run tool</button>
-        </form>
-      </div>
-      <div class="tool-card">
-        <h3>Browsing history</h3>
-        <p>Products this customer has viewed.</p>
-        <form id="history-form" class="lookup-row">
-          <input id="history-customer" type="number" min="1" value="1" required>
-          <button class="btn btn-gradient" type="submit">Run tool</button>
-        </form>
-      </div>
-      <div class="tool-card">
-        <h3>Recommendation metrics</h3>
-        <p>Counts, average feedback rating, and helpful rate.</p>
-        <button id="metrics-btn" class="btn btn-gradient" type="button">Run tool</button>
-      </div>
-      <div id="mcp-result">Tool results will appear here.</div>
+      <label class="mode-switch">
+        <span id="mcp-state">MCP on</span>
+        <span class="switch">
+          <input id="mcp-toggle" type="checkbox" checked>
+          <span class="switch-track"></span>
+        </span>
+      </label>
     </div>
-  </section>
+
+    <div class="tool-grid">
+      <article class="tile tile-recs">
+        <span class="tile-index">01</span>
+        <h2>Saved picks</h2>
+        <p>Recommendations already stored for one customer.</p>
+        <form id="recs-form">
+          <label for="recs-customer">Customer ID</label>
+          <input id="recs-customer" type="number" min="1" value="1" required>
+          <button type="submit">Show saved picks</button>
+        </form>
+      </article>
+
+      <article class="tile tile-history">
+        <span class="tile-index">02</span>
+        <h2>Viewed shoes</h2>
+        <p>Products this customer opened, with time spent on each.</p>
+        <form id="history-form">
+          <label for="history-customer">Customer ID</label>
+          <input id="history-customer" type="number" min="1" value="1" required>
+          <button type="submit">Show viewed shoes</button>
+        </form>
+      </article>
+
+      <article class="tile tile-metrics">
+        <span class="tile-index">03</span>
+        <h2>Store metrics</h2>
+        <p>How many recommendations exist, plus feedback and the helpful rate.</p>
+        <button id="metrics-btn" type="button">Show store metrics</button>
+      </article>
+    </div>
+
+    <section class="readout" id="mcp-result-wrap" aria-live="polite">
+      <div class="readout-bar">
+        <span>Result</span>
+        <span>JSON</span>
+      </div>
+      <pre id="mcp-result">Choose a lookup. The tool response will show here.</pre>
+    </section>
+  </main>
+
   <script>
     const API_BASE = '{{ api_base }}';
+    const bench = document.querySelector('.bench');
     const toggle = document.getElementById('mcp-toggle');
     const state = document.getElementById('mcp-state');
+    const resultWrap = document.getElementById('mcp-result-wrap');
     const result = document.getElementById('mcp-result');
 
     function renderState() {
-      state.textContent = toggle.checked ? 'On' : 'Off';
-      state.className = 'pill ' + (toggle.checked ? 'on' : 'off');
+      const on = toggle.checked;
+      state.textContent = on ? 'MCP on' : 'MCP off';
+      bench.classList.toggle('is-off', !on);
     }
     renderState();
     toggle.addEventListener('change', renderState);
 
+    function show(text, isError) {
+      result.textContent = text;
+      resultWrap.classList.toggle('is-error', Boolean(isError));
+    }
+
     async function run(path, data) {
       if (!toggle.checked) {
-        result.textContent = 'MCP mode is off. Turn it on to run tools.';
+        show('MCP mode is off. Turn it on to run tools.', true);
         return;
       }
-      result.textContent = 'Working…';
+      show('Working…', false);
       const response = await fetch(`${API_BASE}${path}`, {
         method: 'POST',
         headers: { 'X-MCP-Mode': 'on' },
@@ -85,10 +344,10 @@
       });
       const payload = await response.json();
       if (!response.ok) {
-        result.textContent = payload.error || 'The MCP tool rejected this request.';
+        show(payload.error || 'The MCP tool rejected this request.', true);
         return;
       }
-      result.textContent = JSON.stringify(payload, null, 2);
+      show(JSON.stringify(payload, null, 2), false);
     }
 
     document.getElementById('recs-form').addEventListener('submit', (event) => {
