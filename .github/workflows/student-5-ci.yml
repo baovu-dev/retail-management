@@ -10,6 +10,11 @@ on:
       - 'student-5/**'
       - '.github/workflows/student-5-ci.yml'
 
+# Release 1: MCP and RAG stay integrated in the app, but are disabled during CI/CD.
+env:
+  MCP_ENABLED: "false"
+  RAG_ENABLED: "false"
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -46,3 +51,10 @@ jobs:
       - name: Validate Docker Compose config
         working-directory: student-5
         run: docker compose config
+
+      - name: Confirm MCP and RAG are disabled in CI
+        run: |
+          echo "MCP_ENABLED=${{ env.MCP_ENABLED }}"
+          echo "RAG_ENABLED=${{ env.RAG_ENABLED }}"
+          test "${{ env.MCP_ENABLED }}" = "false"
+          test "${{ env.RAG_ENABLED }}" = "false"

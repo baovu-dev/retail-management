@@ -1,6 +1,11 @@
 from mcp.server.fastmcp import FastMCP
 from tools.student1_reviews import get_rating_summary, get_reviews_by_product, get_flagged_reviews
 from tools.student3_customers import get_customer_summary
+from tools.student5_recommendations import (
+    get_customer_browsing_history,
+    get_customer_recommendations,
+    get_recommendation_metrics,
+)
 
 mcp = FastMCP("KICKLAB Shared MCP", host="0.0.0.0", port=8100)
 
@@ -27,6 +32,22 @@ def flagged_reviews() -> dict:
 def customer_summary(customer_id: int) -> dict:
     """Return safe account details for one KICKLAB customer. Read-only."""
     return get_customer_summary(customer_id)
+def customer_recommendations(customer_id: int) -> dict:
+    """Return saved sneaker recommendations for one customer. Read-only."""
+    return get_customer_recommendations(customer_id)
+
+
+@mcp.tool()
+def recommendation_metrics() -> dict:
+    """Return recommendation counts, feedback average, and helpful rate. Read-only."""
+    return get_recommendation_metrics()
+
+
+@mcp.tool()
+def customer_browsing_history(customer_id: int) -> dict:
+    """Return products a customer has viewed. Read-only."""
+    return get_customer_browsing_history(customer_id)
+
 
 if __name__ == "__main__":
     mcp.run(transport="streamable-http")
