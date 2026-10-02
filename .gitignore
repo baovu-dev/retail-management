@@ -17,3 +17,10 @@ __pycache__/
 ai-services/rag-server/chroma/
 ai-services/rag-server/rag-audit.jsonl
 ai-services/agentic-loop/outputs/
+# Private validation state (never submit)
+**/runtime.json
+**/compose.env
+**/login.txt
+*.sqlite*
+.env.*
+.pytest_cache/

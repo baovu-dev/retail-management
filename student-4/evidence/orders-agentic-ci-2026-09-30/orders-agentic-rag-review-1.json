@@ -1,0 +1,132 @@
+{
+  "reviewer": "Codex source-by-source inspection, 2026-09-30; not an automated LLM judge",
+  "evidence_sha256": "17a445c1037e6792befc6df0bfc25341d4a49b973587f32e25c67131725d01e4",
+  "rubric": "Review complete answers against retrieved text and implementation. Unknown delivery/refund details require explicit insufficient_context. Citations, confidence and keyword presence alone cannot pass.",
+  "cases": [
+    {
+      "id": "statuses",
+      "verdict": "supported",
+      "answer_quote": "The three supported order statuses are:\n1. PENDING\n2. CONFIRMED\n3. CANCELLED",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        },
+        {
+          "source_id": "knowledge/student-4/order-lookup.md",
+          "quote": "The Orders guide answers general documentation questions; use MCP for a particular order's current status."
+        },
+        {
+          "source_id": "knowledge/student-4/order-guide-scope.md",
+          "quote": "It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome."
+        },
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "답변은 정확히 PENDING, CONFIRMED, CANCELLED 세 상태를 나열한다. 검색된 order-statuses의 exactly three 문장과 schema.sql CHECK 및 database/app.py allowed_statuses와 일치한다. 추가 상태나 배송 완료를 주장하지 않는다."
+    },
+    {
+      "id": "confirmed_cancel",
+      "verdict": "supported",
+      "answer_quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        },
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them."
+        },
+        {
+          "source_id": "knowledge/student-4/order-lookup.md",
+          "quote": "The Orders guide answers general documentation questions; use MCP for a particular order's current status."
+        },
+        {
+          "source_id": "knowledge/student-4/order-guide-scope.md",
+          "quote": "It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "답변 전체를 대조했다. order-cancellation의 regardless of its previous status, including CONFIRMED를 그대로 설명하고 order/item 보존, 환불 처리 미구현도 일치한다. 나머지 상태/조회/범위 설명은 검색된 각 문서에 있다. database/app.py cancel_order는 이전 상태 조건 없이 UPDATE만 실행한다. 문서 전체 재현으로 장황하지만 반대 조건을 만들지 않는다."
+    },
+    {
+      "id": "records",
+      "verdict": "supported",
+      "answer_quote": "It preserves the order and its items instead of deleting them.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them."
+        },
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        },
+        {
+          "source_id": "knowledge/student-4/order-guide-scope.md",
+          "quote": "It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome."
+        },
+        {
+          "source_id": "knowledge/student-4/order-lookup.md",
+          "quote": "The Orders guide answers general documentation questions; use MCP for a particular order's current status."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "답변은 preserves the order and its items instead of deleting them이라고 명시한다. 해당 검색 문장과 cancel_order의 UPDATE 구현이 일치하며 DELETE SQL은 없다. 추가 상태/조회/범위 문장도 각 검색 문서와 대조했다. 기록 삭제나 자동 환불을 주장하지 않는다."
+    },
+    {
+      "id": "delivery_unknown",
+      "verdict": "incomplete_abstention",
+      "answer_quote": "It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        },
+        {
+          "source_id": "knowledge/student-4/order-lookup.md",
+          "quote": "The Orders guide answers general documentation questions; use MCP for a particular order's current status."
+        },
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them."
+        },
+        {
+          "source_id": "knowledge/student-4/order-guide-scope.md",
+          "quote": "It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "관련 근거(distance 0.2717)가 있지만 정확한 배송일은 문서에 없다. 답변은 cannot establish a delivery date라고 인용하고 날짜나 배송 약속을 만들어내지는 않았다. 그러나 질문에 답할 수 없는데 status=success, confidence=High로 문서를 길게 반환했고 insufficient_context가 아니다. 경계 설명을 포함하는 것만으로 정답/정보 부족 처리 통과로 볼 수 없다. 마지막 Source 목록도 scope 문서의 실제 Source와 다르다."
+    },
+    {
+      "id": "refund_unknown",
+      "verdict": "incomplete_abstention",
+      "answer_quote": "No refund amount or refund processing is implemented by this operation.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. It preserves the order and its items instead of deleting them."
+        },
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        },
+        {
+          "source_id": "knowledge/student-4/order-lookup.md",
+          "quote": "The Orders guide answers general documentation questions; use MCP for a particular order's current status."
+        },
+        {
+          "source_id": "knowledge/student-4/order-guide-scope.md",
+          "quote": "It cannot establish a delivery date, shipment tracking number, refund entitlement or payment outcome."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "관련 취소 근거(distance 0.317)가 있지만 환불 소요일은 문서에 없다. No refund amount or refund processing is implemented라는 답변은 검색 문장과 일치하고 환불 기한/금액/자격을 지어내지 않았다. 그러나 status=success, confidence=Medium으로 문서를 재현했으며 insufficient_context 처리를 하지 않아 이 사례는 실패다."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "model": "llama3.1:8b",
+  "result": "interrupted_after_repeated_120_second_generation_timeouts",
+  "hardware": "Ollama reports size_vram=0; CPU-only",
+  "pipeline_sha256": "f550b66b7f048354a2b93fad06fe30331f38471084514d80ed5b3148caf0b4f0",
+  "no_success_selected": true
+}

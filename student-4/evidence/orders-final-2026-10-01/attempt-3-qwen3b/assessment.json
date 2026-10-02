@@ -1,0 +1,6 @@
+{
+  "verdict": "FAIL",
+  "required_supported": "All five supported cases incorrectly abstained; UI transport success is not semantic success.",
+  "required_unknown": "Four related unknowns abstained correctly.",
+  "optional": "Korean support question also abstained; not a Release 1 requirement."
+}

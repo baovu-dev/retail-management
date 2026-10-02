@@ -1,0 +1,5 @@
+{
+  "private_paths_in_candidates": [],
+  "credential_pattern_hits": [],
+  "limitation": "Heuristic scan; missing old runtime prevents comparison against its former actual private values. Test fixture secrets are not production credentials."
+}

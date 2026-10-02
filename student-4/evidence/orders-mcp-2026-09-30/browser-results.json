@@ -1,0 +1,181 @@
+[
+  {
+    "check": "ready http://localhost:5000/",
+    "result": "PASS",
+    "detail": 200
+  },
+  {
+    "check": "ready http://localhost:3004/",
+    "result": "PASS",
+    "detail": 200
+  },
+  {
+    "check": "ready http://localhost:5004/api/health",
+    "result": "PASS",
+    "detail": 200
+  },
+  {
+    "check": "ready http://localhost:5003/",
+    "result": "PASS",
+    "detail": 200
+  },
+  {
+    "check": "ready http://localhost:5102/products",
+    "result": "PASS",
+    "detail": 200
+  },
+  {
+    "check": "local Ollama models",
+    "result": "PASS",
+    "detail": [
+      "llama3.1:8b",
+      "qwen2.5:0.5b"
+    ]
+  },
+  {
+    "check": "Chrome launch",
+    "result": "PASS",
+    "detail": "154.0.8037.58"
+  },
+  {
+    "check": "real login cookie",
+    "result": "PASS",
+    "detail": "HttpOnly session cookie present; value omitted"
+  },
+  {
+    "check": "browser MCP success",
+    "result": "PASS",
+    "detail": {
+      "http": 200,
+      "screen": "Order #13: PENDING \u00b7 Source: MCP (get_order_status)"
+    }
+  },
+  {
+    "check": "credentialed browser CORS",
+    "result": "PASS",
+    "detail": [
+      {
+        "status": 200,
+        "allow_origin": "http://localhost:3004",
+        "allow_credentials": "true"
+      },
+      {
+        "status": 200,
+        "allow_origin": "http://localhost:3004",
+        "allow_credentials": "true"
+      },
+      {
+        "status": 200,
+        "allow_origin": "http://localhost:3004",
+        "allow_credentials": "true"
+      },
+      {
+        "status": 200,
+        "allow_origin": "http://localhost:3004",
+        "allow_credentials": "true"
+      },
+      {
+        "status": 200,
+        "allow_origin": "http://localhost:3004",
+        "allow_credentials": "true"
+      },
+      {
+        "status": 200,
+        "allow_origin": "http://localhost:3004",
+        "allow_credentials": "true"
+      }
+    ]
+  },
+  {
+    "check": "other customer denied",
+    "result": "PASS",
+    "detail": {
+      "http": 403,
+      "screen": "Order status access denied or MCP disabled."
+    }
+  },
+  {
+    "check": "forged token/header denied",
+    "result": "PASS",
+    "detail": 401
+  },
+  {
+    "check": "existing order details",
+    "result": "PASS",
+    "detail": "modal shows owned test order"
+  },
+  {
+    "check": "existing AI endpoint",
+    "result": "PASS",
+    "detail": {
+      "http": 200,
+      "source": "ollama",
+      "answer_present": true
+    }
+  },
+  {
+    "check": "actual Ollama generation",
+    "result": "PASS",
+    "detail": {
+      "source": "ollama"
+    }
+  },
+  {
+    "check": "shared shop create order",
+    "result": "PASS",
+    "detail": {
+      "order_id": 17
+    }
+  },
+  {
+    "check": "admin return across origins",
+    "result": "PASS",
+    "detail": "http://localhost:5000/staff_dashboard"
+  },
+  {
+    "check": "existing staff confirm order",
+    "result": "PASS",
+    "detail": {
+      "order_id": 17
+    }
+  },
+  {
+    "check": "existing customer cancel order",
+    "result": "PASS",
+    "detail": {
+      "order_id": 17
+    }
+  },
+  {
+    "check": "MCP outage screen",
+    "result": "PASS",
+    "detail": {
+      "http": 503,
+      "screen": "Shared MCP server is unavailable."
+    }
+  },
+  {
+    "check": "MCP recovery",
+    "result": "PASS",
+    "detail": {
+      "http": 200,
+      "screen": "Order #13: PENDING \u00b7 Source: MCP (get_order_status)"
+    }
+  },
+  {
+    "check": "real 120-second expiry",
+    "result": "PASS",
+    "detail": {
+      "status": 401,
+      "error": "Authentication expired. Please try again."
+    }
+  },
+  {
+    "check": "fresh token retry from UI",
+    "result": "PASS",
+    "detail": {
+      "http": 200,
+      "screen": "Order #13: PENDING \u00b7 Source: MCP (get_order_status)"
+    }
+  }
+]

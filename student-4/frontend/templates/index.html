@@ -19,12 +19,12 @@
     <header>
         <div class="container header-inner">
 
-            <a href="http://localhost:5000/" class="logo">
+            <a href="{{ shared_base }}/" class="logo">
                 <span class="logo-name">KICKLAB</span>
             </a>
 
             <div class="header-actions">
-                <a href="http://localhost:5000/" class="btn btn-glass">
+                <a href="{{ shared_base }}/" class="btn btn-glass">
                     Store Home
                 </a>
             </div>
@@ -134,6 +134,47 @@
             </section>
 
 
+            <section class="assistant-card" aria-labelledby="mcpHeading">
+                <div class="assistant-heading">
+                    <span class="section-tag">MCP Mode · Read only</span>
+                    <h2 id="mcpHeading">Check order status</h2>
+                    <p>Use your store login to check your order's current status.</p>
+                    <a href="{{ shared_base }}/login" class="btn btn-glass">Store login</a>
+                </div>
+                <form id="mcpStatusForm" class="assistant-form">
+                    <div class="field-group field-order">
+                        <label for="mcpOrderId">Order ID</label>
+                        <input id="mcpOrderId" type="number" min="1" max="2147483647" step="1" required>
+                    </div>
+                    <button id="mcpStatusButton" type="submit" class="btn btn-ai">Check with MCP</button>
+                </form>
+                <div id="mcpStatusResult" class="assistant-answer" role="status" aria-live="polite"></div>
+            </section>
+
+            <section class="assistant-card" aria-labelledby="ragHeading">
+                <div class="assistant-heading">
+                    <span class="section-tag">RAG Mode · Orders documentation</span>
+                    <h2 id="ragHeading">Orders guide</h2>
+                    <p>Ask about order statuses, cancellation or how to view orders.
+                        This guide uses documentation; use MCP above for your current order status.</p>
+                </div>
+                <form id="ragForm" class="assistant-form">
+                    <div class="field-group field-question">
+                        <label for="ragQuery">Question about Orders</label>
+                        <input id="ragQuery" type="text" maxlength="300" required
+                            placeholder="What order statuses are supported?">
+                    </div>
+                    <button id="ragButton" type="submit" class="btn btn-ai">Ask Orders guide</button>
+                </form>
+                <div id="ragResult" class="assistant-answer" role="status" aria-live="polite" hidden>
+                    <strong id="ragStatus"></strong>
+                    <p id="ragAnswer"></p>
+                    <p id="ragConfidence"></p>
+                    <div id="ragSources"></div>
+                </div>
+                <p>Confidence describes the match to retrieved documentation, not a probability of correctness.</p>
+            </section>
+
             <!-- ORDER LIST -->
             <section>
 
@@ -196,7 +237,99 @@
 
     <script>
 
-        const API_BASE = "{{ api_base }}";
+        const API_BASE = {{ api_base | tojson }};
+        const SHARED_BASE = {{ shared_base | tojson }};
+
+        document.getElementById("ragForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const result = document.getElementById("ragResult");
+            const status = document.getElementById("ragStatus");
+            const answer = document.getElementById("ragAnswer");
+            const confidence = document.getElementById("ragConfidence");
+            const sources = document.getElementById("ragSources");
+            const button = document.getElementById("ragButton");
+            result.hidden = false;
+            result.dataset.state = "loading";
+            status.textContent = "Searching Orders documentation...";
+            answer.textContent = confidence.textContent = "";
+            sources.replaceChildren();
+            button.disabled = true;
+            try {
+                const response = await fetch(`${API_BASE}/api/rag/answer`, {
+                    method: "POST", headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({query: document.getElementById("ragQuery").value.trim()}),
+                    signal: AbortSignal.timeout(130000),
+                });
+                const payload = await response.json();
+                if (!response.ok || payload.status === "error") {
+                    throw new Error(payload.error || "Orders guide service is unavailable.");
+                }
+                result.dataset.state = payload.status;
+                status.textContent = payload.status === "insufficient_context" ? "Not enough information" : "Answer from Orders documentation";
+                answer.textContent = payload.answer;
+                confidence.textContent = `Confidence: ${payload.confidence_category}`;
+                if (payload.citations.length) {
+                    const label = document.createElement("strong");
+                    label.textContent = "Sources";
+                    const list = document.createElement("ul");
+                    for (const citation of payload.citations) {
+                        const item = document.createElement("li");
+                        item.textContent = `[${citation.ref}] ${citation.source_id} (${citation.chunk_id})`;
+                        list.appendChild(item);
+                    }
+                    sources.append(label, list);
+                } else {
+                    sources.textContent = "Sources: none";
+                }
+            } catch (error) {
+                result.dataset.state = "error";
+                status.textContent = "Orders guide unavailable";
+                answer.textContent = error.name === "TimeoutError" ? "The guide timed out. Please try again." :
+                    (error instanceof TypeError ? "Could not reach the Orders service." : error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        document.getElementById("mcpStatusForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const result = document.getElementById("mcpStatusResult");
+            const button = document.getElementById("mcpStatusButton");
+            const orderId = Number(document.getElementById("mcpOrderId").value);
+            if (!Number.isInteger(orderId) || orderId <= 0 || orderId > 2147483647) {
+                result.textContent = "Enter a valid positive order ID.";
+                return;
+            }
+            button.disabled = true;
+            result.textContent = "Checking your order...";
+            try {
+                const tokenResponse = await fetch(`${SHARED_BASE}/api/orders/mcp-token`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({order_id: orderId}),
+                    signal: AbortSignal.timeout(10000),
+                });
+                const auth = await tokenResponse.json();
+                if (!tokenResponse.ok) throw new Error(auth.error || "Store login is unavailable.");
+                // Keep the capability only in this request; never store it in a URL or localStorage.
+                const response = await fetch(`${API_BASE}/api/mcp/order-status`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json", "Authorization": `Bearer ${auth.access_token}`},
+                    body: JSON.stringify({order_id: orderId}),
+                    signal: AbortSignal.timeout(25000),
+                });
+                const payload = await response.json();
+                if (!response.ok) throw new Error(payload.error || "Order status lookup failed.");
+                result.textContent = `Order #${payload.order_id}: ${payload.status} · Source: MCP (${payload.tool})`;
+            } catch (error) {
+                result.textContent = error.name === "TimeoutError"
+                    ? "Order status lookup timed out. Please try again."
+                    : (error instanceof TypeError ? "Could not reach the store or Orders service." : error.message);
+            } finally {
+                button.disabled = false;
+            }
+        });
 
         const params = new URLSearchParams(window.location.search);
         const customerId = params.get("customer_id");

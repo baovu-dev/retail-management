@@ -1,0 +1,53 @@
+ Network orders-rag-followup_default Creating 
+ Network orders-rag-followup_default Creating 
+ Network orders-rag-followup_default Created 
+ Network orders-rag-followup_default Created 
+ Container orders-rag-followup-student4-database-1 Creating 
+ Container orders-rag-followup-student4-database-1 Created 
+ Container orders-rag-followup-student4-backend-1 Creating 
+ Container orders-rag-followup-student4-backend-1 Created 
+ Container orders-rag-followup-student4-frontend-1 Creating 
+ Container orders-rag-followup-student4-frontend-1 Created 
+ Container orders-rag-followup-student4-database-1 Starting 
+ Container orders-rag-followup-student4-database-1 Started 
+ Container orders-rag-followup-student4-database-1 Waiting 
+ Container orders-rag-followup-student4-database-1 Healthy 
+ Container orders-rag-followup-student4-backend-1 Starting 
+ Container orders-rag-followup-student4-backend-1 Started 
+ Container orders-rag-followup-student4-frontend-1 Starting 
+ Container orders-rag-followup-student4-frontend-1 Started 
+statuses 503 error UI False
+confirmed_cancel 503 error UI False
+ Container orders-rag-followup-student4-frontend-1 Stopping 
+ Container orders-rag-followup-student4-frontend-1 Stopped 
+ Container orders-rag-followup-student4-backend-1 Stopping 
+ Container orders-rag-followup-student4-backend-1 Stopped 
+ Container orders-rag-followup-student4-database-1 Stopping 
+ Container orders-rag-followup-student4-database-1 Stopped 
+Traceback (most recent call last):
+  File "/Users/ashley/Desktop/retail-management/student-4/scripts/rag_followup.py", line 141, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/ashley/Desktop/retail-management/student-4/scripts/rag_followup.py", line 96, in main
+    status, body = ask(query)
+                   ^^^^^^^^^^
+  File "/Users/ashley/Desktop/retail-management/student-4/scripts/rag_followup.py", line 90, in ask
+    with page.expect_response(lambda r: "/api/rag/answer" in r.url, timeout=135000) as captured:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/orders-release1-venv/lib/python3.12/site-packages/playwright/_impl/_sync_base.py", line 85, in __exit__
+    self._event.value
+  File "/private/tmp/orders-release1-venv/lib/python3.12/site-packages/playwright/_impl/_sync_base.py", line 55, in value
+    self._sync_base._dispatcher_fiber.switch()
+  File "/private/tmp/orders-release1-venv/lib/python3.12/site-packages/playwright/sync_api/_context_manager.py", line 55, in greenlet_main
+    self._loop.run_until_complete(self._connection.run_as_sync())
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 678, in run_until_complete
+    self.run_forever()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 645, in run_forever
+    self._run_once()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1961, in _run_once
+    event_list = self._selector.select(timeout)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/selectors.py", line 566, in select
+    kev_list = self._selector.control(None, max_ev, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

@@ -4,6 +4,7 @@ from flask import Flask, render_template
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 API_BASE = os.getenv("API_BASE", "http://localhost:5004")
+SHARED_BASE = os.getenv("SHARED_BASE", "http://localhost:5000").rstrip("/")
 
 app = Flask(
     __name__,
@@ -15,11 +16,11 @@ app = Flask(
 
 @app.route("/")
 def index():
-    return render_template("index.html", api_base=API_BASE)
+    return render_template("index.html", api_base=API_BASE, shared_base=SHARED_BASE)
 
 @app.route("/admin")
 def admin():
-    return render_template("admin.html", api_base=API_BASE)
+    return render_template("admin.html", api_base=API_BASE, shared_base=SHARED_BASE)
 
 if __name__ == "__main__":
     print("Order Frontend running on http://localhost:3004")

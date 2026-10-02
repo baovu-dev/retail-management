@@ -20,6 +20,12 @@ services:
       DATABASE_URL: http://database:6004
       OLLAMA_URL: http://host.docker.internal:11434/api/generate
       OLLAMA_MODEL: qwen2.5:0.5b
+      AI_ENABLED: ${AI_ENABLED:-true}
+      MCP_URL: http://host.docker.internal:8100/mcp
+      MCP_ENABLED: ${MCP_ENABLED:-false}
+      ORDERS_MCP_SECRET: ${ORDERS_MCP_SECRET:-}
+      RAG_URL: http://host.docker.internal:8200
+      RAG_ENABLED: ${RAG_ENABLED:-false}
     depends_on:
       database:
         condition: service_healthy
@@ -31,5 +37,6 @@ services:
       - "3004:3004"
     environment:
       API_BASE: http://localhost:5004
+      SHARED_BASE: http://localhost:5000
     depends_on:
       - backend

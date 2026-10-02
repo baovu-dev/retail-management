@@ -2,6 +2,13 @@ import importlib.util
 import os
 import sys
 from unittest.mock import patch, Mock
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def isolated_ai_mode(monkeypatch):
+    # Explicitly enable only the mocked unit-test path, even when CI disables AI.
+    monkeypatch.setenv("AI_ENABLED", "true")
 
 BACKEND_DIR = os.path.join(
     os.path.dirname(__file__),
@@ -177,3 +184,15 @@ def test_order_assistant_fallback():
 
                 assert data["source"] == "fallback"
                 assert "CONFIRMED" in data["answer"]
+
+
+@pytest.mark.parametrize("value", ["false", "0", "off", "invalid"])
+def test_ai_disabled_does_not_contact_db_or_model(monkeypatch, value):
+    monkeypatch.setenv("AI_ENABLED", value)
+    backend = load_backend()
+    with patch.object(backend, "db_get") as db, patch.object(backend, "ask_ollama") as model:
+        response = backend.app.test_client().post("/api/order-assistant", json={"order_id": 1, "question": "Status?"})
+    assert response.status_code == 403
+    assert response.json["code"] == "disabled"
+    db.assert_not_called()
+    model.assert_not_called()
