@@ -12,6 +12,10 @@ on:
       - 'docker-compose.yml'
       - '.github/workflows/student-3-ci.yml'
 
+env:
+  MCP_ENABLED: "false"
+  RAG_ENABLED: "false"
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -44,7 +48,7 @@ jobs:
 
       - name: Run pytest
         working-directory: student-3
-        run: PYTHONPATH=. pytest tests/ -v
+        run: PYTHONPATH=.:backend python -m pytest tests/ -v
 
   build:
     runs-on: ubuntu-latest

@@ -87,6 +87,10 @@ services:
       - DATABASE_URL=http://student3-database:6003
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - OLLAMA_MODEL=llama3.1:8b
+      - MCP_URL=http://host.docker.internal:8100/mcp
+      - MCP_ENABLED=true
+      - RAG_URL=http://host.docker.internal:8200
+      - RAG_ENABLED=true
     depends_on:
       student3-database:
         condition: service_healthy
