@@ -16,22 +16,8 @@
 
 <body>
 
-    <header>
-        <div class="container header-inner">
-
-            <a href="{{ shared_base }}/" class="logo">
-                <span class="logo-name">KICKLAB</span>
-            </a>
-
-            <div class="header-actions">
-                <a href="{{ shared_base }}/" class="btn btn-glass">
-                    Store Home
-                </a>
-            </div>
-
-        </div>
-    </header>
-
+    {% set staff_mode = false %}
+    {% include "partials/header.html" %}
 
     <main class="page-main">
 
@@ -57,27 +43,43 @@
 
                 </div>
 
-                <div class="hero-visual" aria-hidden="true">
-                    <div class="hero-orb hero-orb-one"></div>
-                    <div class="hero-orb hero-orb-two"></div>
+            </section>
 
-                    <div class="hero-shopping-card">
-                        <div class="hero-bag">
-                            K
-                        </div>
 
-                        <div class="hero-box"></div>
+            <div id="statusMessage" class="status-msg" role="status" aria-live="polite"></div>
+
+
+            <!-- ORDER LIST -->
+            <section id="orders" aria-labelledby="ordersHeading">
+
+                <div class="orders-section-head">
+
+                    <div>
+                        <span class="section-tag">
+                            Recent Orders
+                        </span>
+
+                        <h2 id="ordersHeading" class="orders-section-title">
+                            Your order history
+                        </h2>
                     </div>
+
+                    <p class="orders-section-copy">
+                        Review order status, totals and item details below.
+                    </p>
+
+                </div>
+
+
+                <div id="ordersContainer" class="orders-grid">
+                    <p>Loading orders...</p>
                 </div>
 
             </section>
 
 
-            <div id="statusMessage" class="status-msg"></div>
-
-
             <!-- AI ORDER ASSISTANT -->
-            <section class="assistant-card">
+            <section id="assistant" class="assistant-card" aria-labelledby="assistantHeading">
 
                 <div class="assistant-heading">
 
@@ -85,7 +87,7 @@
                         ✦ AI Mode
                     </span>
 
-                    <h2>
+                    <h2 id="assistantHeading">
                         Order Assistant
                     </h2>
 
@@ -134,7 +136,7 @@
             </section>
 
 
-            <section class="assistant-card" aria-labelledby="mcpHeading">
+            <section id="mcp" class="assistant-card" aria-labelledby="mcpHeading">
                 <div class="assistant-heading">
                     <span class="section-tag">MCP Mode · Read only</span>
                     <h2 id="mcpHeading">Check order status</h2>
@@ -151,7 +153,7 @@
                 <div id="mcpStatusResult" class="assistant-answer" role="status" aria-live="polite"></div>
             </section>
 
-            <section class="assistant-card" aria-labelledby="ragHeading">
+            <section id="rag" class="assistant-card" aria-labelledby="ragHeading">
                 <div class="assistant-heading">
                     <span class="section-tag">RAG Mode · Orders documentation</span>
                     <h2 id="ragHeading">Orders guide</h2>
@@ -172,40 +174,15 @@
                     <p id="ragConfidence"></p>
                     <div id="ragSources"></div>
                 </div>
-                <p>Confidence describes the match to retrieved documentation, not a probability of correctness.</p>
+                <p class="field-help">Confidence describes the match to retrieved documentation, not a probability of correctness.</p>
             </section>
 
-            <!-- ORDER LIST -->
-            <section>
-
-                <div class="orders-section-head">
-
-                    <div>
-                        <span class="section-tag">
-                            Recent Orders
-                        </span>
-
-                        <h2 class="orders-section-title">
-                            Your order history
-                        </h2>
-                    </div>
-
-                    <p class="orders-section-copy">
-                        Review order status, totals and item details below.
-                    </p>
-
-                </div>
-
-
-                <div id="ordersContainer" class="orders-grid">
-                    <p>Loading orders...</p>
-                </div>
-
-            </section>
 
         </div>
 
     </main>
+
+    {% include "partials/footer.html" %}
 
 
     <!-- ORDER DETAIL MODAL -->
