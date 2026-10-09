@@ -30,11 +30,15 @@ Leave `ollama serve` running in its own terminal, anything AI-related will fail 
 docker compose up --build
 ```
 
-This starts the feature services currently listed in Compose. The shared
-login/dashboard service is not yet active in root Compose and must be launched
-separately. Check each feature owner's setup before a full integration run.
-For existing data, inspect the database initializers before starting the stack;
-use isolated validation copies when preservation is required.
+This starts the shared login/dashboard and the five feature services. See the
+[Orders runbook](student-4/README.md) for local configuration, host AI services,
+service startup and verification. The browser uses localhost endpoints; services
+inside Docker use Compose service names.
+
+For an existing installation, back up data before rebuilding or recreating
+containers. Orders now uses a persistent named volume and non-destructive startup;
+old container databases require an explicit import. Reviews and Customers still
+run seed initializers, so coordinate with their owners before restarting them.
 
 You can also just run each individual feature on its own instead of the whole thing:
 
@@ -67,12 +71,11 @@ a bit different per student.
 - `docs/` - reports and diagrams
 - `docker-compose.yml` - runs the whole thing together
 
-Release 1 integration is in progress; see the Orders handoff below.
+See the Orders runbook and retained evidence for the scope of verified flows.
 
 ## Release 1 Orders
 
-See [current runbooks and submission drafts](docs/release-1/student-4/README.md).
-AI Mode/Ollama, MCP, RAG and the agentic loop run locally outside Docker.
-Root Compose still lacks an active shared homepage service. Its default database
-startup commands can reset existing data; use the documented isolated validation
-procedure instead when preserving data.
+See the [Orders runbook](student-4/README.md) and
+[retained validation evidence](student-4/evidence/README.md). AI Mode/Ollama, MCP,
+RAG and the agentic loop run locally outside Docker. Release 2 implementation
+is a separate next phase.
