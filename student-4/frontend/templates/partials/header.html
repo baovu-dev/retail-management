@@ -35,37 +35,6 @@
 
         <div class="header-actions">
             <a href="{{ shared_base }}/" class="btn btn-glass">{{ 'View Store' if staff_mode else 'Store Home' }}</a>
-            <button type="button" class="menu-toggle" id="menuToggle" aria-label="Toggle navigation"
-                    aria-controls="ordersNavigation" aria-expanded="false">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" aria-hidden="true">
-                    <path d="M3 6h18M3 12h18M3 18h18"/>
-                </svg>
-            </button>
         </div>
     </div>
 </header>
-
-<script>
-    (() => {
-        const header = document.getElementById('header');
-        const toggle = document.getElementById('menuToggle');
-        function closeNavigation() {
-            header.classList.remove('open');
-            toggle.setAttribute('aria-expanded', 'false');
-        }
-        toggle.addEventListener('click', () => {
-            const open = header.classList.toggle('open');
-            toggle.setAttribute('aria-expanded', String(open));
-        });
-        document.querySelectorAll('#ordersNavigation a').forEach(link => {
-            link.addEventListener('click', closeNavigation);
-        });
-        header.addEventListener('keydown', event => {
-            if (event.key === 'Escape' && header.classList.contains('open')) {
-                closeNavigation();
-                toggle.focus();
-            }
-        });
-    })();
-</script>

@@ -272,15 +272,6 @@ header.scrolled {
   background: rgba(255, 107, 53, 0.06);
 }
 
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text);
-}
-
-
 .section-tag {
   display: inline-block;
   font-size: 0.75rem;
@@ -328,7 +319,6 @@ section[id] { scroll-margin-top: 112px; }
 .logo, .header-actions { flex-shrink: 0; }
 .main-nav { gap: 28px; }
 .main-nav a { white-space: nowrap; }
-.menu-toggle { min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
 .btn { min-height: 46px; }
 .btn:disabled { cursor: not-allowed; }
 .btn:disabled:hover { transform: none; }
@@ -441,11 +431,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--purple); outlin
     .header-inner { gap: 16px; }
 }
 @media (max-width: 760px) {
-    .menu-toggle { display: inline-flex; }
-    #ordersNavigation { display: none; }
-    header.open #ordersNavigation { display: block; position: absolute; top: calc(100% + 16px); left: 0; right: 0; padding: 20px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); }
-    .main-nav { flex-direction: column; gap: 4px; }
-    .main-nav a { display: block; padding: 10px 0; }
+    .header-inner { flex-wrap: wrap; }
+    #ordersNavigation { order: 3; flex-basis: 100%; }
+    .main-nav { flex-wrap: wrap; gap: 8px 20px; }
     .orders-section-head { display: block; }
     .orders-section-copy { margin-top: 8px; }
     .assistant-form { grid-template-columns: minmax(120px, 0.4fr) minmax(0, 1fr); }
