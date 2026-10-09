@@ -1,0 +1,187 @@
+{
+  "baseline": "7e25183",
+  "scope": "Release 1 cleanup; no Release 2 implementation",
+  "host_regression": {
+    "passed": 161,
+    "skipped": 1,
+    "python": "3.13"
+  },
+  "container_regression": {
+    "passed": 161,
+    "skipped": 1,
+    "python": "3.11"
+  },
+  "live_mcp_test": {
+    "passed": 1,
+    "warnings": "5 SDK deprecation warnings"
+  },
+  "built_image_integration": [
+    {
+      "check": "built backend connects to built database",
+      "result": "PASS"
+    },
+    {
+      "check": "new isolated order starts PENDING",
+      "result": "PASS"
+    },
+    {
+      "check": "order total and items",
+      "result": "PASS"
+    },
+    {
+      "check": "PENDING to CONFIRMED",
+      "result": "PASS"
+    },
+    {
+      "check": "unimplemented shipping status rejected",
+      "result": "PASS"
+    },
+    {
+      "check": "CONFIRMED can be cancelled",
+      "result": "PASS"
+    },
+    {
+      "check": "cancel preserves order and exact item records",
+      "result": "PASS"
+    },
+    {
+      "check": "missing order remains 404",
+      "result": "PASS"
+    },
+    {
+      "check": "AI disabled without contacting local AI services",
+      "result": "PASS"
+    },
+    {
+      "check": "MCP disabled without contacting local AI services",
+      "result": "PASS"
+    },
+    {
+      "check": "RAG disabled without contacting local AI services",
+      "result": "PASS"
+    },
+    {
+      "check": "built frontend contains MCP/RAG and browser API origin",
+      "result": "PASS"
+    },
+    {
+      "check": "staff dashboard uses shared origin",
+      "result": "PASS"
+    }
+  ],
+  "browser": [
+    {
+      "check": "shared registration establishes customer session",
+      "passed": true
+    },
+    {
+      "check": "shared shop loads real Product API",
+      "passed": true
+    },
+    {
+      "check": "store UI creates three orders through shared backend",
+      "passed": true
+    },
+    {
+      "check": "My Orders displays only newly registered customer orders",
+      "passed": true
+    },
+    {
+      "check": "customer order details open with item rows",
+      "passed": true
+    },
+    {
+      "check": "customer cancellation preserves order and items",
+      "passed": true
+    },
+    {
+      "check": "Orders desktop has no horizontal overflow at 1280px",
+      "passed": true
+    },
+    {
+      "check": "Orders desktop has no horizontal overflow at 1440px",
+      "passed": true
+    }
+  ],
+  "staff_browser": {
+    "staff_confirmation": true,
+    "staff_details": true,
+    "javascript_errors": [],
+    "initial_check_note": "Initial automation dismissed the confirmation dialog; repeated this step with explicit acceptance."
+  },
+  "ai_browser": [
+    {
+      "check": "isolated shared RAG index refreshed",
+      "passed": true,
+      "details": {
+        "status": "success",
+        "chunk_count": 22,
+        "tier_1_chunks": 0,
+        "tier_2_chunks": 22,
+        "collection": "kicklab_context"
+      }
+    },
+    {
+      "check": "shared session to backend to actual MCP returns scoped order status",
+      "passed": true,
+      "details": {
+        "order_id": 3,
+        "source": "mcp",
+        "status": "PENDING",
+        "tool": "get_order_status"
+      }
+    },
+    {
+      "check": "existing AI assistant calls actual Ollama",
+      "passed": true,
+      "details": {
+        "answer": "Order ID: 3\nCustomer ID: 11\nStatus: PENDING",
+        "order_id": 3,
+        "source": "ollama"
+      }
+    },
+    {
+      "check": "RAG supported response and UI state",
+      "passed": true,
+      "details": {
+        "answer": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. [1]",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-statuses.md#1",
+            "ref": 1,
+            "source_id": "knowledge/student-4/order-statuses.md"
+          }
+        ],
+        "confidence_category": "High",
+        "feature": "student-4",
+        "query": "What are the three supported order statuses?",
+        "status": "success"
+      }
+    },
+    {
+      "check": "RAG undocumented response and UI state",
+      "passed": true,
+      "details": {
+        "answer": "Insufficient context: the Orders documentation cannot answer this question.",
+        "citations": [],
+        "confidence_category": "Insufficient",
+        "feature": "student-4",
+        "query": "Exactly what date will my CONFIRMED order be delivered?",
+        "status": "insufficient_context"
+      }
+    }
+  ],
+  "database_container_recreation_preserved_order_and_items": true,
+  "original_local_database_hashes_unchanged": 4,
+  "retained_raw_evidence_unchanged": true,
+  "archived_experiment_files": 96,
+  "archived_experiment_bytes": 6247409,
+  "limitations": [
+    "Isolated fresh project/data; host ports 5001/5002 remapped to 15001/15002 because another project used them.",
+    "All team service images built and started; other students full feature acceptance was not performed.",
+    "Reviews/Customers initializers still reset their own data on startup; coordinate with those owners.",
+    "Two RAG smoke questions were run live; original nine-question evidence retained, not rerun.",
+    "Initial browser automation dismissed staff confirmation; only staff step repeated with dialog acceptance.",
+    "GitHub CI results are available on the cleanup PR and are not claimed by these local logs."
+  ]
+}

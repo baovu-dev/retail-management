@@ -6,7 +6,7 @@ import sqlite3
 app = Flask(__name__)
 CORS(app)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "orders.db")
+DB_PATH = os.getenv("ORDERS_DB_PATH", os.path.join(os.path.dirname(__file__), "orders.db"))
 
 
 def get_db_connection():
@@ -269,5 +269,8 @@ def order_count():
 
 
 if __name__ == "__main__":
+    from init_db import initialize
+
+    initialize(DB_PATH)
     print("Order Database API running on http://localhost:6004")
     app.run(host="0.0.0.0", port=6004, debug=True)

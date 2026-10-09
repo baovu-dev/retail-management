@@ -1,9 +1,0 @@
-{
-  "markdown_links_checked": 64,
-  "broken_links": [],
-  "python_syntax": "passed",
-  "collector_import": "passed; no main execution",
-  "pending_live_cases": 11,
-  "homepage_render_with_synthetic_session": true,
-  "homepage_navigation": "not followed; no live services"
-}

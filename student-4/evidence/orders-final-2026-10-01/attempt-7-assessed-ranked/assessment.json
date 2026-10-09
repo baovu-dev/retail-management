@@ -1,8 +1,0 @@
-{
-  "required_pass": 7,
-  "required_fail": ["delivery_unknown", "delivery_paraphrase"],
-  "reason": "Exact quotations do not supply the requested delivery dates.",
-  "ui_contract": "9/9 PASS; semantic correctness separate",
-  "outage": "PASS real HTTP 503",
-  "optional": "not run"
-}
