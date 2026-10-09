@@ -10,6 +10,9 @@ on:
       - 'ai-services/rag-server/**'
       - 'ai-services/agentic-loop/**'
       - 'shared/backend/**'
+      - 'shared/Dockerfile'
+      - 'shared/.dockerignore'
+      - 'shared/frontend/**'
       - 'docker-compose.yml'
       - '.github/workflows/student-4-ci.yml'
   pull_request:
@@ -21,6 +24,9 @@ on:
       - 'ai-services/rag-server/**'
       - 'ai-services/agentic-loop/**'
       - 'shared/backend/**'
+      - 'shared/Dockerfile'
+      - 'shared/.dockerignore'
+      - 'shared/frontend/**'
       - 'docker-compose.yml'
       - '.github/workflows/student-4-ci.yml'
 
@@ -71,3 +77,6 @@ jobs:
 
       - name: Validate root Docker Compose config
         run: docker compose config --quiet
+
+      - name: Build shared login image
+        run: docker build -t kicklab-shared ./shared

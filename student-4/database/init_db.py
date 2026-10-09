@@ -1,23 +1,36 @@
+import argparse
 import os
 import sqlite3
+from pathlib import Path
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "orders.db")
+DB_PATH = os.getenv("ORDERS_DB_PATH", os.path.join(os.path.dirname(__file__), "orders.db"))
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 
-def seed(db_path=None):
+def initialize(db_path=None):
+    """Create missing tables without replacing existing orders or items."""
     target_path = db_path or DB_PATH
+    Path(target_path).parent.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(target_path) as connection:
+        connection.executescript(Path(SCHEMA_PATH).read_text(encoding="utf-8"))
+
+
+def seed(db_path=None, *, reset=False):
+    """Add demo fixtures to an empty database; replacing data requires reset=True."""
+    target_path = db_path or DB_PATH
+    initialize(target_path)
 
     connection = sqlite3.connect(target_path)
+    connection.execute("PRAGMA foreign_keys = ON")
     cursor = connection.cursor()
-
-    # Create database tables from schema.sql
-    with open(SCHEMA_PATH, "r", encoding="utf-8") as schema_file:
-        cursor.executescript(schema_file.read())
-
-    # Clear existing data so the seed can be run repeatedly
-    cursor.execute("DELETE FROM order_items")
-    cursor.execute("DELETE FROM orders")
+    cursor.execute("BEGIN IMMEDIATE")
+    if reset:
+        cursor.execute("DELETE FROM order_items")
+        cursor.execute("DELETE FROM orders")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name IN ('orders', 'order_items')")
+    elif cursor.execute("SELECT COUNT(*) FROM orders").fetchone()[0]:
+        connection.close()
+        raise ValueError("Database already contains orders; demo seed refused. Use --seed-demo --reset only for disposable data.")
 
     # Sample orders for Release 0
     orders = [
@@ -33,13 +46,12 @@ def seed(db_path=None):
         (1, 259.98, "PENDING"),
     ]
 
-    cursor.executemany(
-        """
-        INSERT INTO orders (customer_id, total_amount, status)
-        VALUES (?, ?, ?)
-        """,
-        orders,
-    )
+    order_ids = []
+    for order in orders:
+        cursor.execute(
+            "INSERT INTO orders (customer_id, total_amount, status) VALUES (?, ?, ?)", order
+        )
+        order_ids.append(cursor.lastrowid)
 
     # At least one item for every sample order
     order_items = [
@@ -61,7 +73,7 @@ def seed(db_path=None):
         (order_id, product_id, quantity, unit_price, subtotal)
         VALUES (?, ?, ?, ?, ?)
         """,
-        order_items,
+        [(order_ids[row[0] - 1], *row[1:]) for row in order_items],
     )
 
     connection.commit()
@@ -74,4 +86,14 @@ def seed(db_path=None):
 
 
 if __name__ == "__main__":
-    seed()
+    parser = argparse.ArgumentParser(description="Initialize Orders safely or explicitly seed demo data")
+    parser.add_argument("--seed-demo", action="store_true", help="Insert sample orders into an empty database")
+    parser.add_argument("--reset", action="store_true", help="Delete existing orders before demo seeding")
+    args = parser.parse_args()
+    if args.reset and not args.seed_demo:
+        parser.error("--reset requires --seed-demo")
+    if args.seed_demo:
+        seed(reset=args.reset)
+    else:
+        initialize()
+        print("Orders schema ready; existing data preserved.")

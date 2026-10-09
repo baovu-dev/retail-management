@@ -1,7 +1,11 @@
 services:
   database:
     build: .
-    command: sh -c "python database/init_db.py && python database/app.py"
+    command: python database/app.py
+    environment:
+      ORDERS_DB_PATH: /app/data/orders.db
+    volumes:
+      - orders-data:/app/data
     ports:
       - "6004:6004"
     healthcheck:
@@ -40,3 +44,6 @@ services:
       SHARED_BASE: http://localhost:5000
     depends_on:
       - backend
+
+volumes:
+  orders-data:

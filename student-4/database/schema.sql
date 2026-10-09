@@ -1,9 +1,6 @@
 PRAGMA foreign_keys = ON;
 
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     order_id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -13,7 +10,7 @@ CREATE TABLE orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
     order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
@@ -26,11 +23,11 @@ CREATE TABLE order_items (
         ON DELETE CASCADE
 );
 
-CREATE INDEX idx_orders_customer
+CREATE INDEX IF NOT EXISTS idx_orders_customer
 ON orders(customer_id);
 
-CREATE INDEX idx_order_items_order
+CREATE INDEX IF NOT EXISTS idx_order_items_order
 ON order_items(order_id);
 
-CREATE INDEX idx_order_items_product
+CREATE INDEX IF NOT EXISTS idx_order_items_product
 ON order_items(product_id);
