@@ -1,11 +1,20 @@
 
 services:
   # ── Shared microservice (login, customer homepage, staff dashboard) ──
-  # TODO: whoever finishes the shared service, add your build/command/ports here
-  # shared-backend:
-  #   build: ./shared
-  #   ports:
-  #     - "5000:5000"
+  shared-backend:
+    build: ./shared
+    ports:
+      - "5000:5000"
+    environment:
+      - REVIEWS_API=http://student1-backend:5001
+      - PRODUCTS_API=http://student2-backend:5002
+      - CUSTOMERS_API=http://student3-backend:5003
+      - ORDERS_API=http://student4-backend:5004
+      - SECRET_KEY=${SECRET_KEY:-kicklab-dev-secret-key}
+      - ORDERS_MCP_SECRET=${ORDERS_MCP_SECRET:-}
+      - STAFF_EMAIL=${STAFF_EMAIL:-admin@kicklab.com}
+      - STAFF_PASSWORD=${STAFF_PASSWORD:-Admin1234}
+      - ORDERS_FRONTEND_ORIGIN=http://localhost:3004
 
   # ── Student 1 — Reviews & Ratings ──
   student1-database:
@@ -39,7 +48,7 @@ services:
   # ── Student 2 — Product Management ──
   student2-database:
     build: ./student-2
-    command: python database/app.py
+    command: sh -c "if [ ! -s database/data/products.db ]; then python database/init_db.py; fi && python database/app.py"
     ports:
       - "6002:6002"
 
@@ -98,7 +107,11 @@ services:
  # ── Student 4 — Order Management ──
   student4-database:
     build: ./student-4
-    command: sh -c "python database/init_db.py && python database/app.py"
+    command: python database/app.py
+    environment:
+      - ORDERS_DB_PATH=/app/data/orders.db
+    volumes:
+      - orders-data:/app/data
     ports:
       - "6004:6004"
     healthcheck:
@@ -173,9 +186,12 @@ services:
     ports:
       - "3005:3005"
     environment:
-      - API_BASE=http://student5-backend:5005
+      - API_BASE=http://localhost:5005
     depends_on:
       - student5-backend
 
   # Release 1: AI/Ollama, common MCP/RAG and agentic loop run on the host.
-  # Do not add them as Compose services; see docs/release-1/student-4/.
+  # Do not add them as Compose services; see student-4/README.md.
+
+volumes:
+  orders-data:

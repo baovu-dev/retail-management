@@ -1,0 +1,231 @@
+Requirement already satisfied: flask in /usr/local/lib/python3.11/site-packages (from -r tests/requirements.txt (line 1)) (3.1.3)
+Requirement already satisfied: flask-cors in /usr/local/lib/python3.11/site-packages (from -r tests/requirements.txt (line 2)) (6.0.5)
+Requirement already satisfied: requests in /usr/local/lib/python3.11/site-packages (from -r tests/requirements.txt (line 3)) (2.34.2)
+Collecting pytest (from -r tests/requirements.txt (line 4))
+  Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+Requirement already satisfied: itsdangerous<3,>=2.2 in /usr/local/lib/python3.11/site-packages (from -r tests/requirements.txt (line 5)) (2.2.0)
+Requirement already satisfied: mcp<2,>=1.10 in /usr/local/lib/python3.11/site-packages (from -r tests/requirements.txt (line 6)) (1.30.0)
+Requirement already satisfied: blinker>=1.9.0 in /usr/local/lib/python3.11/site-packages (from flask->-r tests/requirements.txt (line 1)) (1.9.0)
+Requirement already satisfied: click>=8.1.3 in /usr/local/lib/python3.11/site-packages (from flask->-r tests/requirements.txt (line 1)) (8.5.0)
+Requirement already satisfied: jinja2>=3.1.2 in /usr/local/lib/python3.11/site-packages (from flask->-r tests/requirements.txt (line 1)) (3.1.6)
+Requirement already satisfied: markupsafe>=2.1.1 in /usr/local/lib/python3.11/site-packages (from flask->-r tests/requirements.txt (line 1)) (3.0.4)
+Requirement already satisfied: werkzeug>=3.1.0 in /usr/local/lib/python3.11/site-packages (from flask->-r tests/requirements.txt (line 1)) (3.1.9)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/site-packages (from requests->-r tests/requirements.txt (line 3)) (3.5.2)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.11/site-packages (from requests->-r tests/requirements.txt (line 3)) (3.20)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/local/lib/python3.11/site-packages (from requests->-r tests/requirements.txt (line 3)) (2.8.0)
+Requirement already satisfied: certifi>=2023.5.7 in /usr/local/lib/python3.11/site-packages (from requests->-r tests/requirements.txt (line 3)) (2026.7.22)
+Collecting iniconfig>=1.0.1 (from pytest->-r tests/requirements.txt (line 4))
+  Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+Requirement already satisfied: packaging>=22 in /usr/local/lib/python3.11/site-packages (from pytest->-r tests/requirements.txt (line 4)) (26.3)
+Collecting pluggy<2,>=1.5 (from pytest->-r tests/requirements.txt (line 4))
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest->-r tests/requirements.txt (line 4))
+  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: anyio>=4.5 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (4.15.1)
+Requirement already satisfied: httpx-sse>=0.4 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.4.3)
+Requirement already satisfied: httpx<1.0.0,>=0.27.1 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.28.1)
+Requirement already satisfied: jsonschema>=4.20.0 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (4.26.0)
+Requirement already satisfied: pydantic-settings>=2.5.2 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2.15.0)
+Requirement already satisfied: pydantic<3.0.0,>=2.11.0 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2.13.5)
+Requirement already satisfied: pyjwt>=2.10.1 in /usr/local/lib/python3.11/site-packages (from pyjwt[crypto]>=2.10.1->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2.15.1)
+Requirement already satisfied: python-multipart>=0.0.9 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.0.32)
+Requirement already satisfied: sse-starlette>=1.6.1 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (3.5.0)
+Requirement already satisfied: starlette>=0.27 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (1.7.0)
+Requirement already satisfied: typing-extensions>=4.9.0 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (4.16.0)
+Requirement already satisfied: typing-inspection>=0.4.1 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.4.4)
+Requirement already satisfied: uvicorn>=0.31.1 in /usr/local/lib/python3.11/site-packages (from mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.54.0)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/site-packages (from httpx<1.0.0,>=0.27.1->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (1.0.9)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.11/site-packages (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.16.0)
+Requirement already satisfied: attrs>=22.2.0 in /usr/local/lib/python3.11/site-packages (from jsonschema>=4.20.0->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (26.1.0)
+Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /usr/local/lib/python3.11/site-packages (from jsonschema>=4.20.0->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2025.9.1)
+Requirement already satisfied: referencing>=0.28.4 in /usr/local/lib/python3.11/site-packages (from jsonschema>=4.20.0->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.37.0)
+Requirement already satisfied: rpds-py>=0.25.0 in /usr/local/lib/python3.11/site-packages (from jsonschema>=4.20.0->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2026.9.1)
+Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.11/site-packages (from pydantic<3.0.0,>=2.11.0->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (0.8.0)
+Requirement already satisfied: pydantic-core==2.46.5 in /usr/local/lib/python3.11/site-packages (from pydantic<3.0.0,>=2.11.0->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2.46.5)
+Requirement already satisfied: python-dotenv>=0.21.0 in /usr/local/lib/python3.11/site-packages (from pydantic-settings>=2.5.2->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (1.2.4)
+Requirement already satisfied: cryptography>=3.4.0 in /usr/local/lib/python3.11/site-packages (from pyjwt[crypto]>=2.10.1->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (50.0.2)
+Requirement already satisfied: cffi>=2.0.0 in /usr/local/lib/python3.11/site-packages (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (2.1.1)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.11/site-packages (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp<2,>=1.10->-r tests/requirements.txt (line 6)) (3.0)
+Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 386.5/386.5 kB 2.6 MB/s eta 0:00:00
+Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 2.4 MB/s eta 0:00:00
+Installing collected packages: pygments, pluggy, iniconfig, pytest
+Successfully installed iniconfig-2.3.1 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1
+No broken requirements found.
+============================= test session starts ==============================
+platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python
+rootdir: /repo/student-4
+plugins: anyio-4.15.1
+collecting ... collected 162 items
+
+tests/test_backend.py::test_backend_health PASSED                        [  0%]
+tests/test_backend.py::test_order_assistant_requires_question PASSED     [  1%]
+tests/test_backend.py::test_order_assistant_requires_order_id PASSED     [  1%]
+tests/test_backend.py::test_order_assistant_uses_ollama PASSED           [  2%]
+tests/test_backend.py::test_order_assistant_fallback PASSED              [  3%]
+tests/test_backend.py::test_ai_disabled_does_not_contact_db_or_model[false] PASSED [  3%]
+tests/test_backend.py::test_ai_disabled_does_not_contact_db_or_model[0] PASSED [  4%]
+tests/test_backend.py::test_ai_disabled_does_not_contact_db_or_model[off] PASSED [  4%]
+tests/test_backend.py::test_ai_disabled_does_not_contact_db_or_model[invalid] PASSED [  5%]
+tests/test_database_startup.py::test_initialization_creates_empty_schema_and_parent_directory PASSED [  6%]
+tests/test_database_startup.py::test_repeated_startup_preserves_orders_items_status_and_next_id PASSED [  6%]
+tests/test_database_startup.py::test_demo_seed_refuses_to_replace_existing_data PASSED [  7%]
+tests/test_database_startup.py::test_explicit_demo_reset_replaces_data_and_keeps_item_relationships PASSED [  8%]
+tests/test_database_startup.py::test_seed_handles_empty_database_with_existing_sequence PASSED [  8%]
+tests/test_orders.py::test_health PASSED                                 [  9%]
+tests/test_orders.py::test_create_order PASSED                           [  9%]
+tests/test_orders.py::test_get_order PASSED                              [ 10%]
+tests/test_orders.py::test_update_order_status PASSED                    [ 11%]
+tests/test_orders.py::test_cancel_order PASSED                           [ 11%]
+tests/test_orders.py::test_create_order_requires_items PASSED            [ 12%]
+tests/test_orders.py::test_invalid_order_not_found PASSED                [ 12%]
+tests/test_orders.py::test_invalid_order_status PASSED                   [ 13%]
+tests/test_orders_agentic.py::test_complete_bound_review PASSED          [ 14%]
+tests/test_orders_agentic.py::test_citations_confidence_and_keywords_do_not_pass_without_review PASSED [ 14%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[tamper_answer] PASSED [ 15%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[missing_case] PASSED [ 16%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[wrong_verdict] PASSED [ 16%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[no_grounds] PASSED [ 17%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[fabricated_quote] PASSED [ 17%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[wrong_source] PASSED [ 18%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[unsupported_claim] PASSED [ 19%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[no_rationale] PASSED [ 19%]
+tests/test_orders_agentic.py::test_review_rejects_incomplete_or_unbound_claims[transport_failed] PASSED [ 20%]
+tests/test_orders_agentic.py::test_existing_student1_cases_preserved PASSED [ 20%]
+tests/test_orders_agentic.py::test_collect_refuses_to_overwrite_saved_observations PASSED [ 21%]
+tests/test_orders_agentic.py::test_saved_review_has_no_network_calls PASSED [ 22%]
+tests/test_orders_agentic.py::test_unknown_question_cannot_pass_with_success_and_high_confidence PASSED [ 22%]
+tests/test_orders_agentic.py::test_cli_default_still_dispatches_existing_student1_modes[mcp] PASSED [ 23%]
+tests/test_orders_agentic.py::test_cli_default_still_dispatches_existing_student1_modes[rag] PASSED [ 24%]
+tests/test_orders_agentic.py::test_cli_default_still_dispatches_existing_student1_modes[ai-mode] PASSED [ 24%]
+tests/test_orders_agentic.py::test_cli_orders_exception_exits_nonzero_without_secret PASSED [ 25%]
+tests/test_orders_evidence.py::test_related_context_does_not_establish_answerability PASSED [ 25%]
+tests/test_orders_evidence.py::test_implemented_question_can_use_negative_evidence PASSED [ 26%]
+tests/test_orders_evidence.py::test_real_quote_without_requested_fact_abstains PASSED [ 27%]
+tests/test_orders_evidence.py::test_supported_no_is_not_missing_information PASSED [ 27%]
+tests/test_orders_evidence.py::test_invalid_verifier_result_is_error PASSED [ 28%]
+tests/test_orders_evidence.py::test_verifier_transport_failure_is_error PASSED [ 29%]
+tests/test_orders_evidence.py::test_two_model_calls_share_time_budget PASSED [ 29%]
+tests/test_orders_evidence.py::test_exhausted_model_budget_is_error PASSED [ 30%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision0] PASSED [ 30%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision1] PASSED [ 31%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision2] PASSED [ 32%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision3] PASSED [ 32%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision4] PASSED [ 33%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision5] PASSED [ 33%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision6] PASSED [ 34%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision7] PASSED [ 35%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision8] PASSED [ 35%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision9] PASSED [ 36%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision10] PASSED [ 37%]
+tests/test_orders_evidence.py::test_invalid_model_response_is_error_not_abstention[decision11] PASSED [ 37%]
+tests/test_orders_evidence.py::test_model_outage_stays_error PASSED      [ 38%]
+tests/test_orders_evidence.py::test_sentence_id_maps_back_to_original_chunk PASSED [ 38%]
+tests/test_orders_evidence.py::test_student1_generation_and_citation_behavior_preserved PASSED [ 39%]
+tests/test_orders_evidence.py::test_irrelevant_context_skips_model PASSED [ 40%]
+tests/test_orders_evidence.py::test_sentence_not_shown_to_model_is_rejected PASSED [ 40%]
+tests/test_orders_evidence.py::test_sentence_embedding_outage_is_error PASSED [ 41%]
+tests/test_orders_evidence.py::test_ranked_id_maps_to_original_sentence_and_source PASSED [ 41%]
+tests/test_orders_evidence.py::test_truncated_output_is_error_even_if_json_parses PASSED [ 42%]
+tests/test_orders_mcp.py::test_shared_login_issues_order_scoped_token[login_body0] PASSED [ 43%]
+tests/test_orders_mcp.py::test_shared_login_issues_order_scoped_token[login_body1] PASSED [ 43%]
+tests/test_orders_mcp.py::test_shared_rejects_no_session_forged_session_and_untrusted_origin PASSED [ 44%]
+tests/test_orders_mcp.py::test_shared_fails_closed_with_default_keys PASSED [ 45%]
+tests/test_orders_mcp.py::test_shared_staff_token_and_logout PASSED      [ 45%]
+tests/test_orders_mcp.py::test_shared_default_staff_password_cannot_issue_token PASSED [ 46%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[None] PASSED       [ 46%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[0] PASSED          [ 47%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[-1] PASSED         [ 48%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[True] PASSED       [ 48%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[1.5] PASSED        [ 49%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[1] PASSED          [ 50%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[1 OR 1=1] PASSED   [ 50%]
+tests/test_orders_mcp.py::test_bad_id_never_calls_mcp[2147483648] PASSED [ 51%]
+tests/test_orders_mcp.py::test_backend_executes_registered_tool_contract PASSED [ 51%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[-401] PASSED [ 52%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[forged-401] PASSED [ 53%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWhWXJJaUFgOFwdz4TKByQx2lovwckJLk0uKS_NzUIqA0jAlWYV4LAGguHqc.ashr3w.rSQYFVcRzt6hNi8Ry7m7qRYwk1I-401] PASSED [ 53%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWhWXJJaUFgOFwdz4TKByIx2lovwckJLk0uKS_NzUIqA0jAlWYV4LAGhSHqg.ashr3w.GS3J6K56e9ts-zFQz3y4k1hGcbI-403] PASSED [ 54%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[.eJyrVkosTVGyUsovyUgtUtJRKk7OL0gF8YtSUousiksSS0qLgcJgbnwmUKWhjlJRfg5ISXJpcUl-LlgXjAlWYV4LAMc5HM0.ashr3w.om_STyzMuq_b8HN_P4uZG4NknCg-401] PASSED [ 54%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWpUXZZakAkXBvPhMoGpDHaWi_ByQiuTS4pL83NQioDSMCVZhXgsAQsUeLg.ashr3w.JozMLkKO_F9K7myjv509TIBJgyM-401] PASSED [ 55%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWhWXJJaUFgOFwdz4TKByQx2lovwckJLElNzMPKBccmlxSX4uVNq8FgAGAx0-.ashr3w.uLnnpiSlUpxoNF7Kyglt2ByQpnc-401] PASSED [ 56%]
+tests/test_orders_mcp.py::test_auth_rejected_at_both_entry_points[.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWhWXJJaUFgOFwdz4TKByQx2lovwckJLk0uKS_NzUIqA0jAlWUVJUmloLAMfOIDA.ashr3w.mcWAM-9qdcbZiDO6fM3vTXjgVoE-401] PASSED [ 56%]
+tests/test_orders_mcp.py::test_expired_token_is_rejected PASSED          [ 57%]
+tests/test_orders_mcp.py::test_internal_checks_owner_and_returns_minimum_fields[7-.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWhWXJJaUFgOFwdz4TKByQx2lovwckJLk0uKS_NzUIqA0jAlWYV4LAGguHqc.ashr3w.16_sM8ABFT78S_E2kENfa5_OQTE-200] PASSED [ 58%]
+tests/test_orders_mcp.py::test_internal_checks_owner_and_returns_minimum_fields[8-.eJyrVkosTVGyUsovSkktKtbNTS5Q0lEqTs4vSIUJWhWXJJaUFgOFwdz4TKByQx2lovwckJLk0uKS_NzUIqA0jAlWYV4LAGguHqc.ashr3w.16_sM8ABFT78S_E2kENfa5_OQTE-403] PASSED [ 58%]
+tests/test_orders_mcp.py::test_internal_checks_owner_and_returns_minimum_fields[8-.eJw1iksKgCAQQO8yawtaBa66iYiOEDiMOApBdPemj8v3OcH3CBa4RqwyUShgQAIXHNJK862L6hfdrvtioHJ-Fo0paQtdGtOfV_N5h-T3PK4ND08l4xyY4LoBt6ApXw.ashr3w.CPXaibii2FakipGpYXa7Qik5aXI-200] PASSED [ 59%]
+tests/test_orders_mcp.py::test_internal_missing_order_or_database_failure[404-404] PASSED [ 59%]
+tests/test_orders_mcp.py::test_internal_missing_order_or_database_failure[500-503] PASSED [ 60%]
+tests/test_orders_mcp.py::test_internal_missing_order_or_database_failure[503-503] PASSED [ 61%]
+tests/test_orders_mcp.py::test_mcp_unavailable_and_disabled PASSED       [ 61%]
+tests/test_orders_mcp.py::test_missing_config_and_oversized_token_fail_closed PASSED [ 62%]
+tests/test_orders_mcp.py::test_orders_tool_uses_fixed_authenticated_read_endpoint PASSED [ 62%]
+tests/test_orders_mcp.py::test_frontend_links_use_shared_origin PASSED   [ 63%]
+tests/test_orders_mcp.py::test_orders_tool_normal_response[PENDING] PASSED [ 64%]
+tests/test_orders_mcp.py::test_orders_tool_normal_response[CONFIRMED] PASSED [ 64%]
+tests/test_orders_mcp.py::test_orders_tool_normal_response[CANCELLED] PASSED [ 65%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[None] PASSED [ 66%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body1] PASSED [ 66%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[PENDING] PASSED [ 67%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[42] PASSED [ 67%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body4] PASSED [ 68%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body5] PASSED [ 69%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body6] PASSED [ 69%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body7] PASSED [ 70%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body8] PASSED [ 70%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body9] PASSED [ 71%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body10] PASSED [ 72%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body11] PASSED [ 72%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_response_types[body12] PASSED [ 73%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_id_before_http[True] PASSED [ 74%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_id_before_http[1] PASSED [ 74%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_id_before_http[1.5] PASSED [ 75%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_id_before_http[0] PASSED [ 75%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_id_before_http[-1] PASSED [ 76%]
+tests/test_orders_mcp.py::test_orders_tool_rejects_invalid_id_before_http[2147483648] PASSED [ 77%]
+tests/test_orders_mcp_live.py::test_real_mcp_transport_ownership_and_reviews_regression SKIPPED [ 77%]
+tests/test_orders_rag.py::test_grounded_answer_and_feature_is_server_controlled PASSED [ 78%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[None] PASSED [ 79%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[] PASSED [ 79%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[  ] PASSED [ 80%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[1] PASSED [ 80%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[query4] PASSED [ 81%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[query5] PASSED [ 82%]
+tests/test_orders_rag.py::test_invalid_query_does_not_contact_rag[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] PASSED [ 82%]
+tests/test_orders_rag.py::test_invalid_k[True] PASSED                    [ 83%]
+tests/test_orders_rag.py::test_invalid_k[0] PASSED                       [ 83%]
+tests/test_orders_rag.py::test_invalid_k[11] PASSED                      [ 84%]
+tests/test_orders_rag.py::test_invalid_k[5] PASSED                       [ 85%]
+tests/test_orders_rag.py::test_invalid_k[None] PASSED                    [ 85%]
+tests/test_orders_rag.py::test_insufficient_context_is_not_service_failure PASSED [ 86%]
+tests/test_orders_rag.py::test_outage_has_no_fabricated_answer[ConnectionError] PASSED [ 87%]
+tests/test_orders_rag.py::test_outage_has_no_fabricated_answer[Timeout] PASSED [ 87%]
+tests/test_orders_rag.py::test_outage_has_no_fabricated_answer[HTTPError] PASSED [ 88%]
+tests/test_orders_rag.py::test_model_error_is_unavailable PASSED         [ 88%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[None] PASSED [ 89%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[payload1] PASSED [ 90%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[payload2] PASSED [ 90%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[payload3] PASSED [ 91%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[payload4] PASSED [ 91%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[payload5] PASSED [ 92%]
+tests/test_orders_rag.py::test_invalid_or_cross_feature_response_fails_closed[payload6] PASSED [ 93%]
+tests/test_orders_rag.py::test_disabled_by_default PASSED                [ 93%]
+tests/test_orders_rag.py::test_existing_loader_supports_orders_and_retains_reviews PASSED [ 94%]
+tests/test_validation_checks.py::test_recorded_failure_sets_process_result PASSED [ 95%]
+tests/test_validation_checks.py::test_normal_mcp_requires_id_status_and_screen PASSED [ 95%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[https://fonts.googleapis.com/css2-stylesheet-True] PASSED [ 96%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[https://images.example.test/image.jpg-image-True] PASSED [ 96%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[http://localhost:5000/login-document-False] PASSED [ 97%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[http://localhost:5000/api/orders/mcp-token-fetch-False] PASSED [ 98%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[http://localhost:5004/api/mcp/order-status-fetch-False] PASSED [ 98%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[http://host.docker.internal:11434/api/generate-fetch-False] PASSED [ 99%]
+tests/test_validation_checks.py::test_only_external_static_assets_are_blocked[https://example.test/api-fetch-False] PASSED [100%]
+
+======================== 161 passed, 1 skipped in 4.82s ========================
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: pip install --upgrade pip

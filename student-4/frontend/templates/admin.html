@@ -16,26 +16,8 @@
 
 <body>
 
-    <header>
-        <div class="container header-inner">
-
-            <a href="{{ shared_base }}/staff_dashboard" class="logo">
-                <span class="logo-name">KICKLAB</span>
-            </a>
-
-            <div class="header-actions">
-                <a href="{{ shared_base }}/staff_dashboard" class="btn btn-glass">
-                    Staff Dashboard
-                </a>
-
-                <a href="{{ shared_base }}/" class="btn btn-glass">
-                    View Store
-                </a>
-            </div>
-
-        </div>
-    </header>
-
+    {% set staff_mode = true %}
+    {% include "partials/header.html" %}
 
     <main class="page-main">
 
@@ -60,30 +42,13 @@
 
                 </div>
 
-                <div class="hero-visual" aria-hidden="true">
-
-                    <div class="hero-orb hero-orb-one"></div>
-                    <div class="hero-orb hero-orb-two"></div>
-
-                    <div class="hero-shopping-card">
-
-                        <div class="hero-bag">
-                            K
-                        </div>
-
-                        <div class="hero-box"></div>
-
-                    </div>
-
-                </div>
-
             </section>
 
 
-            <div id="statusMessage" class="status-msg"></div>
+            <div id="statusMessage" class="status-msg" role="status" aria-live="polite"></div>
 
 
-            <section>
+            <section id="orders" aria-labelledby="ordersHeading">
 
                 <div class="orders-section-head">
 
@@ -93,7 +58,7 @@
                             All Orders
                         </span>
 
-                        <h2 class="orders-section-title">
+                        <h2 id="ordersHeading" class="orders-section-title">
                             Customer order activity
                         </h2>
 
@@ -115,6 +80,8 @@
         </div>
 
     </main>
+
+    {% include "partials/footer.html" %}
 
 
     <div id="orderModal" class="modal" hidden>

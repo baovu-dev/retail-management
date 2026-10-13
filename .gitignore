@@ -13,6 +13,8 @@ __pycache__/
 # Local SQLite databases
 *.db
 **/*.db
+*.db-wal
+*.db-shm
 
 ai-services/rag-server/chroma/
 ai-services/rag-server/rag-audit.jsonl

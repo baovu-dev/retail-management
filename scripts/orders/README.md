@@ -1,83 +1,88 @@
-# Local Orders validation
+# Orders validation scripts
 
-Current fresh-checkout and --reuse procedure:
-[handoff](../../docs/release-1/student-4/README.md).
-`rag_followup.py` captures actual UI/HTTP/model evidence; exit 1 means review required.
-Its canonical implementation is here; old student-4/scripts commands forward here.
+Run from the repository root. [Orders setup](../../student-4/README.md) describes
+normal application startup. These scripts are opt-in validation tools, not runtime
+services. `student-4/scripts/` retains small compatibility wrappers because saved
+evidence cites those paths; new commands use this directory.
 
-These scripts contain no runtime credentials or databases. They use a private
-directory **outside this repository** selected by `ORDERS_VALIDATION_RUN`.
-Do not add that directory, `runtime.json`, `compose.env`, `login.txt`, DB copies,
-or browser cookies/tokens to Git. Use a separate Python environment:
+Use a separate, private directory outside the repository for each validation run:
 
 ```sh
-python -m pip install -r student-4/tests/requirements.txt playwright
-export ORDERS_VALIDATION_RUN=/private/tmp/orders-mcp-browser-validation
+export ORDERS_VALIDATION_RUN="$(mktemp -d "${TMPDIR:-/tmp}/orders-validation.XXXXXX")"
+.venv/bin/python -m pip install -r student-4/tests/requirements.txt playwright
 ```
 
-The browser checker uses installed Google Chrome (`channel='chrome'`). Its
-headless context is independent of your personal Chrome profile.
+Never commit runtime.json, compose.env, login.txt, DB snapshots, session cookies,
+keys or Chroma indexes. Capture scripts use installed Google Chrome in headless
+mode, independently of your personal profile. The static-resource policy blocks
+external images/fonts/stylesheets only; live local APIs are not mocked.
 
-For the already prepared validation environment, **reuse** its runtime and DBs:
+## Regression and built-image integration
 
 ```sh
-docker compose --env-file "$ORDERS_VALIDATION_RUN/compose.env" -f "$ORDERS_VALIDATION_RUN/compose.json" ps
-# If stopped, start only this dedicated project (commands do not run init_db.py):
-docker compose --env-file "$ORDERS_VALIDATION_RUN/compose.env" -f "$ORDERS_VALIDATION_RUN/compose.json" up -d
-# Run these only when the corresponding validation server is stopped:
-python scripts/orders/host_servers.py shared
-python scripts/orders/host_servers.py mcp
-python scripts/orders/browser_check.py
-python scripts/orders/audit.py
+AI_ENABLED=false MCP_ENABLED=false RAG_ENABLED=false \
+  .venv/bin/python -m pytest student-4/tests/ -q
+ORDERS_VALIDATION_RUN="$ORDERS_VALIDATION_RUN" \
+  .venv/bin/python scripts/orders/local_ci.py --build
 ```
 
-Orders RAG validation is separate from the completed MCP checks. Install the
-existing `ai-services/rag-server/requirements.txt` on the host and pull
-`nomic-embed-text` in Ollama. With the same RUN, start `host_servers.py rag`, then
-run `rag_check.py`. It uses an isolated index and the same real shared pipeline.
-See `student-4/ORDERS_RAG.md` for configuration and expected results. Stop it with
-`host_servers.py rag stop`; do not remove or regenerate runtime files.
+`local_ci.py` creates three isolated containers on an internal Docker network,
+uses `RUN/image-data`, installs test dependencies inside the image and saves logs.
+It removes its own containers afterwards, retaining the evidence and test DB.
+Use only one `orders-image-validation` run at a time. This does not prove the
+complete shared-login/team UI flow, and it does not run remote GitHub Actions.
 
-For shared agentic-loop Orders cases and source-by-source RAG answer review, see
-`student-4/ORDERS_AGENTIC.md`. Collection alone is not a correctness pass. Existing
-related-unknown delivery/refund observations remain failed and are preserved.
-For default Dockerfile/Python 3.11/local CI checks, build the image as documented
-there, then run `local_ci.py`. It creates only a separate internal test network and
-new `RUN/image-data` database; it does not change this browser validation stack.
+## Fresh public-document RAG capture
 
-`browser_check.py` exits 1 on exceptions **or any recorded FAIL**. The normal,
-recovery and fresh-token checks require the exact requested ID, PENDING state,
-MCP tool/source and matching screen text. Use its dedicated PENDING fixture order;
-do not change that fixture's status manually. Other test orders are created,
-confirmed and cancelled only in the working DB copies. It temporarily stops and
-restarts the validation MCP process and waits for real token expiry.
-
-Network policy: only external `image`, `font`, and `stylesheet` resources are
-aborted. All localhost/loopback/host.docker.internal requests are allowed, and
-fetch/XHR/API requests are never fulfilled with mock responses or blocked by
-this policy. The first historical browser run had a broader non-local URL block;
-current runs use this explicit static-only policy.
-
-On a fresh environment only, inspect `prepare.py` source DB/container names and
-ensure ports 3004, 5000, 5003, 5004, 5102, 6002, 6003, 6004, 8100 are available.
-The script reads snapshots from stopped Orders/Customer containers and a local
-Product DB. It generates independent working copies and random test credentials,
-and refuses to overwrite an existing runtime:
+Install the RAG dependencies and models in the main runbook. Ports 3004, 5004,
+6004 and 8200 must be free. `rag_followup.py` needs a **nonexistent** RUN path
+for its first run (unlike `local_ci.py` above):
 
 ```sh
-python scripts/orders/prepare.py
-docker build -t orders-mcp-validation:local -f "$ORDERS_VALIDATION_RUN/Dockerfile" .
+export ORDERS_VALIDATION_RUN="${TMPDIR:-/tmp}/orders-rag-new-run"
+docker build -t student4-orders:release1-local student-4
+.venv/bin/python scripts/orders/rag_followup.py --capture-name coverage
 ```
 
-Do not rerun preparation after partial failure without inspecting existing files.
-`host_servers.py` reads private settings, and `audit.py` compares original DB
-hashes without printing secrets. Reports and screenshots land in RUN. Review them
-before copying sanitized evidence into `student-4/evidence/`.
+Choose a new path/name each time; do not overwrite existing observations. Use
+`--reuse` only with a runtime previously created by this collector and a new
+capture name. `--include-optional` adds intentional Korean diagnostic questions;
+the required nine-question English set is unchanged. A collection exits 1 when
+semantic review is required; a transport/UI success alone is not correctness.
 
-Stop only validation services without deleting data:
+## Historical authenticated MCP/browser fixtures
+
+`prepare.py`, `host_servers.py`, `browser_check.py`, `rag_check.py` and `audit.py`
+are retained for the earlier snapshot-based validation workflow. They expect
+specific existing Orders/Customers containers and a local Products database.
+They are **not fresh-checkout installers**. Inspect the source names in
+`prepare.py` and `audit.py`, confirm the source containers are stopped and adjust
+names for your own environment before use. `prepare.py` copies source DBs into
+private working fixtures and refuses to replace an existing runtime.
+
+If the matching private runtime already exists, use its recorded configuration:
 
 ```sh
-python scripts/orders/host_servers.py mcp stop
-python scripts/orders/host_servers.py shared stop
-docker compose --env-file "$ORDERS_VALIDATION_RUN/compose.env" -f "$ORDERS_VALIDATION_RUN/compose.json" stop
+docker compose --env-file "$ORDERS_VALIDATION_RUN/compose.env" \
+  -f "$ORDERS_VALIDATION_RUN/compose.json" up -d
+.venv/bin/python scripts/orders/host_servers.py shared
+.venv/bin/python scripts/orders/host_servers.py mcp
+.venv/bin/python scripts/orders/browser_check.py
+.venv/bin/python scripts/orders/audit.py
 ```
+
+Start each host service only if its port is free. The browser checker writes to
+fixture DBs, exercises ownership/staff/expiry/outage handling, and returns nonzero
+for a recorded failure. It must not target production or personal customer data.
+`audit.py` compares snapshots with the original DB hashes. Stop only that run:
+
+```sh
+.venv/bin/python scripts/orders/host_servers.py mcp stop
+.venv/bin/python scripts/orders/host_servers.py shared stop
+docker compose --env-file "$ORDERS_VALIDATION_RUN/compose.env" \
+  -f "$ORDERS_VALIDATION_RUN/compose.json" stop
+```
+
+For saved source-based review with no new model requests, see
+[Orders agentic review](../../student-4/ORDERS_AGENTIC.md). Sanitized, retained
+historical results are indexed in [evidence](../../student-4/evidence/README.md).

@@ -1,0 +1,12 @@
+.                                                                        [100%]
+=============================== warnings summary ===============================
+student-4/tests/test_orders_mcp_live.py::test_real_mcp_transport_ownership_and_reviews_regression
+student-4/tests/test_orders_mcp_live.py::test_real_mcp_transport_ownership_and_reviews_regression
+student-4/tests/test_orders_mcp_live.py::test_real_mcp_transport_ownership_and_reviews_regression
+student-4/tests/test_orders_mcp_live.py::test_real_mcp_transport_ownership_and_reviews_regression
+student-4/tests/test_orders_mcp_live.py::test_real_mcp_transport_ownership_and_reviews_regression
+  /Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:109: DeprecationWarning: Use `streamable_http_client` instead.
+    self.gen = func(*args, **kwds)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 5 warnings in 6.81s
