@@ -15,9 +15,7 @@ from tools.student5_recommendations import (
     get_recommendation_metrics,
 )
 
-mcp = FastMCP("KICKLAB Shared MCP", host=os.getenv("MCP_HOST", "0.0.0.0"),
-              port=int(os.getenv("MCP_PORT", "8100")))
-
+mcp = FastMCP("KICKLAB Shared MCP", host="0.0.0.0", port=8100)  # noqa: S104 - must accept connections from Docker via host.docker.internal
 
 @mcp.tool()
 def get_order_status(order_id: int, access_token: str) -> dict:

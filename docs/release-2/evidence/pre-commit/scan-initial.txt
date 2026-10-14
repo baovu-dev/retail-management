@@ -1,0 +1,219 @@
+Ruff security scan (S rules).............................................Failed
+- hook id: ruff-security-scan
+- exit code: 1
+
+student-4/backend/orders_auth.py:6:14: S105 Possible hardcoded password assigned to: "TOKEN_SALT"
+Found 1 error.
+student-3/database/init_db.py:32:16: S105 Possible hardcoded password assigned to: "PASSWORD"
+Found 1 error.
+All checks passed!
+All checks passed!
+student-2/backend/app.py:26:16: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:31:16: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:41:16: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:52:16: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:61:16: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:69:16: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:78:24: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:100:23: S113 Probable use of `requests` call without timeout
+student-2/backend/app.py:117:18: S104 Possible binding to all interfaces
+student-2/backend/app.py:117:40: S201 Use of `debug=True` in Flask app detected
+Found 10 errors.
+All checks passed!
+student-4/database/app.py:276:18: S104 Possible binding to all interfaces
+student-4/database/app.py:276:40: S201 Use of `debug=True` in Flask app detected
+student-5/backend/app.py:756:18: S104 Possible binding to all interfaces
+student-5/backend/app.py:756:40: S201 Use of `debug=True` in Flask app detected
+student-5/frontend/app.py:34:18: S104 Possible binding to all interfaces
+student-5/frontend/app.py:34:40: S201 Use of `debug=True` in Flask app detected
+Found 6 errors.
+All checks passed!
+student-3/backend/app.py:97:16: S113 Probable use of `requests` call without timeout
+student-3/backend/app.py:124:16: S113 Probable use of `requests` call without timeout
+student-3/backend/app.py:193:25: S113 Probable use of `requests` call without timeout
+student-3/backend/app.py:216:16: S113 Probable use of `requests` call without timeout
+student-3/backend/app.py:311:18: S104 Possible binding to all interfaces
+student-3/backend/app.py:311:40: S201 Use of `debug=True` in Flask app detected
+Found 6 errors.
+All checks passed!
+All checks passed!
+student-3/database/app.py:425:14: S104 Possible binding to all interfaces
+student-3/database/app.py:427:9: S201 Use of `debug=True` in Flask app detected
+student-4/backend/app.py:486:14: S104 Possible binding to all interfaces
+student-4/backend/app.py:488:9: S201 Use of `debug=True` in Flask app detected
+student-5/database/app.py:468:18: S104 Possible binding to all interfaces
+student-5/database/app.py:468:40: S201 Use of `debug=True` in Flask app detected
+Found 6 errors.
+student-2/database/app.py:135:18: S104 Possible binding to all interfaces
+student-2/database/app.py:135:40: S201 Use of `debug=True` in Flask app detected
+student-2/frontend/app.py:10:18: S104 Possible binding to all interfaces
+student-2/frontend/app.py:10:40: S201 Use of `debug=True` in Flask app detected
+student-4/frontend/app.py:28:18: S104 Possible binding to all interfaces
+student-4/frontend/app.py:28:40: S201 Use of `debug=True` in Flask app detected
+Found 6 errors.
+shared/backend/app.py:46:30: S105 Possible hardcoded password assigned to: "STAFF_PASSWORD"
+shared/backend/app.py:562:14: S104 Possible binding to all interfaces
+shared/backend/app.py:564:9: S201 Use of `debug=True` in Flask app detected
+Found 3 errors.
+
+detect-secrets scan......................................................Failed
+- hook id: detect-secrets-scan
+- exit code: 1
+
+ERROR: Potential secrets about to be committed to git repo!
+
+Secret Type: Secret Keyword
+Location:    student-3/database/init_db.py:32
+
+Possible mitigations:
+  - For information about putting your secrets in a safer place, please ask in
+    #security
+  - Mark false positives with an inline `pragma: allowlist secret` comment
+
+If a secret has already been committed, visit
+https://help.github.com/articles/removing-sensitive-data-from-a-repository
+ERROR: Potential secrets about to be committed to git repo!
+
+Secret Type: Secret Keyword
+Location:    shared/frontend/templates/login.html:81
+
+Possible mitigations:
+  - For information about putting your secrets in a safer place, please ask in
+    #security
+  - Mark false positives with an inline `pragma: allowlist secret` comment
+
+If a secret has already been committed, visit
+https://help.github.com/articles/removing-sensitive-data-from-a-repository
+ERROR: Potential secrets about to be committed to git repo!
+
+Secret Type: Secret Keyword
+Location:    shared/backend/app.py:46
+
+Secret Type: Secret Keyword
+Location:    student-4/tests/test_orders_mcp.py:13
+
+Secret Type: Secret Keyword
+Location:    student-4/tests/test_orders_mcp.py:14
+
+Secret Type: Secret Keyword
+Location:    student-4/tests/test_orders_mcp.py:57
+
+Secret Type: Secret Keyword
+Location:    student-4/tests/test_orders_mcp.py:74
+
+Secret Type: Secret Keyword
+Location:    student-4/tests/test_orders_mcp.py:133
+
+Possible mitigations:
+  - For information about putting your secrets in a safer place, please ask in
+    #security
+  - Mark false positives with an inline `pragma: allowlist secret` comment
+
+If a secret has already been committed, visit
+https://help.github.com/articles/removing-sensitive-data-from-a-repository
+ERROR: Potential secrets about to be committed to git repo!
+
+Secret Type: Secret Keyword
+Location:    shared/frontend/templates/create_account.html:146
+
+Secret Type: Secret Keyword
+Location:    shared/frontend/templates/create_account.html:167
+
+Possible mitigations:
+  - For information about putting your secrets in a safer place, please ask in
+    #security
+  - Mark false positives with an inline `pragma: allowlist secret` comment
+
+If a secret has already been committed, visit
+https://help.github.com/articles/removing-sensitive-data-from-a-repository
+
+pip-audit dependency scan................................................Failed
+- hook id: pip-audit-scan
+- exit code: 1
+
+=== pip-audit: ai-services/agentic-loop/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: ai-services/mcp-server/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: ai-services/rag-server/requirements.txt ===
+No known vulnerabilities found, 5 ignored
+
+=== pip-audit: shared/backend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-1/backend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-1/database/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-1/tests/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-2/backend/requirements.txt ===
+Found 14 known vulnerabilities in 3 packages
+Name       Version ID              Fix Versions
+---------- ------- --------------- ------------
+flask      3.0.3   PYSEC-2026-2151 3.1.3
+flask      3.0.3   PYSEC-2026-2151 3.1.3
+requests   2.32.3  PYSEC-2026-1872 2.32.4
+requests   2.32.3  PYSEC-2026-2275 2.33.0
+requests   2.32.3  PYSEC-2026-1872 2.32.4
+requests   2.32.3  PYSEC-2026-2275 2.33.0
+flask-cors 4.0.1   PYSEC-2024-71   4.0.2
+flask-cors 4.0.1   PYSEC-2024-71   4.0.2
+flask-cors 4.0.1   PYSEC-2026-1385 6.0.0
+flask-cors 4.0.1   PYSEC-2026-1383 6.0.0
+flask-cors 4.0.1   PYSEC-2026-1384 6.0.0
+flask-cors 4.0.1   PYSEC-2026-1383 6.0.0
+flask-cors 4.0.1   PYSEC-2026-1384 6.0.0
+flask-cors 4.0.1   PYSEC-2026-1385 6.0.0
+
+=== pip-audit: student-2/database/requirements.txt ===
+Found 2 known vulnerabilities in 1 package
+Name  Version ID              Fix Versions
+----- ------- --------------- ------------
+flask 3.0.3   PYSEC-2026-2151 3.1.3
+flask 3.0.3   PYSEC-2026-2151 3.1.3
+
+=== pip-audit: student-2/frontend/requirements.txt ===
+Found 2 known vulnerabilities in 1 package
+Name  Version ID              Fix Versions
+----- ------- --------------- ------------
+flask 3.0.3   PYSEC-2026-2151 3.1.3
+flask 3.0.3   PYSEC-2026-2151 3.1.3
+
+=== pip-audit: student-3/backend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-3/database/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-4/backend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-4/database/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-4/frontend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-4/tests/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-5/backend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-5/database/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-5/frontend/requirements.txt ===
+No known vulnerabilities found
+
+=== pip-audit: student-5/tests/requirements.txt ===
+No known vulnerabilities found
+
+Vulnerabilities or audit errors in: student-2/backend/requirements.txt, student-2/database/requirements.txt, student-2/frontend/requirements.txt
+
