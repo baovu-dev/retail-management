@@ -1,0 +1,10 @@
+[tool.ruff.lint]
+# Release 2: static security scan, flake8-bandit (S) rules only
+select = ["S"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests: pytest uses assert, and test fixtures use dummy secrets on purpose
+"**/tests/**" = ["S101", "S105", "S106"]
+"**/test_*.py" = ["S101", "S105", "S106"]
+# Local dev helper scripts run fixed commands, not user input
+"scripts/**" = ["S603", "S607", "S101", "S104"]

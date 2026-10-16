@@ -4,6 +4,7 @@ import time
 import uuid
 import re
 import math
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -24,6 +25,8 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 ORDERS_RAG_MODEL = os.getenv("ORDERS_RAG_MODEL", "qwen2.5:3b")
 # Calibrated from measured distances: relevant <= 0.323, unrelated >= 0.468
 RELEVANCE_THRESHOLD = float(os.getenv("RAG_RELEVANCE_THRESHOLD", "0.40"))
+
+logger = logging.getLogger(__name__)
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -122,8 +125,8 @@ def refresh_corpus():
         client = chromadb.PersistentClient(path=str(CHROMA_PATH))
         try:
             client.delete_collection(COLLECTION_NAME)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Could not delete collection %s: %s", COLLECTION_NAME, exc)
         # cosine distance: 0 = identical meaning, larger = less related
         collection = client.create_collection(COLLECTION_NAME, metadata={"hnsw:space": "cosine"})
 
@@ -325,7 +328,7 @@ def _orders_evidence(query, relevant):
         return None, "Orders evidence retrieval failed"
     selected = [{**c, "id": i} for i, c in enumerate(selected, 1)]
     deadline = time.monotonic() + 90  # Shared budget for both generation calls.
-    prompt = """Select evidence that directly answers the question, including all its conditions.
+    prompt = """Choose evidence that directly answers the question, including all its conditions.
 First write assessment: a brief factual answer from the evidence, or the missing fact,
 in at most 12 words. Set question_kind to yes_no for a question asking whether a claim
 is true; otherwise use detail. Then return decision (answer or insufficient_context) and sentence_ids.

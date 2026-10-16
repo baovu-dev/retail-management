@@ -1,0 +1,14 @@
+# Vulnerabilities accepted after review. Each entry needs a reason.
+#
+# chromadb 1.5.9 (ai-services/rag-server): latest release, no fixed version
+# available at audit time (14 Oct 2026).
+# All five advisories affect ChromaDB's server mode: its HTTP API
+# (/api/v2/... collection endpoints) and multi-tenant RBAC authorisation.
+# KICKLAB uses chromadb.PersistentClient (embedded, in-process), so no
+# ChromaDB HTTP server or endpoints are exposed, and the app has a single
+# tenant. The RAG server also runs locally only and is disabled in the
+# cloud deployment. Re-check when a fixed version is released.
+PYSEC-2026-311
+PYSEC-2026-3813
+PYSEC-2026-3814
+PYSEC-2026-3815

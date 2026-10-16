@@ -15,6 +15,7 @@ app.register_blueprint(rag_bp)
 DATABASE_URL = os.getenv("DATABASE_URL", "http://localhost:6001")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+REQUEST_TIMEOUT = 10  # seconds; stops a slow service from hanging the backend
 
 def analyse_sentiment(comment_text):
     if not comment_text:
@@ -77,10 +78,10 @@ def view_reviews_html():
     if not product_id:
         return "<p>Enter a product ID.</p>"
  
-    reviews_response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    reviews_response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     reviews = reviews_response.json()
  
-    summary_response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}")
+    summary_response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}", timeout=REQUEST_TIMEOUT)
     existing_summary = summary_response.json()
  
     if existing_summary and existing_summary.get('generated_summary_text'):
@@ -92,7 +93,7 @@ def view_reviews_html():
 
 @app.route('/reviews/<int:product_id>', methods=['GET'])
 def list_reviews(product_id):
-    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews', methods=['POST'])
@@ -105,7 +106,7 @@ def submit_review():
     data['sentiment_score'] = analyse_sentiment(data.get('comment', ''))
     data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0 # Flag if sentiment is very negative
 
-    response = requests.post(f"{DATABASE_URL}/reviews", json=data)
+    response = requests.post(f"{DATABASE_URL}/reviews", json=data, timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/submit-form', methods=['POST'])
@@ -120,7 +121,7 @@ def submit_review_form():
     if not is_verified_purchase(data['customer_id'], data['product_id']):
         return "<p style='color: var(--pink);'>Only verified purchases can leave a review.</p>"
  
-    existing_reviews_res = requests.get(f"{DATABASE_URL}/reviews/{data['product_id']}")
+    existing_reviews_res = requests.get(f"{DATABASE_URL}/reviews/{data['product_id']}", timeout=REQUEST_TIMEOUT)
     existing_reviews = existing_reviews_res.json()
     already_reviewed = any(
         rev['customer_id'] == data['customer_id'] for rev in existing_reviews
@@ -131,7 +132,7 @@ def submit_review_form():
     data['sentiment_score'] = analyse_sentiment(data['comment'])
     data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0
  
-    r = requests.post(f"{DATABASE_URL}/reviews", json=data)
+    r = requests.post(f"{DATABASE_URL}/reviews", json=data, timeout=REQUEST_TIMEOUT)
  
     if r.status_code == 201:
         response = app.make_response(
@@ -144,21 +145,21 @@ def submit_review_form():
 @app.route('/reviews/<int:review_id>', methods=['PUT'])
 def edit_review(review_id):
     data = request.json
-    response = requests.put(f"{DATABASE_URL}/reviews/{review_id}", json=data)
+    response = requests.put(f"{DATABASE_URL}/reviews/{review_id}", json=data, timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/<int:review_id>', methods=['DELETE'])
 def delete_review(review_id):
-    response = requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
+    response = requests.delete(f"{DATABASE_URL}/reviews/{review_id}", timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/delete-form/<int:review_id>', methods=['DELETE'])
 def remove_review_form(review_id):
-    requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
+    requests.delete(f"{DATABASE_URL}/reviews/{review_id}", timeout=REQUEST_TIMEOUT)
     return ''
 
 def generate_summary(product_id):
-    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     reviews = response.json()
 
     if not reviews:
@@ -184,7 +185,7 @@ def generate_summary(product_id):
 
 @app.route('/reviews/summary/<int:product_id>', methods=['GET'])
 def get_review_summary(product_id):
-    response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}")
+    response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}", timeout=REQUEST_TIMEOUT)
     existing_summary = response.json()
 
     if existing_summary and existing_summary.get('generated_summary_text'):
@@ -199,7 +200,7 @@ def moderate_page():
 
 @app.route('/reviews/flagged', methods=['GET'])
 def view_flagged_reviews():
-    r = requests.get(f"{DATABASE_URL}/reviews")
+    r = requests.get(f"{DATABASE_URL}/reviews", timeout=REQUEST_TIMEOUT)
     all_reviews = r.json()
 
     flagged_reviews = [rev for rev in all_reviews if rev['is_flagged']]
@@ -208,7 +209,7 @@ def view_flagged_reviews():
 
 @app.route('/reviews/stats', methods=['GET'])
 def get_review_stats():
-    response = requests.get(f"{DATABASE_URL}/reviews")
+    response = requests.get(f"{DATABASE_URL}/reviews", timeout=REQUEST_TIMEOUT)
     all_reviews = response.json()
 
     total = len(all_reviews)
@@ -222,4 +223,6 @@ def get_review_stats():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    # noqa: S104 - the container must listen on all interfaces to be reachable
+    app.run(host="0.0.0.0", port=5001, debug=debug_mode)  # noqa: S104

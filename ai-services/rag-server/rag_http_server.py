@@ -73,7 +73,7 @@ class RAGHandler(BaseHTTPRequestHandler):
 
 
 def main():
-    host = "0.0.0.0"
+    host = "0.0.0.0"    # noqa: S104 - must accept connections from Docker via host.docker.internal
     port = int(os.getenv("PORT", "8200"))
     server = ThreadingHTTPServer((host, port), RAGHandler)
     print(f"KICKLAB RAG HTTP server running on {host}:{port}")
