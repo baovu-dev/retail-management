@@ -33,7 +33,8 @@ def tracked_requirements():
 
 
 def main():
-    files = tracked_requirements()
+    # Files passed by pre-commit (the ones in this commit), or every tracked file if run directly
+    files = sys.argv[1:] or tracked_requirements()    #files = tracked_requirements()
     if not files:
         print("No requirements files found.")
         return 0

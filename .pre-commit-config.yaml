@@ -20,5 +20,4 @@ repos:
         entry: python scripts/test/pip_audit_all.py
         language: python
         additional_dependencies: ["pip-audit==2.10.1"]
-        pass_filenames: false
         files: (^|/)requirements[^/]*\.txt$
