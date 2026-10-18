@@ -1,5 +1,0 @@
-{"workflow_id": "352c6082-a25a-4bab-97a9-b6ddc8d2ba66", "timestamp": "2026-10-16T05:04:36+00:00", "event": "workflow_started", "feature": "student-1", "user_request": "Summarise customer feedback for product 103."}
-{"workflow_id": "352c6082-a25a-4bab-97a9-b6ddc8d2ba66", "timestamp": "2026-10-16T05:04:41+00:00", "event": "planner_completed", "status": "completed"}
-{"workflow_id": "352c6082-a25a-4bab-97a9-b6ddc8d2ba66", "timestamp": "2026-10-16T05:04:43+00:00", "event": "worker_completed", "status": "completed", "evidence_count": 2}
-{"workflow_id": "352c6082-a25a-4bab-97a9-b6ddc8d2ba66", "timestamp": "2026-10-16T05:04:45+00:00", "event": "reviewer_completed", "status": "completed"}
-{"workflow_id": "352c6082-a25a-4bab-97a9-b6ddc8d2ba66", "timestamp": "2026-10-16T05:04:45+00:00", "event": "awaiting_human_review", "duration_ms": 8314}
