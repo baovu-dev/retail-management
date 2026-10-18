@@ -28,6 +28,7 @@ ORDERS_API = os.getenv("ORDERS_API", "http://localhost:5004")
 
 
 STAFF_EMAIL = os.getenv("STAFF_EMAIL", "admin@kicklab.com")
+STAFF_PASSWORD = os.getenv("STAFF_PASSWORD")  # no hardcoded default: docker-compose sets it locally, a Container Apps secret in the cloud
 KNOWN_DEV_STAFF_PASSWORD = "Admin1234"  # pragma: allowlist secret - public dev default, only used to refuse it  # noqa: S105
 ORDERS_FRONTEND_ORIGIN = os.getenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004").rstrip("/")
 
