@@ -20,6 +20,13 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
 REQUEST_TIMEOUT = 10  # seconds; stops a slow service from hanging the backend
 
+# Other KICKLAB services: defaults match local Docker, the cloud deployment overrides them
+ORDERS_API_URL = os.getenv("ORDERS_API_URL", "http://host.docker.internal:5004")
+SHARED_URL = os.getenv("SHARED_URL", "http://localhost:5000")
+PRODUCTS_URL = os.getenv("PRODUCTS_URL", "http://localhost:3002")
+ORDERS_UI_URL = os.getenv("ORDERS_UI_URL", "http://localhost:3004")
+CHATBOT_URL = os.getenv("CHATBOT_URL", "http://localhost:3005")
+
 def analyse_sentiment(comment_text):
     if not comment_text:
         return 0.0  # Neutral sentiment for empty comments
@@ -41,7 +48,7 @@ def analyse_sentiment(comment_text):
 
 def is_verified_purchase(customer_id, product_id):
     try:
-        r = requests.get("http://host.docker.internal:5004/api/orders", timeout=5)
+        r = requests.get(f"{ORDERS_API_URL}/api/orders", timeout=5)
         orders = r.json()
     except requests.exceptions.RequestException as e:
         print(f"Orders API connection error: {e}")
@@ -54,7 +61,7 @@ def is_verified_purchase(customer_id, product_id):
             continue
 
         order_detail_res = requests.get(
-            f"http://host.docker.internal:5004/api/orders/{order['order_id']}", timeout=5
+            f"{ORDERS_API_URL}/api/orders/{order['order_id']}", timeout=5
         )
         order_detail = order_detail_res.json()
         item_product_ids = [item['product_id'] for item in order_detail.get('items', [])]
@@ -141,7 +148,7 @@ def submit_review_form():
         response = app.make_response(
             "<p style='color: var(--purple); font-weight: 600;'>Review submitted. Redirecting…</p>"
         )
-        response.headers['HX-Redirect'] = 'http://localhost:5000/'
+        response.headers['HX-Redirect'] = f"{SHARED_URL}/"
         return response
     return "<p style='color: var(--pink);'>Something went wrong. Please try again.</p>"
 
@@ -224,6 +231,18 @@ def get_review_stats():
         "flagged_count": flagged_count,
         "total_reviews": total,
     })
+
+@app.context_processor
+def inject_links():
+    """Cross-feature link addresses, available in every template as {{ links.<name> }}."""
+    return {
+        "links": {
+            "shared": SHARED_URL,
+            "products": PRODUCTS_URL,
+            "orders": ORDERS_UI_URL,
+            "chatbot": CHATBOT_URL,
+        }
+    }
 
 if __name__ == "__main__":
     debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
