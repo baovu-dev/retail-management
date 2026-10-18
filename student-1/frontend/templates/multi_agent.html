@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Reviews Multi-Agent Workflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .mode-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .pill { font-weight: 700; font-size: 0.78rem; padding: 3px 12px; border-radius: 100px; }
+    .pill.on { background: rgba(0, 200, 120, 0.12); color: #0a9960; }
+    .pill.off { background: rgba(255, 61, 154, 0.12); color: var(--pink); }
+
+    .tool-card, .agent-card {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .tool-card h3, .agent-card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .tool-card p { margin: 0 0 14px; color: var(--text-muted); font-size: 0.9rem; }
+    .agent-card .step { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--purple); }
+    .agent-card pre { white-space: pre-wrap; font-family: inherit; margin: 8px 0 0; line-height: 1.5; }
+    .agent-card ul { margin: 8px 0 0; padding-left: 20px; font-size: 0.9rem; }
+
+    .lookup-row { display: flex; gap: 12px; align-items: center; }
+    .lookup-row input, .decision-form input, .decision-form select, .decision-form textarea {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 1rem;
+      background: #fff;
+    }
+    .decision-form { display: grid; gap: 12px; margin-top: 12px; }
+    .decision-form textarea { min-height: 80px; }
+    #corrected-wrapper { display: none; }
+    .meta { color: var(--text-muted); font-size: 0.8rem; margin-top: 10px; }
+    #ma-result { margin-top: 28px; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-orb bg-orb-4"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18h20l-2-9H4L2 18z"/>
+            <path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/>
+          </svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to Reviews</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder">
+    <div class="container">
+      <span class="section-tag">🤝 Multi-Agent Workflow</span>
+      <h2 class="section-title">Plan, work, review, then you decide</h2>
+      <p class="section-sub">A Planner agent plans the task, a Worker agent completes it using real review data, and a Reviewer agent checks the result. A staff member makes the final decision.</p>
+
+      <div class="mode-row">
+        <label><input id="ma-mode-toggle" type="checkbox" checked> Multi-Agent mode</label>
+        <span id="ma-mode-state" class="pill on">On</span>
+      </div>
+
+      <div class="tool-card">
+        <h3>Run a workflow</h3>
+        <p>Describe a task about product reviews. It takes about 10 seconds.</p>
+        <form id="ma-run-form" class="lookup-row">
+          <input id="ma-request" maxlength="300" value="Summarise customer feedback for product 103." required>
+          <button type="submit" class="btn btn-gradient">Run</button>
+        </form>
+      </div>
+
+      <div class="tool-card">
+        <h3>Workflow status</h3>
+        <p>How many workflows have run, and the latest decision.</p>
+        <button id="ma-status-btn" type="button" class="btn btn-gradient">Get status</button>
+      </div>
+
+      <div id="ma-result"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">&copy; 2026 KICKLAB · Reviews & Ratings</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById("ma-mode-toggle");
+    const stateLabel = document.getElementById("ma-mode-state");
+    const result = document.getElementById("ma-result");
+    const STORAGE_KEY = "reviews_multi_agent_mode_enabled";
+
+    function isOn() { return toggle.checked; }
+
+    function renderState() {
+      stateLabel.textContent = isOn() ? "On" : "Off";
+      stateLabel.className = "pill " + (isOn() ? "on" : "off");
+    }
+
+    // Build elements with textContent so agent output can never inject HTML
+    function el(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    function show(...nodes) { result.replaceChildren(...nodes); }
+    function showMessage(text) { show(el("p", text)); }
+
+    async function call(method, path, body) {
+      if (!isOn()) {
+        showMessage("Multi-Agent mode is off. Turn it on to run workflows.");
+        return null;
+      }
+      try {
+        const options = { method, headers: { "X-Multi-Agent-Mode": "on" } };
+        if (body) {
+          options.headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify(body);
+        }
+        const res = await fetch(path, options);
+        return await res.json();
+      } catch (err) {
+        showMessage("Could not reach the Reviews backend: " + err);
+        return null;
+      }
+    }
+
+    function agentCard(step, title, bodyText) {
+      const card = el("div", undefined, "agent-card");
+      card.appendChild(el("span", step, "step"));
+      card.appendChild(el("h3", title));
+      card.appendChild(el("pre", bodyText || "(no output)"));
+      return card;
+    }
+
+    function renderWorkflow(w) {
+      if (w.status === "error") return showMessage("Error: " + w.error);
+
+      const planner = agentCard("Step 1", "Planner agent", w.planner_result.plan);
+
+      const worker = agentCard("Step 2", `Worker agent (${w.worker_result.evidence_count || 0} evidence records)`, w.worker_result.output);
+      const evidenceList = el("ul");
+      (w.worker_result.evidence || []).forEach(r => evidenceList.appendChild(el("li", `[${r.id}] ${r.text}`)));
+      worker.appendChild(el("strong", "Evidence used"));
+      worker.appendChild(evidenceList);
+
+      const reviewer = agentCard("Step 3", "Reviewer agent", w.reviewer_result.review);
+
+      show(planner, worker, reviewer, decisionCard(w.workflow_id),
+           el("p", `Workflow ${w.workflow_id} · ${w.duration_ms} ms`, "meta"));
+    }
+
+    function decisionCard(workflowId) {
+      const card = el("div", undefined, "agent-card");
+      card.appendChild(el("span", "Step 4", "step"));
+      card.appendChild(el("h3", "Human review"));
+      card.appendChild(el("p", "Read the agents' work above, then make the final decision.", "meta"));
+
+      const form = el("form", undefined, "decision-form");
+
+      const select = document.createElement("select");
+      ["Approve", "Correct", "Partially Accept", "Reject"].forEach(v => {
+        const option = el("option", v);
+        option.value = v;
+        select.appendChild(option);
+      });
+
+      const reviewer = document.createElement("input");
+      reviewer.placeholder = "Your name";
+      reviewer.required = true;
+
+      const comment = document.createElement("textarea");
+      comment.placeholder = "Reason for your decision";
+      comment.required = true;
+
+      const correctedWrapper = el("div");
+      correctedWrapper.id = "corrected-wrapper";
+      const corrected = document.createElement("textarea");
+      corrected.placeholder = "Corrected output";
+      correctedWrapper.appendChild(corrected);
+
+      select.addEventListener("change", () => {
+        correctedWrapper.style.display = select.value === "Correct" ? "block" : "none";
+      });
+
+      const submit = el("button", "Submit decision", "btn btn-gradient");
+      submit.type = "submit";
+
+      form.append(select, reviewer, comment, correctedWrapper, submit);
+
+      const outcome = el("div");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = await call("POST", `/multi-agent/workflow/${workflowId}/decision`, {
+          decision: select.value,
+          reviewer: reviewer.value.trim(),
+          comment: comment.value.trim(),
+          corrected_output: select.value === "Correct" ? corrected.value.trim() : null,
+        });
+        if (!payload) return;
+        if (payload.status === "success") {
+          const d = payload.human_decision;
+          outcome.replaceChildren(el("p", `Decision recorded: ${d.decision} by ${d.reviewer} at ${d.decided_at}`, "meta"));
+          [...form.elements].forEach(field => field.disabled = true);
+        } else {
+          outcome.replaceChildren(el("p", "Error: " + payload.error, "meta"));
+        }
+      });
+
+      card.append(form, outcome);
+      return card;
+    }
+
+    function renderStatus(s) {
+      if (s.status === "error") return showMessage("Error: " + s.error);
+      const card = el("div", undefined, "agent-card");
+      card.appendChild(el("h3", "Workflow status"));
+      card.appendChild(el("p", `Workflows run: ${s.workflow_history_count} · Audit records: ${s.audit_record_count}`));
+      const latest = s.latest_workflow;
+      if (latest) {
+        const decision = latest.human_decision.status === "decided"
+          ? `${latest.human_decision.decision} by ${latest.human_decision.reviewer}`
+          : "pending";
+        card.appendChild(el("p", `Latest: "${latest.user_request}" · decision: ${decision}`, "meta"));
+      }
+      show(card);
+    }
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    toggle.checked = saved === null ? true : saved === "true";
+    renderState();
+    toggle.addEventListener("change", () => {
+      localStorage.setItem(STORAGE_KEY, String(isOn()));
+      renderState();
+      if (!isOn()) showMessage("Multi-Agent mode is off. Turn it on to run workflows.");
+    });
+
+    document.getElementById("ma-run-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      showMessage("Planner, Worker and Reviewer are working… (about 10 seconds)");
+      const payload = await call("POST", "/multi-agent/workflow", {
+        user_request: document.getElementById("ma-request").value.trim(),
+      });
+      if (payload) renderWorkflow(payload);
+    });
+
+    document.getElementById("ma-status-btn").addEventListener("click", async () => {
+      const payload = await call("GET", "/multi-agent/workflow/status");
+      if (payload) renderStatus(payload);
+    });
+  </script>
+
+</body>
+</html>

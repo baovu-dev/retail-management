@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from flask import Blueprint, request
+from flask import Blueprint, request, render_template
 import requests
 
 
@@ -37,6 +37,9 @@ def is_valid_workflow_id(workflow_id: str) -> bool:
     except ValueError:
         return False
 
+@multi_agent_bp.get("/multi-agent")
+def multi_agent_page():
+    return render_template("multi_agent.html")
 
 @multi_agent_bp.post("/multi-agent/workflow")
 def multi_agent_workflow():
