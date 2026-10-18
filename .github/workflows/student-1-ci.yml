@@ -10,6 +10,7 @@ on:
 
 # Release 1 & 2: MCP, RAG and Multi-Agent are disabled during CI/CD
 env:
+  AI_MODE_ENABLED: "false"
   MCP_ENABLED: "false"
   RAG_ENABLED: "false"
   MULTI_AGENT_ENABLED: "false"

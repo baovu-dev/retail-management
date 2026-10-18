@@ -27,9 +27,16 @@ PRODUCTS_URL = os.getenv("PRODUCTS_URL", "http://localhost:3002")
 ORDERS_UI_URL = os.getenv("ORDERS_UI_URL", "http://localhost:3004")
 CHATBOT_URL = os.getenv("CHATBOT_URL", "http://localhost:3005")
 
+# Release 2: AI-Mode is disabled in the cloud deployment (no Ollama there)
+AI_MODE_ENABLED = os.getenv("AI_MODE_ENABLED", "true").strip().lower() in ("1", "true", "yes", "on")
+AI_DISABLED_MESSAGE = "AI features are disabled in this deployment."
+
 def analyse_sentiment(comment_text):
     if not comment_text:
         return 0.0  # Neutral sentiment for empty comments
+
+    if not AI_MODE_ENABLED:
+        return 0.0  # AI-Mode off: store a neutral score, so the review is not auto-flagged
 
     prompt_template = load_prompt("sentiment_analysis_prompt.txt")
     prompt = prompt_template.format(comment_text=comment_text)
@@ -169,6 +176,9 @@ def remove_review_form(review_id):
     return ''
 
 def generate_summary(product_id):
+    if not AI_MODE_ENABLED:
+        return AI_DISABLED_MESSAGE
+    
     response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     reviews = response.json()
 
