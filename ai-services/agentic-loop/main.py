@@ -3,12 +3,15 @@ from datetime import datetime
 from pathlib import Path
 import sys
 
-from modes import ai_mode, mcp_mode, rag_mode
+from modes import ai_mode, mcp_mode, rag_mode, multi_agent_mode, cloud_mode, testing_mode
 
 MODES = {
     "ai-mode": ai_mode.run,
     "mcp": mcp_mode.run,
     "rag": rag_mode.run,
+    "multi-agent": multi_agent_mode.run,
+    "cloud": cloud_mode.run,
+    "testing": testing_mode.run,
 }
 
 LOG = []

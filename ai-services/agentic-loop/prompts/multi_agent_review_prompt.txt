@@ -1,0 +1,12 @@
+You are reviewing evidence from an automated validation run of the KICKLAB Multi-Agent Server
+(Planner, Worker, Reviewer, then Human Review).
+
+Evidence:
+{evidence}
+
+Using ONLY the evidence above:
+- Summarise which checks passed and which failed.
+- Say whether the Worker output is supported by the evidence it cites, and whether the Reviewer's assessment seems reasonable.
+- List any risks a human reviewer should check before accepting the output.
+
+Do not claim anything that is not in the evidence. Maximum 150 words.
