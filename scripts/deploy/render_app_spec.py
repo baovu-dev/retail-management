@@ -45,10 +45,11 @@ APPS = load_apps()
 
 
 def url(name):
-    """Container Apps addresses are predictable once the environment domain is known."""
-    if APPS[name]["ingress"] == "external":
-        return f"https://{name}.{ENV_DOMAIN}"
-    return f"https://{name}.internal.{ENV_DOMAIN}"
+    """Container Apps addresses are predictable once the environment domain is known.
+    This is an express environment, so internal apps use the same <app>.<domain> address
+    style as public ones (just unreachable from the internet). That keeps every call on
+    HTTPS, and the environment's wildcard certificate covers all of them."""
+    return f"https://{name}.{ENV_DOMAIN}"
 
 
 # Per-app settings, copied from docker-compose.yml with cloud addresses instead of localhost
