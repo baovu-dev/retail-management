@@ -60,6 +60,11 @@ APP_ENV = {
         "ORDERS_API": url("student4-backend"),
         "STAFF_EMAIL": os.getenv("STAFF_EMAIL", "admin@kicklab.com"),
         "ORDERS_FRONTEND_ORIGIN": url("student4-frontend"),
+        "REVIEWS_UI_URL": url("student1-backend"),
+        "PRODUCTS_UI_URL": url("student2-frontend"),
+        "CUSTOMERS_UI_URL": url("student3-backend"),
+        "ORDERS_UI_URL": url("student4-frontend"),
+        "CHATBOT_UI_URL": url("student5-frontend"),
     },
     "student1-backend": {
         "DATABASE_URL": url("student1-database"),

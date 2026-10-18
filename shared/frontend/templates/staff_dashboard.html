@@ -64,20 +64,20 @@
         </li>
 
         <li>
-          <a href="http://localhost:3002">Products</a>
+          <a href="{{ links.products }}">Products</a>
         </li>
 
         <li>
-          <a href="http://localhost:3004/admin">Orders</a>
+          <a href="{{ links.orders }}/admin">Orders</a>
         </li>
 
         <li>
-          <a href="http://localhost:3005">Chatbot</a>
+          <a href="{{ links.chatbot }}">Chatbot</a>
         </li>
       </ul>
 
       <div class="header-actions">
-        <a href="http://localhost:5000/" class="btn btn-glass">View Store</a>
+        <a href="/" class="btn btn-glass">View Store</a>
         <a href="/staff-logout" class="btn btn-login">Log out</a>
 
         <button class="menu-toggle" id="menuToggle" aria-label="Menu">
@@ -205,24 +205,24 @@
 
       <div class="finder-options">
 
-        <a href="http://localhost:5001/" class="chip chip-link chip-highlight">
+        <a href="{{ links.reviews }}/" class="chip chip-link chip-highlight">
           ⭐ Manage reviews & ratings
         </a>
 
-        <a href="http://localhost:5001/moderate" class="chip chip-link chip-highlight">
+        <a href="{{ links.reviews }}/moderate" class="chip chip-link chip-highlight">
           🚩 Moderate flagged reviews
           (<span id="flaggedBadge">--</span>)
         </a>
 
-        <a href="http://localhost:3002" class="chip chip-link chip-highlight">
+        <a href="{{ links.products }}" class="chip chip-link chip-highlight">
           📦 Manage product catalog
         </a>
 
-        <a href="http://localhost:3004/admin" class="chip chip-link chip-highlight">
+        <a href="{{ links.orders }}/admin" class="chip chip-link chip-highlight">
           🧾 View all orders
         </a>
 
-        <a href="http://localhost:5003" class="chip chip-link chip-highlight">
+        <a href="{{ links.customers }}" class="chip chip-link chip-highlight">
           👤 Customer accounts
         </a>
 
@@ -241,7 +241,7 @@
     async function loadDashboardStats() {
       try {
         const res = await fetch(
-          'http://localhost:5000/dashboard/stats'
+          '/dashboard/stats'
         );
 
         const data = await res.json();
