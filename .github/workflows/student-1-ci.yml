@@ -8,11 +8,11 @@ on:
     paths:
       - 'student-1/**'
 
-# Release 1: MCP and RAG are disabled during CI/CD
+# Release 1 & 2: MCP, RAG and Multi-Agent are disabled during CI/CD
 env:
   MCP_ENABLED: "false"
   RAG_ENABLED: "false"
-
+  MULTI_AGENT_ENABLED: "false"
 jobs:
   test:
     runs-on: ubuntu-latest
