@@ -28,9 +28,16 @@ ORDERS_API = os.getenv("ORDERS_API", "http://localhost:5004")
 
 
 STAFF_EMAIL = os.getenv("STAFF_EMAIL", "admin@kicklab.com")
-STAFF_PASSWORD = os.getenv("STAFF_PASSWORD", "Admin1234")
+STAFF_PASSWORD = os.getenv("STAFF_PASSWORD")  # no hardcoded default: docker-compose sets it locally, a Container Apps secret in the cloud
+KNOWN_DEV_STAFF_PASSWORD = "Admin1234"  # pragma: allowlist secret - public dev default, only used to refuse it  # noqa: S105
 ORDERS_FRONTEND_ORIGIN = os.getenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004").rstrip("/")
 
+# Public page addresses for each feature (browser links). Defaults match local Docker; the cloud deployment overrides them.
+REVIEWS_UI_URL = os.getenv("REVIEWS_UI_URL", "http://localhost:5001")
+PRODUCTS_UI_URL = os.getenv("PRODUCTS_UI_URL", "http://localhost:3002")
+CUSTOMERS_UI_URL = os.getenv("CUSTOMERS_UI_URL", "http://localhost:5003")
+ORDERS_UI_URL = os.getenv("ORDERS_UI_URL", "http://localhost:3004")
+CHATBOT_UI_URL = os.getenv("CHATBOT_UI_URL", "http://localhost:3005")
 
 @app.post("/api/orders/mcp-token")
 @cross_origin(origins=[ORDERS_FRONTEND_ORIGIN], supports_credentials=True)
@@ -43,7 +50,7 @@ def orders_mcp_token():
         return jsonify(error="Orders authentication is not configured."), 503
     customer = session.get("customer")
     if session.get("is_staff") is True:
-        if STAFF_PASSWORD == "Admin1234":
+        if not STAFF_PASSWORD or STAFF_PASSWORD == KNOWN_DEV_STAFF_PASSWORD:
             return jsonify(error="Configure a private staff password before using Orders MCP."), 503
         identity = {"role": "staff", "staff_email": session.get("staff_email")}
     elif isinstance(customer, dict) and type(customer.get("customer_id")) is int and customer["customer_id"] > 0:
@@ -556,10 +563,20 @@ def dashboard_stats():
 
     return jsonify(stats)
 
+@app.context_processor
+def inject_links():
+    """Feature page addresses, available in every template as {{ links.<name> }}."""
+    return {
+        "links": {
+            "reviews": REVIEWS_UI_URL,
+            "products": PRODUCTS_UI_URL,
+            "customers": CUSTOMERS_UI_URL,
+            "orders": ORDERS_UI_URL,
+            "chatbot": CHATBOT_UI_URL,
+        }
+    }
+
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=True
-    )
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode)  # noqa: S104 - container must listen on all interfaces

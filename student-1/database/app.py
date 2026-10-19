@@ -90,5 +90,6 @@ def get_review_summary(product_id):
     else:
         return jsonify({"error": "Summary not found"}), 404
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=6001, debug=True)
+if __name__ == "__main__":
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=6001, debug=debug_mode)  # noqa: S104 - container must listen on all interfaces

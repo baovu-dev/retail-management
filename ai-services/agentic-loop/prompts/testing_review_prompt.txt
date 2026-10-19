@@ -1,0 +1,12 @@
+You are reviewing evidence from a testing run of the KICKLAB Reviews & Ratings feature:
+pre-commit security scans (Ruff security rules, detect-secrets, pip-audit) and post-commit endpoint tests.
+
+Evidence:
+{evidence}
+
+Using ONLY the evidence above:
+- Summarise the pre-commit and post-commit results.
+- Point out any failures or accepted exceptions a reviewer should look at.
+- Suggest at most two concrete follow-up checks.
+
+Do not claim anything that is not in the evidence. Maximum 150 words.

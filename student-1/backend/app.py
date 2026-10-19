@@ -12,13 +12,31 @@ app.register_blueprint(mcp_bp)
 from routes.rag_mode import rag_bp
 app.register_blueprint(rag_bp)
 
+from routes.multi_agent_mode import multi_agent_bp
+app.register_blueprint(multi_agent_bp)
+
 DATABASE_URL = os.getenv("DATABASE_URL", "http://localhost:6001")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+REQUEST_TIMEOUT = 10  # seconds; stops a slow service from hanging the backend
+
+# Other KICKLAB services: defaults match local Docker, the cloud deployment overrides them
+ORDERS_API_URL = os.getenv("ORDERS_API_URL", "http://host.docker.internal:5004")
+SHARED_URL = os.getenv("SHARED_URL", "http://localhost:5000")
+PRODUCTS_URL = os.getenv("PRODUCTS_URL", "http://localhost:3002")
+ORDERS_UI_URL = os.getenv("ORDERS_UI_URL", "http://localhost:3004")
+CHATBOT_URL = os.getenv("CHATBOT_URL", "http://localhost:3005")
+
+# Release 2: AI-Mode is disabled in the cloud deployment (no Ollama there)
+AI_MODE_ENABLED = os.getenv("AI_MODE_ENABLED", "true").strip().lower() in ("1", "true", "yes", "on")
+AI_DISABLED_MESSAGE = "AI features are disabled in this deployment."
 
 def analyse_sentiment(comment_text):
     if not comment_text:
         return 0.0  # Neutral sentiment for empty comments
+
+    if not AI_MODE_ENABLED:
+        return 0.0  # AI-Mode off: store a neutral score, so the review is not auto-flagged
 
     prompt_template = load_prompt("sentiment_analysis_prompt.txt")
     prompt = prompt_template.format(comment_text=comment_text)
@@ -37,7 +55,7 @@ def analyse_sentiment(comment_text):
 
 def is_verified_purchase(customer_id, product_id):
     try:
-        r = requests.get("http://host.docker.internal:5004/api/orders", timeout=5)
+        r = requests.get(f"{ORDERS_API_URL}/api/orders", timeout=5)
         orders = r.json()
     except requests.exceptions.RequestException as e:
         print(f"Orders API connection error: {e}")
@@ -50,7 +68,7 @@ def is_verified_purchase(customer_id, product_id):
             continue
 
         order_detail_res = requests.get(
-            f"http://host.docker.internal:5004/api/orders/{order['order_id']}", timeout=5
+            f"{ORDERS_API_URL}/api/orders/{order['order_id']}", timeout=5
         )
         order_detail = order_detail_res.json()
         item_product_ids = [item['product_id'] for item in order_detail.get('items', [])]
@@ -77,10 +95,10 @@ def view_reviews_html():
     if not product_id:
         return "<p>Enter a product ID.</p>"
  
-    reviews_response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    reviews_response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     reviews = reviews_response.json()
  
-    summary_response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}")
+    summary_response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}", timeout=REQUEST_TIMEOUT)
     existing_summary = summary_response.json()
  
     if existing_summary and existing_summary.get('generated_summary_text'):
@@ -92,7 +110,7 @@ def view_reviews_html():
 
 @app.route('/reviews/<int:product_id>', methods=['GET'])
 def list_reviews(product_id):
-    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews', methods=['POST'])
@@ -105,7 +123,7 @@ def submit_review():
     data['sentiment_score'] = analyse_sentiment(data.get('comment', ''))
     data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0 # Flag if sentiment is very negative
 
-    response = requests.post(f"{DATABASE_URL}/reviews", json=data)
+    response = requests.post(f"{DATABASE_URL}/reviews", json=data, timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/submit-form', methods=['POST'])
@@ -120,7 +138,7 @@ def submit_review_form():
     if not is_verified_purchase(data['customer_id'], data['product_id']):
         return "<p style='color: var(--pink);'>Only verified purchases can leave a review.</p>"
  
-    existing_reviews_res = requests.get(f"{DATABASE_URL}/reviews/{data['product_id']}")
+    existing_reviews_res = requests.get(f"{DATABASE_URL}/reviews/{data['product_id']}", timeout=REQUEST_TIMEOUT)
     existing_reviews = existing_reviews_res.json()
     already_reviewed = any(
         rev['customer_id'] == data['customer_id'] for rev in existing_reviews
@@ -131,34 +149,37 @@ def submit_review_form():
     data['sentiment_score'] = analyse_sentiment(data['comment'])
     data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0
  
-    r = requests.post(f"{DATABASE_URL}/reviews", json=data)
+    r = requests.post(f"{DATABASE_URL}/reviews", json=data, timeout=REQUEST_TIMEOUT)
  
     if r.status_code == 201:
         response = app.make_response(
             "<p style='color: var(--purple); font-weight: 600;'>Review submitted. Redirecting…</p>"
         )
-        response.headers['HX-Redirect'] = 'http://localhost:5000/'
+        response.headers['HX-Redirect'] = f"{SHARED_URL}/"
         return response
     return "<p style='color: var(--pink);'>Something went wrong. Please try again.</p>"
 
 @app.route('/reviews/<int:review_id>', methods=['PUT'])
 def edit_review(review_id):
     data = request.json
-    response = requests.put(f"{DATABASE_URL}/reviews/{review_id}", json=data)
+    response = requests.put(f"{DATABASE_URL}/reviews/{review_id}", json=data, timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/<int:review_id>', methods=['DELETE'])
 def delete_review(review_id):
-    response = requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
+    response = requests.delete(f"{DATABASE_URL}/reviews/{review_id}", timeout=REQUEST_TIMEOUT)
     return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/delete-form/<int:review_id>', methods=['DELETE'])
 def remove_review_form(review_id):
-    requests.delete(f"{DATABASE_URL}/reviews/{review_id}")
+    requests.delete(f"{DATABASE_URL}/reviews/{review_id}", timeout=REQUEST_TIMEOUT)
     return ''
 
 def generate_summary(product_id):
-    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}")
+    if not AI_MODE_ENABLED:
+        return AI_DISABLED_MESSAGE
+    
+    response = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
     reviews = response.json()
 
     if not reviews:
@@ -184,7 +205,7 @@ def generate_summary(product_id):
 
 @app.route('/reviews/summary/<int:product_id>', methods=['GET'])
 def get_review_summary(product_id):
-    response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}")
+    response = requests.get(f"{DATABASE_URL}/reviews/summary/{product_id}", timeout=REQUEST_TIMEOUT)
     existing_summary = response.json()
 
     if existing_summary and existing_summary.get('generated_summary_text'):
@@ -199,7 +220,7 @@ def moderate_page():
 
 @app.route('/reviews/flagged', methods=['GET'])
 def view_flagged_reviews():
-    r = requests.get(f"{DATABASE_URL}/reviews")
+    r = requests.get(f"{DATABASE_URL}/reviews", timeout=REQUEST_TIMEOUT)
     all_reviews = r.json()
 
     flagged_reviews = [rev for rev in all_reviews if rev['is_flagged']]
@@ -208,7 +229,7 @@ def view_flagged_reviews():
 
 @app.route('/reviews/stats', methods=['GET'])
 def get_review_stats():
-    response = requests.get(f"{DATABASE_URL}/reviews")
+    response = requests.get(f"{DATABASE_URL}/reviews", timeout=REQUEST_TIMEOUT)
     all_reviews = response.json()
 
     total = len(all_reviews)
@@ -221,5 +242,19 @@ def get_review_stats():
         "total_reviews": total,
     })
 
+@app.context_processor
+def inject_links():
+    """Cross-feature link addresses, available in every template as {{ links.<name> }}."""
+    return {
+        "links": {
+            "shared": SHARED_URL,
+            "products": PRODUCTS_URL,
+            "orders": ORDERS_UI_URL,
+            "chatbot": CHATBOT_URL,
+        }
+    }
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    # noqa: S104 - the container must listen on all interfaces to be reachable
+    app.run(host="0.0.0.0", port=5001, debug=debug_mode)  # noqa: S104

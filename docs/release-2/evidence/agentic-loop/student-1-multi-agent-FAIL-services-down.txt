@@ -1,0 +1,36 @@
+=== KICKLAB agentic loop: multi-agent ===
+[05:07:59] PLAN     Workflow, human decision, boundary and audit checks against http://localhost:8300
+[05:07:59] OBSERVE  PASS - Health: server running with the student-1 evidence provider -> features=['student-1']
+[05:07:59] ACT      POST /workflow 'Summarise customer feedback for product 103.' (Planner -> Worker -> Reviewer)
+[05:08:05] OBSERVE  PASS - Workflow pauses for human review -> status=awaiting_human_review id=527dc90a-b52e-412c-9c9b-04a206f85d31
+[05:08:05] OBSERVE  FAIL - All three agents completed in sequence -> planner=completed worker=error reviewer=completed
+[05:08:05] OBSERVE  FAIL - Worker used real Reviews database evidence -> evidence_count=0 source=None
+[05:08:05] OBSERVE  FAIL - Worker output cites its evidence IDs -> cited=[] of []
+[05:08:05] OBSERVE  PASS - Human decision is pending with four allowed values -> status=pending allowed=['Approve', 'Correct', 'Partially Accept', 'Reject']
+[05:08:05] ACT      Boundary requests
+[05:08:05] OBSERVE  PASS - Boundary: empty request is rejected -> HTTP 400
+[05:08:05] OBSERVE  PASS - Boundary: unknown feature is rejected -> HTTP 400
+[05:08:05] OBSERVE  PASS - Boundary: invalid decision value is rejected -> HTTP 400
+[05:08:05] ACT      Recording a test decision (an automated validation run, not a real human review)
+[05:08:05] OBSERVE  PASS - Decision is recorded -> HTTP 200
+[05:08:05] OBSERVE  PASS - A recorded decision cannot be overwritten -> HTTP 400
+[05:08:05] OBSERVE  PASS - Audit trail records every coordination step in order -> events=['workflow_started', 'planner_completed', 'worker_completed', 'reviewer_completed', 'awaiting_human_review', 'human_decision_recorded']
+[05:08:05] ADAPT    Asking Ollama to review the evidence (advisory only, pass/fail comes from the checks)
+[05:08:09] REVIEW   **Passed checks:**
+[05:08:09] REVIEW   * Server is running with the student-1 evidence provider.
+[05:08:09] REVIEW   * Workflow pauses for human review.
+[05:08:09] REVIEW   * Boundary checks: empty request, unknown feature, and invalid decision value are rejected.
+[05:08:09] REVIEW   * Decision is recorded.
+[05:08:09] REVIEW   * Audit trail records every coordination step.
+[05:08:09] REVIEW   **Failed checks:**
+[05:08:09] REVIEW   * All three agents completed in sequence ( Worker failed).
+[05:08:09] REVIEW   * Worker used real Reviews database evidence.
+[05:08:09] REVIEW   * Worker output cites its evidence IDs ( Worker output is an error message, not citing any evidence IDs).
+[05:08:09] REVIEW   **Support for Worker output and Reviewer's assessment:**
+[05:08:09] REVIEW   * The Worker output is an error message, which suggests that the Reviewer's assessment of a "connection refused" error is reasonable.
+[05:08:09] REVIEW   * The Reviewer's assessment and correction seem supported by the evidence.
+[05:08:09] REVIEW   **Risks for human reviewer to check:**
+[05:08:09] REVIEW   * The Worker's retry of evidence retrieval may still fail.
+[05:08:09] REVIEW   * The human reviewer should verify that the decision recorded is correct.
+[05:08:09] ADAPT    9/12 checks passed
+=== Result: FAIL ===

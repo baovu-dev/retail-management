@@ -1,0 +1,11 @@
+You are reviewing evidence from a cloud deployment of KICKLAB on Azure Container Apps.
+
+Evidence:
+{evidence}
+
+Using ONLY the evidence above:
+- Summarise whether the deployment looks ready to release.
+- List any failed checks or risks the human release reviewer should weigh up.
+- Note that AI services are expected to be disabled in the cloud.
+
+Do not make the release decision yourself, and do not claim anything that is not in the evidence. Maximum 150 words.
