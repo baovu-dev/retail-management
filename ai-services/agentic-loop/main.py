@@ -30,12 +30,18 @@ def main():
     parser.add_argument("--feature", choices=("student-1", "student-4"), default="student-1")
     parser.add_argument("--evidence-file", type=Path, help="Orders RAG: save a new actual run, or review a saved run")
     parser.add_argument("--review-file", type=Path, help="Orders RAG: source-grounded analyst review of the saved evidence")
+    parser.add_argument("--workflow-id", help="Orders multi-agent: existing workflow to review without modifying it")
+    parser.add_argument("--history-file", type=Path, help="Orders multi-agent: original server history")
+    parser.add_argument("--audit-file", type=Path, help="Orders multi-agent: original server coordination audit")
     parser.add_argument("--output-dir", type=Path, default=Path(__file__).parent / "outputs")
     args = parser.parse_args()
     if args.feature == "student-4" and args.mode == "ai-mode":
         parser.error("Orders extends MCP/RAG only; existing AI validation uses student-1")
     if args.feature == "student-4" and args.mode == "rag" and not args.evidence_file:
         parser.error("Orders RAG requires --evidence-file")
+
+    if args.feature == "student-4" and args.mode == "multi-agent" and not args.workflow_id:
+        parser.error("Orders multi-agent review requires --workflow-id")
 
     LOG.clear()
     emit(f"=== KICKLAB agentic loop: {args.mode} ===")
@@ -44,6 +50,9 @@ def main():
         try:
             if args.mode == "testing":
                 passed = testing_mode.run(stage, feature="student-4")
+            elif args.mode == "multi-agent":
+                from modes import orders_workflow_review
+                passed = orders_workflow_review.run(stage, args)
             elif args.mode in ("mcp", "rag"):
                 passed = orders_mode.run(stage, args)
             else:
