@@ -179,6 +179,8 @@ services:
       - MCP_ENABLED=true
       - RAG_URL=http://host.docker.internal:8200
       - RAG_ENABLED=true
+      - MULTI_AGENT_SERVICE_URL=http://host.docker.internal:8300
+      - MULTI_AGENT_ENABLED=true
     depends_on:
       student5-database:
         condition: service_healthy

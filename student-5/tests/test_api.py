@@ -152,15 +152,26 @@ def test_mcp_rejects_invalid_customer_id(backend_client, monkeypatch):
 def test_mcp_and_rag_disabled_during_ci(backend_client, monkeypatch):
     monkeypatch.setenv("MCP_ENABLED", "false")
     monkeypatch.setenv("RAG_ENABLED", "false")
+    monkeypatch.setenv("MULTI_AGENT_ENABLED", "false")
     mcp_response = backend_client.post("/api/mcp/metrics")
     rag_response = backend_client.post("/api/rag/answer", data={"query": "How are recommendations scored?"})
+    agent_response = backend_client.post("/api/multi-agent/workflow", json={"user_request": "Summarise customer 1"})
     assert mcp_response.status_code == 403
     assert rag_response.status_code == 403
+    assert agent_response.status_code == 403
+
+
+def test_multi_agent_rejects_empty_request(backend_client, monkeypatch):
+    monkeypatch.setenv("MULTI_AGENT_ENABLED", "true")
+    response = backend_client.post("/api/multi-agent/workflow", json={"user_request": "   "})
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "user_request is required"
 
 
 def test_frontend_mcp_and_rag_pages(frontend_client):
     assert frontend_client.get("/mcp").status_code == 200
     assert frontend_client.get("/rag").status_code == 200
+    assert frontend_client.get("/multi-agent").status_code == 200
 
 
 def test_frontend_index_loads(frontend_client):

@@ -28,6 +28,11 @@ def rag_page():
     return render_template("rag.html", api_base=API_BASE)
 
 
+@app.route("/multi-agent")
+def multi_agent_page():
+    return render_template("multi_agent.html", api_base=API_BASE)
+
+
 if __name__ == "__main__":
     print("Student 5 frontend running on http://localhost:3005")
     print("API backend expected at http://localhost:5005")

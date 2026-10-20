@@ -10,10 +10,11 @@ on:
       - 'student-5/**'
       - '.github/workflows/student-5-ci.yml'
 
-# Release 1: MCP and RAG stay integrated in the app, but are disabled during CI/CD.
+# Release 1 and 2: MCP, RAG, and Multi-Agent stay integrated, but are disabled during CI/CD.
 env:
   MCP_ENABLED: "false"
   RAG_ENABLED: "false"
+  MULTI_AGENT_ENABLED: "false"
 
 jobs:
   test:
@@ -56,5 +57,7 @@ jobs:
         run: |
           echo "MCP_ENABLED=${{ env.MCP_ENABLED }}"
           echo "RAG_ENABLED=${{ env.RAG_ENABLED }}"
+          echo "MULTI_AGENT_ENABLED=${{ env.MULTI_AGENT_ENABLED }}"
           test "${{ env.MCP_ENABLED }}" = "false"
           test "${{ env.RAG_ENABLED }}" = "false"
+          test "${{ env.MULTI_AGENT_ENABLED }}" = "false"
