@@ -77,6 +77,68 @@
 
             </section>
 
+            <section id="multiAgent" class="assistant-card" aria-labelledby="multiAgentHeading">
+                <div class="assistant-heading">
+                    <span class="section-tag">Multi-Agent · Staff review</span>
+                    <h2 id="multiAgentHeading">Orders operations review</h2>
+                    <p>Planner, Worker and Reviewer assess the live total order count and published Orders rules. Review their evidence before recording your decision. No customer records are sent to the agents.</p>
+                </div>
+                <div class="workflow-actions">
+                    <button type="button" id="startWorkflow" class="btn btn-ai">Run Orders review</button>
+                    <button type="button" id="refreshWorkflow" class="btn btn-glass">Show latest review</button>
+                </div>
+                <div id="workflowStatus" class="assistant-answer" role="status" aria-live="polite"></div>
+                <div id="workflowDetails" hidden>
+                    <div class="workflow-stages">
+                        <section class="workflow-stage" aria-labelledby="plannerHeading">
+                            <h3 id="plannerHeading">1 · Planner</h3><pre id="workflowPlan"></pre>
+                        </section>
+                        <section class="workflow-stage" aria-labelledby="workerHeading">
+                            <h3 id="workerHeading">2 · Worker</h3><pre id="workflowOutput"></pre>
+                            <details class="workflow-evidence">
+                                <summary id="workflowEvidenceLabel">View evidence</summary>
+                                <pre id="workflowEvidence"></pre>
+                            </details>
+                        </section>
+                        <section class="workflow-stage" aria-labelledby="reviewerHeading">
+                            <h3 id="reviewerHeading">3 · Reviewer</h3><pre id="workflowReview"></pre>
+                        </section>
+                    </div>
+                    <form id="workflowDecision" class="workflow-decision-form" hidden>
+                        <h3>4 · Your decision</h3>
+                        <p>Check the evidence and the Reviewer's concerns before recording a decision.</p>
+                        <div class="field-group">
+                            <label for="reviewDecision">Decision</label>
+                            <select id="reviewDecision" required>
+                                <option value="" disabled selected>Select a decision</option>
+                                <option value="Approve">Approve</option>
+                                <option value="Partially Accept">Partially Accept</option>
+                                <option value="Correct">Correct</option>
+                                <option value="Reject">Reject</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="reviewComment">Reason</label>
+                            <textarea id="reviewComment" maxlength="500" rows="3" placeholder="What did the evidence support? What needs correction?" required></textarea>
+                        </div>
+                        <div class="field-group workflow-correction" id="correctionField" hidden>
+                            <label for="correctedOutput">Corrected output</label>
+                            <textarea id="correctedOutput" maxlength="1000" rows="4"></textarea>
+                        </div>
+                        <button type="submit" id="submitDecision" class="btn btn-ai">Record human decision</button>
+                    </form>
+                    <section id="workflowHumanResult" class="workflow-human-result" aria-labelledby="humanResultHeading" hidden>
+                        <h3 id="humanResultHeading">4 · Human decision</h3>
+                        <p id="workflowHumanSummary"></p>
+                        <p id="workflowHumanReason"></p>
+                        <div id="workflowHumanCorrection" hidden>
+                            <strong>Corrected output</strong>
+                            <p id="workflowHumanOutput"></p>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
         </div>
 
     </main>
@@ -112,6 +174,122 @@
     <script>
 
         const API_BASE = {{ api_base | tojson }};
+        const SHARED_BASE = {{ shared_base | tojson }};
+        let activeWorkflowId = null;
+
+        async function staffReviewToken() {
+            const response = await fetch(`${SHARED_BASE}/api/orders/multi-agent-token`, {
+                method: "POST", credentials: "include", signal: AbortSignal.timeout(10000),
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || "Staff login required.");
+            return payload.access_token;
+        }
+
+        function showWorkflow(workflow) {
+            activeWorkflowId = workflow.workflow_id;
+            document.getElementById("workflowDetails").hidden = false;
+            document.getElementById("workflowPlan").textContent = workflow.planner_result?.plan || "No plan returned.";
+            const worker = workflow.worker_result || {};
+            const records = (worker.evidence || []).map(row => `[${row.id}] ${row.text}`).join("\n");
+            document.getElementById("workflowOutput").textContent = worker.output || "No output returned.";
+            document.getElementById("workflowEvidence").textContent = records || "No evidence returned.";
+            document.getElementById("workflowEvidenceLabel").textContent = `View evidence (${(worker.evidence || []).length} sources)`;
+            document.getElementById("workflowReview").textContent = workflow.reviewer_result?.review || "No review returned.";
+            const decided = workflow.human_decision?.status === "decided";
+            const failed = workflow.status === "error";
+            document.getElementById("workflowDecision").hidden = decided || failed;
+            const humanResult = document.getElementById("workflowHumanResult");
+            humanResult.hidden = !decided;
+            if (decided) {
+                const decision = workflow.human_decision;
+                document.getElementById("workflowHumanSummary").textContent = `${decision.decision} · ${decision.reviewer}`;
+                document.getElementById("workflowHumanReason").textContent = decision.comment ? `Reason: ${decision.comment}` : "";
+                const correction = document.getElementById("workflowHumanCorrection");
+                correction.hidden = !decision.corrected_output;
+                document.getElementById("workflowHumanOutput").textContent = decision.corrected_output || "";
+            }
+            document.getElementById("workflowStatus").textContent = failed
+                ? `Review failed: ${workflow.planner_result?.error || worker.error || workflow.reviewer_result?.error || "Agent error"}. No human decision is available.`
+                : decided
+                    ? `Human decision: ${workflow.human_decision.decision} by ${workflow.human_decision.reviewer}`
+                    : `Workflow ${workflow.workflow_id}: awaiting human decision. Check the evidence first.`;
+        }
+
+        async function reviewRequest(path, options = {}) {
+            const token = await staffReviewToken();
+            const response = await fetch(`${API_BASE}${path}`, {
+                ...options,
+                headers: {"Authorization": `Bearer ${token}`, "Content-Type": "application/json"},
+                signal: AbortSignal.timeout(options.timeout || 310000),
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || "Orders workflow unavailable.");
+            return payload;
+        }
+
+        document.getElementById("startWorkflow").addEventListener("click", async () => {
+            const button = document.getElementById("startWorkflow");
+            button.disabled = true;
+            document.getElementById("workflowDecision").reset();
+            document.getElementById("correctionField").hidden = true;
+            document.getElementById("correctedOutput").required = false;
+            document.getElementById("workflowStatus").textContent = "Planning, gathering evidence and reviewing...";
+            document.getElementById("workflowDetails").hidden = true;
+            try {
+                let workflow = await reviewRequest("/api/multi-agent/workflow", {method: "POST"});
+                for (let attempt = 0; workflow.status === "running" && attempt < 240; attempt++) {
+                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    workflow = await reviewRequest(`/api/multi-agent/workflow/${workflow.workflow_id}`, {timeout: 10000});
+                }
+                if (workflow.status === "running") throw new Error("Review is still running. Try Show latest review later.");
+                showWorkflow(workflow);
+            } catch (error) {
+                document.getElementById("workflowStatus").textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        document.getElementById("refreshWorkflow").addEventListener("click", async () => {
+            try {
+                const result = await reviewRequest("/api/multi-agent/workflow/status");
+                if (result.latest_workflow) showWorkflow(result.latest_workflow);
+                else document.getElementById("workflowStatus").textContent = "No recent Orders review in this session.";
+            } catch (error) {
+                document.getElementById("workflowStatus").textContent = error.message;
+            }
+        });
+
+        document.getElementById("reviewDecision").addEventListener("change", (event) => {
+            const correcting = event.target.value === "Correct";
+            document.getElementById("correctionField").hidden = !correcting;
+            document.getElementById("correctedOutput").required = correcting;
+        });
+
+        document.getElementById("workflowDecision").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const button = document.getElementById("submitDecision");
+            const decision = document.getElementById("reviewDecision").value;
+            const corrected = document.getElementById("correctedOutput").value.trim();
+            if (decision === "Correct" && !corrected) {
+                document.getElementById("workflowStatus").textContent = "Enter a corrected output.";
+                return;
+            }
+            button.disabled = true;
+            try {
+                await reviewRequest(`/api/multi-agent/workflow/${activeWorkflowId}/decision`, {
+                    method: "POST", body: JSON.stringify({decision,
+                        comment: document.getElementById("reviewComment").value.trim(),
+                        corrected_output: corrected || null}),
+                });
+                showWorkflow(await reviewRequest(`/api/multi-agent/workflow/${activeWorkflowId}`));
+            } catch (error) {
+                document.getElementById("workflowStatus").textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        });
 
         const ordersContainer =
             document.getElementById("ordersContainer");

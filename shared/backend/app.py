@@ -70,6 +70,27 @@ def orders_mcp_token():
     return response
 
 
+@app.post("/api/orders/multi-agent-token")
+@cross_origin(origins=[ORDERS_FRONTEND_ORIGIN], supports_credentials=True)
+def orders_multi_agent_token():
+    """Issue a short-lived, staff-only capability for an Orders review."""
+    if request.headers.get("Origin") != ORDERS_FRONTEND_ORIGIN:
+        return jsonify(error="Orders frontend origin is required."), 403
+    secret = os.getenv("ORDERS_MCP_SECRET", "")
+    if len(secret) < 32 or len(app.secret_key or "") < 32:
+        return jsonify(error="Orders authentication is not configured."), 503
+    if (session.get("is_staff") is not True or not session.get("staff_email")
+            or not STAFF_PASSWORD or STAFF_PASSWORD == KNOWN_DEV_STAFF_PASSWORD):
+        return jsonify(error="Staff login with private credentials is required."), 403
+    claims = {"aud": "orders-multi-agent", "scope": "orders:workflow:review",
+              "role": "staff", "staff_email": session["staff_email"]}
+    token = URLSafeTimedSerializer(secret, salt="orders-multi-agent-v1").dumps(claims)
+    response = jsonify(access_token=token, expires_in=120)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
 FALLBACK_STATS = {
     "total_orders": 0,
     "avg_rating": 0,

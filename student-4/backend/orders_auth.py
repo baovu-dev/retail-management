@@ -3,7 +3,7 @@ import os
 
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
-TOKEN_SALT = "orders-mcp-status-v1"
+TOKEN_SALT = "orders-mcp-status-v1"  # noqa: S105 - public signing salt, not a secret
 TOKEN_MAX_AGE = 120
 
 
@@ -37,6 +37,24 @@ def verify_access_token(token, order_id):
 def bearer_token(req):
     scheme, _, value = req.headers.get("Authorization", "").partition(" ")
     return value if scheme.lower() == "bearer" else ""
+
+
+def verify_review_token(token):
+    """Review capabilities cannot be used as order-status capabilities."""
+    secret = os.getenv("ORDERS_MCP_SECRET", "")
+    if len(secret) < 32:
+        return None, ({"error": "Orders authentication is not configured.", "code": "unavailable"}, 503)
+    if not isinstance(token, str) or not token or len(token) > 4096:
+        return None, ({"error": "Staff authentication is required.", "code": "unauthorized"}, 401)
+    try:
+        claims = URLSafeTimedSerializer(secret, salt="orders-multi-agent-v1").loads(token, max_age=TOKEN_MAX_AGE)
+    except (SignatureExpired, BadSignature, TypeError, ValueError):
+        return None, ({"error": "Staff authentication invalid or expired.", "code": "unauthorized"}, 401)
+    if (not isinstance(claims, dict) or claims.get("aud") != "orders-multi-agent"
+            or claims.get("scope") != "orders:workflow:review" or claims.get("role") != "staff"
+            or not isinstance(claims.get("staff_email"), str) or not claims["staff_email"]):
+        return None, ({"error": "Invalid review capability.", "code": "unauthorized"}, 401)
+    return claims, None
 
 
 def mcp_enabled():

@@ -7,11 +7,13 @@ from flask_cors import CORS
 from prompt_loader import load_prompt
 from orders_auth import bearer_token, mcp_enabled, valid_order_id, verify_access_token
 from orders_rag import rag_bp
+from orders_multi_agent import multi_agent_bp
 
 
 app = Flask(__name__)
 CORS(app)
 app.register_blueprint(rag_bp)
+app.register_blueprint(multi_agent_bp)
 
 
 DATABASE_URL = os.getenv(
@@ -483,7 +485,7 @@ if __name__ == "__main__":
     )
 
     app.run(
-        host="0.0.0.0",
+        host="0.0.0.0",  # noqa: S104 - Docker must accept connections on all interfaces
         port=5004,
-        debug=True
+        debug=os.getenv("FLASK_DEBUG", "false").strip().lower() == "true"
     )

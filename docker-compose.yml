@@ -139,6 +139,9 @@ services:
       - ORDERS_MCP_SECRET=${ORDERS_MCP_SECRET:-}
       - RAG_URL=http://host.docker.internal:8200
       - RAG_ENABLED=${RAG_ENABLED:-false}
+      - MULTI_AGENT_SERVICE_URL=http://host.docker.internal:8300
+      - MULTI_AGENT_ENABLED=${MULTI_AGENT_ENABLED:-false}
+      - MULTI_AGENT_ORDERS_SECRET=${MULTI_AGENT_ORDERS_SECRET:-}
     depends_on:
       student4-database:
         condition: service_healthy
