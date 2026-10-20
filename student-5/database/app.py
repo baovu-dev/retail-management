@@ -465,4 +465,5 @@ def recommendation_metrics():
 if __name__ == "__main__":
     ensure_database()
     print("Database API running on http://localhost:6005")
-    app.run(host="0.0.0.0", port=6005, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=6005, debug=debug_mode)  # noqa: S104 - container must listen on all interfaces

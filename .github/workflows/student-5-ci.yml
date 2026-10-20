@@ -10,10 +10,11 @@ on:
       - 'student-5/**'
       - '.github/workflows/student-5-ci.yml'
 
-# Release 1: MCP and RAG stay integrated in the app, but are disabled during CI/CD.
+# Release 1 and 2: MCP, RAG, and Multi-Agent stay integrated, but are disabled during CI/CD.
 env:
   MCP_ENABLED: "false"
   RAG_ENABLED: "false"
+  MULTI_AGENT_ENABLED: "false"
 
 jobs:
   test:
@@ -34,7 +35,7 @@ jobs:
 
       - name: Run pytest
         working-directory: student-5
-        run: pytest tests/ -v
+        run: pytest tests/ -v --ignore=tests/post_commit
 
   build:
     runs-on: ubuntu-latest
@@ -56,5 +57,73 @@ jobs:
         run: |
           echo "MCP_ENABLED=${{ env.MCP_ENABLED }}"
           echo "RAG_ENABLED=${{ env.RAG_ENABLED }}"
+          echo "MULTI_AGENT_ENABLED=${{ env.MULTI_AGENT_ENABLED }}"
           test "${{ env.MCP_ENABLED }}" = "false"
           test "${{ env.RAG_ENABLED }}" = "false"
+          test "${{ env.MULTI_AGENT_ENABLED }}" = "false"
+
+  post-commit-endpoints:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start services
+        working-directory: student-5
+        run: docker compose up -d --build
+
+      - name: Wait for the recommendation backend
+        run: |
+          for i in $(seq 1 20); do
+            code=$(curl -sS -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 20 http://localhost:5005/api/health || true)
+            if [ "$code" = "200" ]; then
+              echo "PASS http://localhost:5005/api/health -> $code"
+              exit 0
+            fi
+            echo "Retry $i/20 (got: ${code:-none})"
+            sleep 3
+          done
+          echo "FAIL backend did not become healthy"
+          exit 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install post-commit test dependencies
+        run: pip install pytest requests
+
+      - name: Run post-commit endpoint tests
+        working-directory: student-5
+        run: |
+          mkdir -p reports/post-commit
+          set +e
+          python -m pytest tests/post_commit -v | tee reports/post-commit/test-results.md
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "{\"status\": \"$([ $status -eq 0 ] && echo PASS || echo FAIL)\", \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"run_id\": \"${{ github.run_id }}\"}" >> reports/post-commit/test-audit.jsonl
+          cat > reports/post-commit/report.md << EOF
+          ## Student 5 (Recommendations & Chatbot) post-commit endpoint report
+
+          - Workflow: student-5-ci
+          - Run ID: ${{ github.run_id }}
+          - Commit SHA: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Endpoints tested: get_product_recommendations (GET /api/recommendations/product/<product_id>), recommendation_metrics (GET /api/recommendations/metrics)
+          EOF
+          exit $status
+
+      - name: Upload post-commit test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-5-post-commit-tests
+          path: student-5/reports/post-commit
+
+      - name: Stop services
+        if: always()
+        working-directory: student-5
+        run: docker compose down -v
