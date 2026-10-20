@@ -41,7 +41,7 @@ def extract(result):
 
 
 # Reuse fixtures without loading applications or contacting services at collection time.
-from test_orders_mcp import backend, shared  # noqa: E402,F401
+from test_orders_mcp import backend as backend, shared as shared  # noqa: E402 - explicit pytest fixture exports
 
 
 def test_real_mcp_transport_ownership_and_reviews_regression(backend, shared, monkeypatch, tmp_path):

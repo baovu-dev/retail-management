@@ -8,7 +8,7 @@ import time
 root = Path(__file__).resolve().parents[2]
 run = Path(os.environ["ORDERS_VALIDATION_RUN"]).resolve()
 sys.path.insert(0, str(root / "ai-services/rag-server"))
-import rag_pipeline
+import rag_pipeline  # noqa: E402 - requires repository path or validation setup above
 
 # Use the shared loader, embeddings, retrieval and answer generation.
 # Keep a validation refresh from deleting another developer's existing index.
@@ -47,7 +47,7 @@ if os.getenv("ORDERS_RAG_CAPTURE") == "true":
 
     rag_pipeline.requests.post = traced_post
 
-from rag_http_server import main
+from rag_http_server import main  # noqa: E402 - requires repository path or validation setup above
 
 if __name__ == "__main__":
     main()

@@ -42,7 +42,13 @@ def main():
     if args.feature == "student-4":
         from modes import orders_mode
         try:
-            passed = orders_mode.run(stage, args)
+            if args.mode == "testing":
+                passed = testing_mode.run(stage, feature="student-4")
+            elif args.mode in ("mcp", "rag"):
+                passed = orders_mode.run(stage, args)
+            else:
+                stage("OBSERVE", "FAIL: Orders review mode is not connected yet")
+                passed = False
         except Exception as exc:
             # Never serialize auth request arguments, cookies or credential-bearing exceptions.
             stage("OBSERVE", f"FAIL: Orders validation interrupted ({type(exc).__name__})")

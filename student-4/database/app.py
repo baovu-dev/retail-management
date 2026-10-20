@@ -273,4 +273,4 @@ if __name__ == "__main__":
 
     initialize(DB_PATH)
     print("Order Database API running on http://localhost:6004")
-    app.run(host="0.0.0.0", port=6004, debug=True)
+    app.run(host="0.0.0.0", port=6004, debug=False)  # noqa: S104 - container ingress requires all interfaces

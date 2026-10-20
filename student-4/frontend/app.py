@@ -25,4 +25,4 @@ def admin():
 if __name__ == "__main__":
     print("Order Frontend running on http://localhost:3004")
     print("Order Backend expected at http://localhost:5004")
-    app.run(host="0.0.0.0", port=3004, debug=True)
+    app.run(host="0.0.0.0", port=3004, debug=False)  # noqa: S104 - container ingress requires all interfaces
