@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product Management - Multi-Agent</title>
+    <style>
+        body{ font-family: Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; }
+        textarea{ width: 100%; box-sizing: border-box; padding: 12px; }
+        button{ padding: 10px 16px; margin: 8px 5px 8px 0; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+        #review { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Product Management - Multi-Agent</h1>
+    <p>Planner -> Worker -> Reviewer -> Human Review</p>
+
+    <label for="request">Product analysis request:</label>
+    <textarea id="request" rows="4" 
+    placeholder="Analyse product 103 and suggest improvements"></textarea>
+    <button id="run">Run Multi-Agent Workflow</button>
+
+    <h2>Workflow Result</h2>
+    <pre id="result">No workflow started.</pre>
+
+    <section id="review">
+        <h2>Human Review</h2>
+        <textarea id="comment" rows="2" placeholder="Optional reviewer comment"></textarea>
+        <textarea id="correction" rows="3" placeholder="Corrected output (for Correct)"></textarea>
+        <div>
+            <button onclick="submitDecision('approve')">Approve</button>
+            <button onclick="submitDecision('correct')">Correct</button>
+            <button onclick="submitDecision('reject')">Reject</button>
+        </div>
+    </section>
+
+    <script>
+        const API = `${location.protocol}//${location.hostname}:5002`;
+        let workflowId = null;
+
+        async function apiRequest(path, options = {}) {
+            const response = await fetch(`${API}${path}`, options);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || JSON.stringify(data));
+            return data;
+        }
+       
+        document.getElementById("run").addEventListener("click", async () => {
+            const userRequest = document.getElementById("request").value.trim();
+            if (!userRequest) return alert("Enter a request first.");
+
+            document.getElementById("result").textContent = "Running workflow...";
+            document.getElementById("review").style.display = "none";
+
+            try {
+                const data = await apiRequest("/multi-agent/workflow", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_request: userRequest })
+                });
+                workflowId = data.workflow_id || data.id;
+                document.getElementById("result").textContent = JSON.stringify(data, null, 2)
+                if (workflowId) document.getElementById("review").style.display = "block";
+            } catch (error) {
+                document.getElementById("result").textContent = error.message;
+            }   
+        });
+
+        async function submitDecision(decision) {
+            if (!workflowId) return;
+            try {
+                const data = await apiRequest(
+                    `/multi-agent/workflow/${encodeURIComponent(workflowId)}/decision`, 
+                    {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        decision, 
+                        reviewer: "student-2",
+                        comment: document.getElementById("comment").value,
+                        corrected_output: document.getElementById("correction").value
+                    })
+                }
+            );
+            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+            document.getElementById("review").style.display = "none";
+            } catch (error) {
+                document.getElementById("result").textContent = error.message;
+            }
+        }
+    </script>
+</body>
+</html>

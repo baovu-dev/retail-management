@@ -4,6 +4,7 @@ from mcp_client import call_tool
 import requests
 from rag_client import call_rag_service, RAG_FEATURE
 import os
+import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -162,5 +163,76 @@ def rag_ask():
             "detail": str(exc)
         }), 503
 
+MULTI_AGENT_SERVER_URL = os.getenv(
+    "MULTI_AGENT_SERVER_URL", "http://localhost:8300"
+)
+
+def multi_agent_enabled():
+    return os.getenv("MULTI_AGENT_ENABLED", "true").lower() in (
+"true", "1", "yes", "on")
+
+@app.route("/multi-agent/workflow", methods=["POST"])
+def start_multi_agent_workflow():
+    if not multi_agent_enabled():
+        return jsonify({"error": "Multi-Agent mode is disabled"}), 403
+
+    data = request.get_json(silent=True) or {}
+    user_request =(data.get("user_request") or "").strip()
+
+    if not user_request:
+        return jsonify({"error": "user_request is required"}), 400
+
+    try:
+        response = requests.post(
+            f"{MULTI_AGENT_SERVER_URL}/workflow",
+            json={"user_request": user_request, "feature": "student-2"},
+            timeout=120,
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.RequestException:
+        return jsonify({"error": "Multi-agent server unreachable"}), 503
+
+
+@app.route("/multi-agent/workflow/<workflow_id>/decision", methods=["POST"])
+def submit_workflow_decision(workflow_id):
+    if not multi_agent_enabled():
+        return jsonify({"error": "Multi-Agent mode is disabled"}), 403 
+
+    try: 
+            uuid.UUID(workflow_id)
+    except ValueError:
+        return jsonify({"error": "Invalid workflow_id"}), 400
+
+    data = request.get_json(silent=True) or {}
+    payload = {
+        key: data.get(key)
+         for key in ("decision", "reviewer", "comment", "corrected_output")
+    }
+
+    try: 
+        response = requests.post(
+            f"{MULTI_AGENT_SERVER_URL}/workflow/{workflow_id}/decision",
+            json=payload,
+            timeout=10,
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.RequestException:
+        return jsonify({"error": "Multi-agent server unreachable"}), 503
+
+@app.route("/multi-agent/workflow/status", methods=["GET"])
+def multi_agent_workflow_status():
+    if not multi_agent_enabled():
+        return jsonify({"error": "Multi-Agent mode is disabled"}), 403
+
+    
+    try:
+        response = requests.get(
+            f"{MULTI_AGENT_SERVER_URL}/workflow/status",
+            timeout=10,
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.RequestException:
+        return jsonify({"error": "Multi-agent server unreachable"}), 503
+        
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002, debug=True)

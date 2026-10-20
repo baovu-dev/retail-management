@@ -65,6 +65,7 @@ services:
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - MCP_URL=http://host.docker.internal:8100/mcp
       - RAG_URL=http://host.docker.internal:8200
+      - MULTI_AGENT_SERVER_URL=http://host.docker.internal:8300
     depends_on:
       - student2-database
 
