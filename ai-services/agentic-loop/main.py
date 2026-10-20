@@ -28,12 +28,14 @@ def main():
     parser = argparse.ArgumentParser(description="KICKLAB shared agentic loop")
     parser.add_argument("--mode", required=True, choices=MODES.keys())
     parser.add_argument("--feature", choices=("student-1", "student-4"), default="student-1")
-    parser.add_argument("--evidence-file", type=Path, help="Orders RAG: save a new actual run, or review a saved run")
+    parser.add_argument("--evidence-file", type=Path, help="Orders RAG evidence or explicit Orders cloud artifact bundle JSON")
     parser.add_argument("--review-file", type=Path, help="Orders RAG: source-grounded analyst review of the saved evidence")
     parser.add_argument("--workflow-id", help="Orders multi-agent: existing workflow to review without modifying it")
     parser.add_argument("--history-file", type=Path, help="Orders multi-agent: original server history")
     parser.add_argument("--audit-file", type=Path, help="Orders multi-agent: original server coordination audit")
     parser.add_argument("--output-dir", type=Path, default=Path(__file__).parent / "outputs")
+    parser.add_argument("--cloud-decision-file", type=Path, help="Orders cloud: separate human release decision JSON")
+    parser.add_argument("--cloud-no-advisory", action="store_true", help="Orders cloud: offline deterministic checks only; cannot approve release")
     args = parser.parse_args()
     if args.feature == "student-4" and args.mode == "ai-mode":
         parser.error("Orders extends MCP/RAG only; existing AI validation uses student-1")
@@ -53,6 +55,9 @@ def main():
             elif args.mode == "multi-agent":
                 from modes import orders_workflow_review
                 passed = orders_workflow_review.run(stage, args)
+            elif args.mode == "cloud":
+                from modes import orders_cloud_review
+                passed = orders_cloud_review.run(stage, args)
             elif args.mode in ("mcp", "rag"):
                 passed = orders_mode.run(stage, args)
             else:

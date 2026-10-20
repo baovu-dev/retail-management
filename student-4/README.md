@@ -250,3 +250,10 @@ test runs real local HTTP/MCP with an isolated fixture, not the complete group a
 The existing `.github/workflows/student-4-ci.yml` runs tests and Docker validation.
 See [validation scripts](../scripts/orders/README.md), [agentic review](ORDERS_AGENTIC.md)
 and [retained evidence](evidence/README.md) for scope and historical limitations.
+
+## Orders cloud evidence review
+
+Use the offline [Orders Cloud Review runbook](ORDERS_CLOUD_REVIEW.md) for explicit
+run-bound validation/deployment artifacts, deterministic failure checks and a
+separate human release decision. Missing group tests or deployment evidence
+remain release blockers; this path does not deploy Azure or validate bonuses.
