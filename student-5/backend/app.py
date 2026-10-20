@@ -796,4 +796,5 @@ if __name__ == "__main__":
     print("Student 5 API backend running on http://localhost:5005")
     print("Frontend expected at http://localhost:3005")
     print("Database API expected at http://localhost:6005")
-    app.run(host="0.0.0.0", port=5005, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=5005, debug=debug_mode)  # noqa: S104 - container must listen on all interfaces

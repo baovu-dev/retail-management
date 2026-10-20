@@ -36,4 +36,5 @@ def multi_agent_page():
 if __name__ == "__main__":
     print("Student 5 frontend running on http://localhost:3005")
     print("API backend expected at http://localhost:5005")
-    app.run(host="0.0.0.0", port=3005, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=3005, debug=debug_mode)  # noqa: S104 - container must listen on all interfaces
