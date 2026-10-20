@@ -1,0 +1,105 @@
+[
+  {
+    "check": "ready 5000",
+    "passed": true,
+    "detail": "real HTTP"
+  },
+  {
+    "check": "ready 3004",
+    "passed": true,
+    "detail": "real HTTP"
+  },
+  {
+    "check": "ready 5004",
+    "passed": true,
+    "detail": "real HTTP"
+  },
+  {
+    "check": "ready 8200",
+    "passed": true,
+    "detail": "real HTTP"
+  },
+  {
+    "check": "register isolated customer",
+    "passed": true,
+    "detail": 201
+  },
+  {
+    "check": "create recording fixture",
+    "passed": true,
+    "detail": "Copied DB only"
+  },
+  {
+    "check": "homepage login",
+    "passed": true,
+    "detail": "HttpOnly cookie; value omitted"
+  },
+  {
+    "check": "order details",
+    "passed": true,
+    "detail": "Own test order and items displayed"
+  },
+  {
+    "check": "existing AI with real Ollama",
+    "passed": true,
+    "detail": {
+      "source": "ollama",
+      "answer": "The current status of the order is **PENDING**."
+    }
+  },
+  {
+    "check": "same-session MCP",
+    "passed": true,
+    "detail": {
+      "order_id": 13,
+      "source": "mcp",
+      "status": "PENDING",
+      "tool": "get_order_status"
+    }
+  },
+  {
+    "check": "same-session RAG success",
+    "passed": true,
+    "detail": {
+      "query": "Can a CONFIRMED order be cancelled?",
+      "response": {
+        "answer": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. [2]",
+        "citations": [
+          {
+            "chunk_id": "knowledge/student-4/order-cancellation.md#1",
+            "ref": 2,
+            "source_id": "knowledge/student-4/order-cancellation.md"
+          }
+        ],
+        "confidence_category": "High",
+        "feature": "student-4",
+        "query": "Can a CONFIRMED order be cancelled?",
+        "status": "success"
+      },
+      "elapsed_seconds": 65.167
+    }
+  },
+  {
+    "check": "same-session RAG insufficient_context",
+    "passed": true,
+    "detail": {
+      "query": "Exactly what date will my CONFIRMED order be delivered?",
+      "response": {
+        "answer": "Insufficient context: the Orders documentation cannot answer this question.",
+        "citations": [],
+        "confidence_category": "Insufficient",
+        "feature": "student-4",
+        "query": "Exactly what date will my CONFIRMED order be delivered?",
+        "status": "insufficient_context"
+      },
+      "elapsed_seconds": 19.191
+    }
+  },
+  {
+    "check": "recording fixture available",
+    "passed": true,
+    "detail": {
+      "pending_order_id": 13
+    }
+  }
+]

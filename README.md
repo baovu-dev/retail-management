@@ -30,9 +30,15 @@ Leave `ollama serve` running in its own terminal, anything AI-related will fail 
 docker compose up --build
 ```
 
-This should spin up all 5 features plus the shared login/dashboard stuff.
-Still a work in progress - not every service is wired into this file yet,
-check with whoever owns a feature if theirs isn't showing up.
+This starts the shared login/dashboard and the five feature services. See the
+[Orders runbook](student-4/README.md) for local configuration, host AI services,
+service startup and verification. The browser uses localhost endpoints; services
+inside Docker use Compose service names.
+
+For an existing installation, back up data before rebuilding or recreating
+containers. Orders now uses a persistent named volume and non-destructive startup;
+old container databases require an explicit import. Reviews and Customers still
+run seed initializers, so coordinate with their owners before restarting them.
 
 You can also just run each individual feature on its own instead of the whole thing:
 
@@ -65,4 +71,11 @@ a bit different per student.
 - `docs/` - reports and diagrams
 - `docker-compose.yml` - runs the whole thing together
 
-Still Release 0, more to come.
+See the Orders runbook and retained evidence for the scope of verified flows.
+
+## Release 1 Orders
+
+See the [Orders runbook](student-4/README.md) and
+[retained validation evidence](student-4/evidence/README.md). AI Mode/Ollama, MCP,
+RAG and the agentic loop run locally outside Docker. Release 2 implementation
+is a separate next phase.

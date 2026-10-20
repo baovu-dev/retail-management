@@ -1,0 +1,46 @@
+{
+  "baseline_reused_without_retest": {
+    "MCP_browser": {
+      "pass": 23,
+      "fail": 0
+    },
+    "RAG_browser": {
+      "pass": 11,
+      "fail": 0
+    }
+  },
+  "new_results": {
+    "MCP_agentic": {
+      "pass": 6,
+      "fail": 0
+    },
+    "RAG_transport": {
+      "pass": 5,
+      "fail": 0,
+      "semantic_review_required": true
+    },
+    "RAG_claim_review": {
+      "pass": 3,
+      "fail": 2
+    },
+    "local_CI_Python_3_11": {
+      "pass": 128,
+      "fail": 0,
+      "skip": 1,
+      "seconds": 5.22
+    },
+    "built_image_integration": {
+      "pass": 13,
+      "fail": 0
+    },
+    "original_DB_hashes_unchanged": 5,
+    "default_AI_actual_Ollama": "pass"
+  },
+  "not_run": [
+    "remote CI",
+    "full multi-student root Compose startup",
+    "Student 1 live DB agentic cases",
+    "default 8B model RAG evaluation",
+    "commit/push/PR/merge"
+  ]
+}

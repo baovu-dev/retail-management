@@ -209,13 +209,13 @@
 
             <div class="header-actions">
                 <a href="/shop" class="btn btn-glass">Browse</a>
-                <a href="http://localhost:3005/" class="btn btn-gradient">Help Me Choose</a>
+                <a href="{{ links.chatbot }}/" class="btn btn-gradient">Help Me Choose</a>
 
-                <a href="http://localhost:5003/?customer_id={{ customer.customer_id }}" class="btn btn-glass">
+                <a href="{{ links.customers }}/?customer_id={{ customer.customer_id }}" class="btn btn-glass">
                     My Account
                 </a>
 
-                <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-glass">
+                <a href="{{ links.orders }}/?customer_id={{ customer.customer_id }}" class="btn btn-glass">
                     My Orders
                 </a>
 

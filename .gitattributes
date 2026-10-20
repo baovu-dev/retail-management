@@ -1,0 +1,2 @@
+# Preserve byte-exact Docker terminal captures, including emitted trailing spaces.
+student-4/evidence/orders-final-2026-10-01/attempt-*/console.log whitespace=-blank-at-eol

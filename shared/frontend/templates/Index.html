@@ -23,7 +23,7 @@
 
   <header id="header">
     <div class="container header-inner">
-      <a href="http://localhost:5000/" class="logo">
+      <a href="/" class="logo">
         <span class="logo-mark">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
             stroke-linecap="round" stroke-linejoin="round">
@@ -37,16 +37,16 @@
       <ul class="main-nav">
         <li><a href="#finder">Get Started</a></li>
         <li><a href="/shop">Shop</a></li>
-        <li><a href="http://localhost:5001/">Reviews</a></li>
+        <li><a href="{{ links.reviews }}/">Reviews</a></li>
       </ul>
 
       <div class="header-actions">
         <a href="/shop" class="btn btn-glass">Browse</a>
-        <a href="http://localhost:3005/" class="btn btn-gradient">Help Me Choose</a>
+        <a href="{{ links.chatbot }}/" class="btn btn-gradient">Help Me Choose</a>
 
         {% if customer %}
-        <a href="http://localhost:5003/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Account</a>
-        <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Orders</a>
+        <a href="{{ links.customers }}/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Account</a>
+        <a href="{{ links.orders }}/?customer_id={{ customer.customer_id }}" class="btn btn-glass">My Orders</a>
         <a href="/logout" class="btn btn-login">Logout</a>
         {% else %}
         <a href="/login" class="btn btn-login">Log in</a>
@@ -82,7 +82,7 @@
         </p>
 
         <div class="hero-actions">
-          <a href="http://localhost:3005/" class="btn btn-gradient">Ask AI for Picks</a>
+          <a href="{{ links.chatbot }}/" class="btn btn-gradient">Ask AI for Picks</a>
           <a href="/shop" class="btn btn-glass">Shop Now</a>
         </div>
 
@@ -159,23 +159,23 @@
       <div class="finder-box">
         <div class="finder-options" id="finderOptions">
 
-          <a href="http://localhost:3005/" class="chip chip-link">
+          <a href="{{ links.chatbot }}/" class="chip chip-link">
             👟 Everyday
           </a>
 
-          <a href="http://localhost:3005/" class="chip chip-link">
+          <a href="{{ links.chatbot }}/" class="chip chip-link">
             🏀 Basketball
           </a>
 
-          <a href="http://localhost:3005/" class="chip chip-link">
+          <a href="{{ links.chatbot }}/" class="chip chip-link">
             ✨ Street style
           </a>
 
-          <a href="http://localhost:3005/" class="chip chip-link">
+          <a href="{{ links.chatbot }}/" class="chip chip-link">
             ⚡ Active
           </a>
 
-          <a href="http://localhost:3005/" class="chip chip-link chip-highlight">
+          <a href="{{ links.chatbot }}/" class="chip chip-link chip-highlight">
             🎯 Not sure? Ask our AI
           </a>
 
@@ -235,13 +235,13 @@
 
         <div class="cta-actions">
 
-          <a href="http://localhost:3005/" class="btn btn-glass">
+          <a href="{{ links.chatbot }}/" class="btn btn-glass">
             Try AI Assistant
           </a>
 
           {% if customer %}
 
-          <a href="http://localhost:3004/?customer_id={{ customer.customer_id }}" class="btn btn-login-light">
+          <a href="{{ links.orders }}/?customer_id={{ customer.customer_id }}" class="btn btn-login-light">
             View My Orders
           </a>
 

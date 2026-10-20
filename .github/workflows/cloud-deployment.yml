@@ -1,0 +1,133 @@
+name: cloud-deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # lets azure/login request an OIDC token (no stored Azure password)
+  contents: read
+
+concurrency:
+  group: cloud-deployment
+  cancel-in-progress: false   # never run two deployments at the same time
+
+env:
+  RESOURCE_GROUP: kicklab-rg
+
+jobs:
+  validate:
+    name: Post-commit validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: pip install pytest requests
+
+      - name: Start integrated application
+        run: docker compose up -d --build
+
+      - name: Wait for services
+        run: |
+          for url in http://localhost:5000/ http://localhost:5001/ http://localhost:6001/reviews http://localhost:5005/api/health; do
+            for i in $(seq 1 15); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
+              if [[ "$code" =~ ^[23] ]]; then echo "UP $url"; break; fi
+              sleep 4
+            done
+          done
+
+      - name: Run every student's post-commit endpoint tests
+        run: |
+          mkdir -p reports/cloud-validation
+          status=0
+          for dir in student-*/tests/post_commit; do
+            [ -d "$dir" ] || continue
+            echo "### $dir" | tee -a reports/cloud-validation/test-results.md
+            set +e
+            python -m pytest "$dir" -v | tee -a reports/cloud-validation/test-results.md
+            result=${PIPESTATUS[0]}
+            set -e
+            [ "$result" -eq 0 ] || status=1
+          done
+          echo "{\"status\": \"$([ $status -eq 0 ] && echo PASS || echo FAIL)\", \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"run_id\": \"${{ github.run_id }}\"}" >> reports/cloud-validation/test-audit.jsonl
+          exit $status
+
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-validation-tests
+          path: reports/cloud-validation
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
+
+  deploy:
+    name: Deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    needs: validate   # only deploys if every post-commit test passed
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC, managed identity)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up deployment environment
+        run: bash scripts/deploy/env-setup.sh
+
+      - name: Build and push images
+        run: BUILD_MODE=docker bash scripts/deploy/build-images.sh
+
+      - name: Azure login (refresh before environment step)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create Container Apps environment
+        run: bash scripts/deploy/deploy-azure-env.sh
+
+      - name: Azure login (refresh before deploying apps)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy apps
+        env:
+          STAFF_PASSWORD: ${{ secrets.STAFF_PASSWORD }}
+        run: bash scripts/deploy/deploy-azure.sh
+
+      - name: Azure login (refresh before testing)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate deployment and generate evidence
+        run: bash scripts/deploy/deployment-testing.sh
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-deployment-evidence
+          path: docs/release-2/evidence/cloud/deployment-results.md

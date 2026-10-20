@@ -1,13 +1,32 @@
+import os
+
 from mcp.server.fastmcp import FastMCP
+from tools.student1_reviews import (
+    get_rating_summary,
+    get_reviews_by_product,
+    get_flagged_reviews,
+)
+from tools.student4_orders import get_order_status as read_order_status
 from tools.student1_reviews import get_rating_summary, get_reviews_by_product, get_flagged_reviews
 from tools.student2_products import get_product_by_id
+from tools.student3_customers import get_customer_summary
+
 from tools.student5_recommendations import (
     get_customer_browsing_history,
     get_customer_recommendations,
     get_recommendation_metrics,
 )
 
-mcp = FastMCP("KICKLAB Shared MCP", host="0.0.0.0", port=8100)
+mcp = FastMCP("KICKLAB Shared MCP", host="0.0.0.0", port=8100)  # noqa: S104 - must accept connections from Docker via host.docker.internal
+
+@mcp.tool()
+def get_order_status(order_id: int, access_token: str) -> dict:
+    """Read one order's status using a short-lived shared-login token scoped to that order.
+
+    The Orders API validates the signature, expiry and customer ownership (or staff role).
+    Never supply or return customer details. No writes are supported.
+    """
+    return read_order_status(order_id, access_token)
 
 
 @mcp.tool()
@@ -33,6 +52,9 @@ def product_by_id(product_id: int) -> dict:
     return get_product_by_id(product_id)
 
 @mcp.tool()
+def customer_summary(customer_id: int) -> dict:
+    """Return safe account details for one KICKLAB customer. Read-only."""
+    return get_customer_summary(customer_id)
 def customer_recommendations(customer_id: int) -> dict:
     """Return saved sneaker recommendations for one customer. Read-only."""
     return get_customer_recommendations(customer_id)

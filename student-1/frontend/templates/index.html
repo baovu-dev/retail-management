@@ -123,15 +123,16 @@
       </a>
 
       <ul class="main-nav">
-        <li><a href="http://localhost:3002">Shop</a></li>
-        <li><a href="http://localhost:3004">Orders</a></li>
-        <li><a href="http://localhost:3005">Chatbot</a></li>
+        <li><a href="{{ links.products }}">Shop</a></li>
+        <li><a href="{{ links.orders }}">Orders</a></li>
+        <li><a href="{{ links.chatbot }}">Chatbot</a></li>
       </ul>
 
       <div class="header-actions">
           <a href="/mcp" class="btn btn-glass">MCP Tools</a>
           <a href="/rag" class="btn btn-glass">Reviews Assistant</a>
-          <a href="http://localhost:5000/staff_dashboard" class="btn btn-glass">Back to Dashboard</a>        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+          <a href="/multi-agent" class="btn btn-glass">Multi-Agent</a>
+          <a href="{{ links.shared }}/staff_dashboard" class="btn btn-glass">Back to Dashboard</a>        <button class="menu-toggle" id="menuToggle" aria-label="Menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="6" x2="21" y2="6"/>
             <line x1="3" y1="12" x2="21" y2="12"/>

@@ -8,10 +8,12 @@ on:
     paths:
       - 'student-1/**'
 
-# Release 1: MCP and RAG are disabled during CI/CD
+# Release 1 & 2: MCP, RAG and Multi-Agent are disabled during CI/CD
 env:
+  AI_MODE_ENABLED: "false"
   MCP_ENABLED: "false"
   RAG_ENABLED: "false"
+  MULTI_AGENT_ENABLED: "false"
 
 jobs:
   test:
@@ -32,7 +34,7 @@ jobs:
 
       - name: Run pytest
         working-directory: student-1
-        run: pytest tests/ -v
+        run: pytest tests/ -v --ignore=tests/post_commit
 
   build-images:
     runs-on: ubuntu-latest
@@ -82,6 +84,32 @@ jobs:
           check_url "http://localhost:5001/"
           check_url "http://localhost:6001/reviews"
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install post-commit test dependencies
+        run: pip install pytest requests
+
+      - name: Run post-commit endpoint tests
+        working-directory: student-1
+        run: |
+          mkdir -p reports/post-commit
+          set +e
+          python -m pytest tests/post_commit -v | tee reports/post-commit/test-results.md
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "{\"status\": \"$([ $status -eq 0 ] && echo PASS || echo FAIL)\", \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"run_id\": \"${{ github.run_id }}\"}" >> reports/post-commit/test-audit.jsonl
+          exit $status
+
+      - name: Upload post-commit test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-1-post-commit-tests
+          path: student-1/reports/post-commit
+
       - name: Stop services
         if: always()
         working-directory: student-1
@@ -106,6 +134,10 @@ jobs:
             "run_id": "${{ github.run_id }}",
             "commit_sha": "${{ github.sha }}",
             "branch": "${{ github.ref_name }}"
+            "mcp_enabled": "${{ env.MCP_ENABLED }}",
+            "rag_enabled": "${{ env.RAG_ENABLED }}",
+            "multi_agent_enabled": "${{ env.MULTI_AGENT_ENABLED }}",
+            "post_commit_endpoints_tested": ["list_reviews", "get_review_stats"]
           }
           EOF
 
@@ -120,6 +152,8 @@ jobs:
           - Branch: ${{ github.ref_name }}
           - MCP enabled in CI: ${{ env.MCP_ENABLED }}
           - RAG enabled in CI: ${{ env.RAG_ENABLED }}
+          - Multi-Agent enabled in CI: ${{ env.MULTI_AGENT_ENABLED }}
+          - Post-commit endpoints tested: list_reviews (GET /reviews/<product_id>), get_review_stats (GET /reviews/stats)
           EOF
 
       - name: Generate run-view.md

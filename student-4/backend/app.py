@@ -5,10 +5,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from prompt_loader import load_prompt
+from orders_auth import bearer_token, mcp_enabled, valid_order_id, verify_access_token
+from orders_rag import rag_bp
 
 
 app = Flask(__name__)
 CORS(app)
+app.register_blueprint(rag_bp)
 
 
 DATABASE_URL = os.getenv(
@@ -104,6 +107,61 @@ def db_delete(path):
         )
 
         return DbResponse()
+
+
+def call_order_status(order_id, access_token):
+    # Keep existing CRUD / AI available even when MCP is disabled or not installed.
+    from orders_mcp_client import call_order_status as call
+    return call(order_id, access_token)
+
+
+@app.post("/api/mcp/order-status")
+def mcp_order_status():
+    if not mcp_enabled():
+        return jsonify(error="MCP Mode is disabled.", code="disabled"), 403
+    data = request.get_json(silent=True)
+    order_id = data.get("order_id") if isinstance(data, dict) else None
+    if not valid_order_id(order_id):
+        return jsonify(error="order_id must be a positive integer.", code="invalid_input"), 400
+    token = bearer_token(request)
+    _, error = verify_access_token(token, order_id)
+    if error:
+        return jsonify(error[0]), error[1]
+    try:
+        result = call_order_status(order_id, token)
+        if "error" in result:
+            status = {"invalid_input": 400, "unauthorized": 401, "forbidden": 403,
+                      "not_found": 404, "unavailable": 503}.get(result.get("code"), 502)
+            return jsonify(result), status
+        if result.get("order_id") != order_id or result.get("status") not in {"PENDING", "CONFIRMED", "CANCELLED"}:
+            raise ValueError("Invalid MCP result")
+        return jsonify(order_id=order_id, status=result["status"], source="mcp", tool="get_order_status")
+    except Exception:
+        # Do not expose exception details that may contain bearer credentials.
+        return jsonify(error="Shared MCP server is unavailable.", code="unavailable"), 503
+
+
+@app.get("/api/internal/mcp/orders/<int:order_id>/status")
+def internal_order_status(order_id):
+    if not mcp_enabled():
+        return jsonify(error="MCP Mode is disabled.", code="disabled"), 403
+    if not valid_order_id(order_id):
+        return jsonify(error="Invalid order ID.", code="invalid_input"), 400
+    claims, error = verify_access_token(bearer_token(request), order_id)
+    if error:
+        return jsonify(error[0]), error[1]
+    response = db_get(f"/orders/{order_id}")
+    if response.status_code == 404:
+        return jsonify(error="Order not found.", code="not_found"), 404
+    if response.status_code != 200:
+        return jsonify(error="Order database service is unavailable.", code="unavailable"), 503
+    try:
+        order = response.json()
+        if claims["role"] != "staff" and order["customer_id"] != claims["customer_id"]:
+            return jsonify(error="Order status access denied.", code="forbidden"), 403
+        return jsonify(order_id=order["order_id"], status=order["status"])
+    except (ValueError, KeyError, TypeError):
+        return jsonify(error="Invalid order database response.", code="unavailable"), 503
 
 
 def ask_ollama(prompt):
@@ -271,6 +329,8 @@ def order_count():
     methods=["POST"]
 )
 def order_assistant():
+    if os.getenv("AI_ENABLED", "true").strip().lower() not in {"1", "true", "yes", "on"}:
+        return jsonify(error="AI Mode is disabled.", code="disabled"), 403
     data = request.json or {}
 
     question = str(

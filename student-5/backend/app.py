@@ -8,6 +8,11 @@ from flask_cors import CORS
 
 from catalog import get_all_products, get_product
 from mcp_client import call_tool, mcp_mode_is_enabled
+from multi_agent_client import (
+    call_multi_agent,
+    is_valid_workflow_id,
+    multi_agent_mode_is_enabled,
+)
 from prompt_loader import load_prompt
 from rag_client import call_rag_service, rag_mode_is_enabled
 
@@ -749,8 +754,47 @@ def rag_retrieve():
     return jsonify(payload), status
 
 
+# ── Shared local Multi-Agent server (not containerised) ──
+
+@app.route("/api/multi-agent/workflow", methods=["POST"])
+def multi_agent_workflow():
+    if not multi_agent_mode_is_enabled(request):
+        return jsonify({"status": "error", "error": "Multi-Agent mode is disabled."}), 403
+    user_request = str(_request_value("user_request") or "").strip()
+    if not user_request:
+        return jsonify({"status": "error", "error": "user_request is required"}), 400
+    if len(user_request) > 300:
+        return jsonify({"status": "error", "error": "user_request must be under 300 characters"}), 400
+    try:
+        status, payload = call_multi_agent("POST", "/workflow", {"user_request": user_request, "feature": "student-5"})
+    except requests.RequestException as exc:
+        return jsonify({"status": "error", "error": f"Multi-Agent server unreachable: {exc}"}), 503
+    return jsonify(payload), status
+
+
+@app.route("/api/multi-agent/workflow/<workflow_id>/decision", methods=["POST"])
+def multi_agent_decision(workflow_id):
+    if not multi_agent_mode_is_enabled(request):
+        return jsonify({"status": "error", "error": "Multi-Agent mode is disabled."}), 403
+    if not is_valid_workflow_id(workflow_id):
+        return jsonify({"status": "error", "error": "invalid workflow id"}), 400
+    body = request.get_json(silent=True) or {}
+    payload = {
+        "decision": body.get("decision") or _request_value("decision"),
+        "reviewer": body.get("reviewer") or _request_value("reviewer"),
+        "comment": body.get("comment") or _request_value("comment"),
+        "corrected_output": body.get("corrected_output") or _request_value("corrected_output") or None,
+    }
+    try:
+        status, result = call_multi_agent("POST", f"/workflow/{workflow_id}/decision", payload)
+    except requests.RequestException as exc:
+        return jsonify({"status": "error", "error": f"Multi-Agent server unreachable: {exc}"}), 503
+    return jsonify(result), status
+
+
 if __name__ == "__main__":
     print("Student 5 API backend running on http://localhost:5005")
     print("Frontend expected at http://localhost:3005")
     print("Database API expected at http://localhost:6005")
-    app.run(host="0.0.0.0", port=5005, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=5005, debug=debug_mode)  # noqa: S104 - container must listen on all interfaces

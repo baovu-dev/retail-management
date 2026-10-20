@@ -4,15 +4,39 @@ on:
   push:
     paths:
       - 'student-4/**'
+      - 'docs/release-1/student-4/**'
+      - 'scripts/**'
+      - 'ai-services/mcp-server/**'
+      - 'ai-services/rag-server/**'
+      - 'ai-services/agentic-loop/**'
+      - 'shared/backend/**'
+      - 'shared/Dockerfile'
+      - 'shared/.dockerignore'
+      - 'shared/frontend/**'
+      - 'docker-compose.yml'
       - '.github/workflows/student-4-ci.yml'
   pull_request:
     paths:
       - 'student-4/**'
+      - 'docs/release-1/student-4/**'
+      - 'scripts/**'
+      - 'ai-services/mcp-server/**'
+      - 'ai-services/rag-server/**'
+      - 'ai-services/agentic-loop/**'
+      - 'shared/backend/**'
+      - 'shared/Dockerfile'
+      - 'shared/.dockerignore'
+      - 'shared/frontend/**'
+      - 'docker-compose.yml'
       - '.github/workflows/student-4-ci.yml'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      AI_ENABLED: 'false'
+      MCP_ENABLED: 'false'
+      RAG_ENABLED: 'false'
 
     steps:
       - name: Checkout repository
@@ -34,6 +58,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: test
+    env:
+      AI_ENABLED: 'false'
+      MCP_ENABLED: 'false'
+      RAG_ENABLED: 'false'
 
     steps:
       - name: Checkout repository
@@ -45,4 +73,10 @@ jobs:
 
       - name: Validate Docker Compose config
         working-directory: student-4
-        run: docker compose config
+        run: docker compose config --quiet
+
+      - name: Validate root Docker Compose config
+        run: docker compose config --quiet
+
+      - name: Build shared login image
+        run: docker build -t kicklab-shared ./shared

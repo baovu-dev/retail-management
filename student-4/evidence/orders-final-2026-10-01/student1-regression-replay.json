@@ -1,0 +1,22 @@
+{
+  "method": "Replay the same real captured model output and retrieved documents through baseline and modified Student 1 paths; not a fresh model run.",
+  "generator_unchanged": true,
+  "cases": [
+    {
+      "query": "When does a review get flagged?",
+      "identical_baseline_and_current": true,
+      "status": "success"
+    },
+    {
+      "query": "Can I review a product I did not buy?",
+      "identical_baseline_and_current": true,
+      "status": "success"
+    },
+    {
+      "query": "What is the weather in Sydney?",
+      "identical_baseline_and_current": true,
+      "status": "insufficient_context"
+    }
+  ],
+  "semantic_limitation": "The 0.5B flagging answer omits the sentiment threshold in both paths; existing model quality failure, not an Orders code regression."
+}

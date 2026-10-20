@@ -1,0 +1,71 @@
+{
+  "reviewer": "Codex full-answer/source review; not a human assessment score",
+  "evidence_sha256": "080232decedb3831b70721a3450c2e8d2c2866524f24a604f3d268558a65674f",
+  "cases": [
+    {
+      "id": "statuses",
+      "verdict": "supported",
+      "answer_quote": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED. [1]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "# KICKLAB Orders: supported statuses Orders have exactly three supported statuses: PENDING, CONFIRMED and CANCELLED."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The complete answer lists exactly PENDING, CONFIRMED and CANCELLED, as documented and accepted by the existing API."
+    },
+    {
+      "id": "confirmed_cancel",
+      "verdict": "supported",
+      "answer_quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED. [2]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "The current API sets an existing order to CANCELLED regardless of its previous status, including CONFIRMED."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The selected sentence explicitly includes CONFIRMED among previous statuses that can be set to CANCELLED; it answers the qualified case."
+    },
+    {
+      "id": "records",
+      "verdict": "supported",
+      "answer_quote": "It preserves the order and its items instead of deleting them. [1]",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "It preserves the order and its items instead of deleting them."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The selected cancellation sentence explicitly preserves both the order and its items, matching the existing cancellation operation."
+    },
+    {
+      "id": "delivery_unknown",
+      "verdict": "correct_abstention",
+      "answer_quote": "Insufficient context: the Orders documentation cannot answer this question.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-statuses.md",
+          "quote": "CONFIRMED does not mean shipped or delivered; no shipping or delivery status is implemented."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "The documentation does not provide an individual delivery date. A statement that delivery is unimplemented would not answer the requested date; abstention is correct."
+    },
+    {
+      "id": "refund_unknown",
+      "verdict": "correct_abstention",
+      "answer_quote": "Insufficient context: the Orders documentation cannot answer this question.",
+      "grounds": [
+        {
+          "source_id": "knowledge/student-4/order-cancellation.md",
+          "quote": "No refund amount or refund processing is implemented by this operation."
+        }
+      ],
+      "unsupported_claims": [],
+      "rationale": "No processing or bank timing is documented; the requested business-day count cannot be established."
+    }
+  ]
+}

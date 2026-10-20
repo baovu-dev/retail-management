@@ -1,0 +1,7 @@
+{
+  "check": "default-enabled AI after flag addition",
+  "http": 200,
+  "source": "ollama",
+  "answer_present": true,
+  "pass": true
+}

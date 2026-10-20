@@ -1,0 +1,5 @@
+{
+  "duplicate_capture_rejected": true,
+  "capture_unchanged": true,
+  "reuse": "Successful full coverage run reused the existing isolated DB/index; duplicate name rejected before launching services."
+}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICKLAB — Recommendation agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .agents { width: min(1100px, 92vw); margin: 108px auto 64px; position: relative; z-index: 1; }
+    .agents-intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 28px; }
+    .agents-kicker { display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+    .agents-intro h1 { font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 8px; }
+    .agents-intro p { max-width: 54ch; color: var(--text-muted); }
+    .mode-switch { display: flex; align-items: center; gap: 12px; background: #fff; color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow-sm); border-radius: 999px; padding: 8px 8px 8px 16px; flex-shrink: 0; }
+    .mode-switch span { font-size: 0.85rem; font-weight: 600; }
+    .switch { position: relative; width: 52px; height: 30px; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .switch-track { display: block; width: 52px; height: 30px; border-radius: 999px; background: #ddd9e8; }
+    .switch-track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(26, 21, 40, 0.2); transition: transform 0.2s; }
+    .switch input:checked + .switch-track { background: var(--orange); }
+    .switch input:checked + .switch-track::after { transform: translateX(22px); }
+    .composer, .sheet, .step { background: #fff; border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow-sm); padding: 22px; }
+    .composer { margin-bottom: 16px; }
+    .composer h2, .step-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+    #request { width: 100%; min-height: 90px; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--border); background: #faf9fd; font-family: inherit; font-size: 1rem; }
+    #request:focus { outline: none; border-color: var(--orange); }
+    #workflow-form button, .decision button { margin-top: 14px; width: 100%; border: 0; border-radius: 12px; padding: 12px 14px; font-family: inherit; font-weight: 700; color: #fff; background: var(--gradient); cursor: pointer; }
+    .step { margin-bottom: 12px; }
+    .step pre, .step p { white-space: pre-wrap; line-height: 1.55; }
+    .step ul { margin-top: 10px; padding-left: 18px; color: var(--text-muted); }
+    .decision { display: flex; flex-direction: column; gap: 10px; }
+    .decision input, .decision select, .decision textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border); font-family: inherit; background: #faf9fd; }
+    .meta { color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; }
+    .is-error { color: #c2185b; }
+    @media (max-width: 860px) { .agents-intro { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-grid"></div>
+  </div>
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M2 18h20l-2-9H4L2 18z"/><path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>
+        </span>
+        <span class="logo-name">KICKLAB</span>
+      </a>
+      <ul class="main-nav">
+        <li><a href="/#chatbot">Chat</a></li>
+        <li><a href="/mcp">MCP</a></li>
+        <li><a href="/rag">RAG</a></li>
+        <li><a href="/multi-agent">Agents</a></li>
+      </ul>
+      <div class="header-actions">
+        <a href="/" class="btn btn-glass">Back to assistant</a>
+      </div>
+    </div>
+  </header>
+  <main class="agents">
+    <div class="agents-intro">
+      <div>
+        <span class="agents-kicker">Planner, worker, reviewer</span>
+        <h1>Recommendation agents</h1>
+        <p>A request goes through this feature's backend to the shared Multi-Agent Server. You make the final decision.</p>
+      </div>
+      <label class="mode-switch">
+        <span id="agent-state">Agents on</span>
+        <span class="switch">
+          <input id="agent-toggle" type="checkbox" checked>
+          <span class="switch-track"></span>
+        </span>
+      </label>
+    </div>
+    <section class="composer">
+      <h2>Request</h2>
+      <form id="workflow-form">
+        <textarea id="request" maxlength="300" required placeholder="Summarise saved recommendations for customer 1"></textarea>
+        <button type="submit">Run workflow</button>
+      </form>
+    </section>
+    <div id="workflow-result"></div>
+  </main>
+  <script>
+    const API_BASE = '{{ api_base }}';
+    const toggle = document.getElementById('agent-toggle');
+    const state = document.getElementById('agent-state');
+    const result = document.getElementById('workflow-result');
+
+    function el(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+    function renderState() { state.textContent = toggle.checked ? 'Agents on' : 'Agents off'; }
+    renderState();
+    toggle.addEventListener('change', renderState);
+
+    async function call(path, options) {
+      const response = await fetch(`${API_BASE}${path}`, options);
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Request failed');
+      return payload;
+    }
+
+    function step(label, title, body) {
+      const card = el('section', undefined, 'step');
+      card.appendChild(el('div', label, 'step-label'));
+      card.appendChild(el('h2', title));
+      card.appendChild(el('pre', body || '(no output)'));
+      return card;
+    }
+
+    function renderWorkflow(workflow) {
+      result.replaceChildren();
+      result.appendChild(step('Step 1', 'Planner', workflow.planner_result.plan));
+      const worker = step('Step 2', 'Worker', workflow.worker_result.output);
+      const list = el('ul');
+      (workflow.worker_result.evidence || []).forEach((record) => {
+        list.appendChild(el('li', `[${record.id}] ${record.text}`));
+      });
+      worker.appendChild(el('strong', 'Evidence'));
+      worker.appendChild(list);
+      result.appendChild(worker);
+      result.appendChild(step('Step 3', 'Reviewer', workflow.reviewer_result.review));
+
+      const human = el('section', undefined, 'step');
+      human.appendChild(el('div', 'Step 4', 'step-label'));
+      human.appendChild(el('h2', 'Human review'));
+      const form = el('form', undefined, 'decision');
+      const select = document.createElement('select');
+      ['Approve', 'Correct', 'Partially Accept', 'Reject'].forEach((value) => {
+        const option = el('option', value);
+        option.value = value;
+        select.appendChild(option);
+      });
+      const name = document.createElement('input');
+      name.placeholder = 'Your name';
+      name.required = true;
+      const comment = document.createElement('textarea');
+      comment.placeholder = 'Reason for your decision';
+      comment.required = true;
+      const corrected = document.createElement('textarea');
+      corrected.placeholder = 'Corrected output';
+      corrected.hidden = true;
+      select.addEventListener('change', () => { corrected.hidden = select.value !== 'Correct'; });
+      const button = el('button', 'Submit decision');
+      button.type = 'submit';
+      form.append(select, name, comment, corrected, button);
+      const outcome = el('p', '', 'meta');
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        outcome.textContent = 'Saving decision…';
+        try {
+          const payload = await call(`/api/multi-agent/workflow/${workflow.workflow_id}/decision`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Multi-Agent-Mode': 'on' },
+            body: JSON.stringify({
+              decision: select.value,
+              reviewer: name.value.trim(),
+              comment: comment.value.trim(),
+              corrected_output: select.value === 'Correct' ? corrected.value.trim() : null
+            })
+          });
+          outcome.textContent = `Decision recorded: ${payload.human_decision.decision} by ${payload.human_decision.reviewer}.`;
+        } catch (error) {
+          outcome.textContent = error.message;
+          outcome.className = 'meta is-error';
+        }
+      });
+      human.append(form, outcome);
+      result.appendChild(human);
+      result.appendChild(el('p', `Workflow ${workflow.workflow_id}`, 'meta'));
+    }
+
+    document.getElementById('workflow-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!toggle.checked) {
+        result.replaceChildren(el('p', 'Multi-Agent mode is off. Turn it on to run a workflow.', 'is-error'));
+        return;
+      }
+      result.replaceChildren(el('p', 'Planner, Worker, and Reviewer are working…', 'meta'));
+      try {
+        const payload = await call('/api/multi-agent/workflow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Multi-Agent-Mode': 'on' },
+          body: JSON.stringify({ user_request: document.getElementById('request').value.trim() })
+        });
+        if (payload.status === 'error') throw new Error(payload.error || 'Workflow failed');
+        renderWorkflow(payload);
+      } catch (error) {
+        result.replaceChildren(el('p', error.message, 'is-error'));
+      }
+    });
+  </script>
+</body>
+</html>

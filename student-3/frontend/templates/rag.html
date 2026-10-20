@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KICKLAB — Customer RAG Assistant</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='styles.css') }}"
+    >
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <style>
+        .rag-toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .rag-state {
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding: 3px 12px;
+            border-radius: 100px;
+        }
+
+        .rag-state.on {
+            background: rgba(0, 200, 120, 0.12);
+            color: #0a9960;
+        }
+
+        .rag-state.off {
+            background: rgba(255, 61, 154, 0.12);
+            color: var(--pink);
+        }
+
+        .rag-card {
+            background: var(--surface-solid);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .rag-card textarea {
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            padding: 14px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 14px;
+        }
+
+        .rag-card textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+
+        #rag-result {
+            margin-top: 28px;
+            background: var(--surface-solid);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #rag-result ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-effects" aria-hidden="true">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="bg-orb bg-orb-4"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <header class="scrolled">
+        <div class="container header-inner">
+
+            <a href="/" class="logo">
+                <span class="logo-name">KICKLAB</span>
+            </a>
+
+            <div class="header-actions">
+                <a href="/" class="btn btn-glass">
+                    Back to Account
+                </a>
+
+                <a href="/mcp" class="btn btn-glass">
+                    MCP Tools
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <section class="finder">
+        <div class="container">
+
+            <span class="section-tag">
+                RAG Assistant
+            </span>
+
+            <h2 class="section-title">
+                Customer account knowledge
+            </h2>
+
+            <p class="section-sub">
+                Ask questions grounded in KICKLAB Customer Account
+                Management knowledge.
+            </p>
+
+            <div class="rag-toggle-row">
+
+                <label>
+                    <input
+                        id="rag-mode-toggle"
+                        type="checkbox"
+                        checked
+                    >
+                    RAG mode
+                </label>
+
+                <span
+                    id="rag-mode-state"
+                    class="rag-state on"
+                >
+                    On
+                </span>
+
+            </div>
+
+            <div class="rag-card">
+
+                <form
+                    class="rag-action"
+                    hx-post="/rag/answer"
+                    hx-target="#rag-result"
+                >
+
+                    <textarea
+                        name="query"
+                        placeholder="Example: How do I change my password?"
+                        required
+                    ></textarea>
+
+                    <button
+                        type="submit"
+                        class="btn btn-gradient"
+                    >
+                        Ask with RAG
+                    </button>
+
+                </form>
+
+            </div>
+
+            <div id="rag-result">
+                Grounded answers will appear here.
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p class="footer-copy">
+            &copy; 2026 KICKLAB · Customer Account Management
+        </p>
+    </footer>
+
+    <script>
+        const toggle =
+            document.getElementById("rag-mode-toggle");
+
+        const stateLabel =
+            document.getElementById("rag-mode-state");
+
+        const resultPanel =
+            document.getElementById("rag-result");
+
+        const STORAGE_KEY =
+            "customer_rag_mode_enabled";
+
+
+        function isOn() {
+            return toggle.checked;
+        }
+
+
+        function renderState() {
+            stateLabel.textContent =
+                isOn() ? "On" : "Off";
+
+            stateLabel.className =
+                "rag-state " +
+                (isOn() ? "on" : "off");
+        }
+
+
+        function showOffMessage() {
+            resultPanel.innerHTML =
+                "<p>RAG mode is off. Turn it on to ask grounded questions.</p>";
+        }
+
+
+        const saved =
+            localStorage.getItem(STORAGE_KEY);
+
+        toggle.checked =
+            saved === null
+                ? true
+                : saved === "true";
+
+        renderState();
+
+        if (!isOn()) {
+            showOffMessage();
+        }
+
+
+        toggle.addEventListener(
+            "change",
+            () => {
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    String(isOn())
+                );
+
+                renderState();
+
+                if (!isOn()) {
+                    showOffMessage();
+                }
+            }
+        );
+
+
+        document.body.addEventListener(
+            "htmx:configRequest",
+            (event) => {
+                if (
+                    event.detail.elt.classList.contains(
+                        "rag-action"
+                    )
+                ) {
+                    event.detail.headers["X-RAG-Mode"] =
+                        isOn() ? "on" : "off";
+                }
+            }
+        );
+
+
+        document.body.addEventListener(
+            "htmx:beforeRequest",
+            (event) => {
+                if (
+                    event.detail.elt.classList.contains(
+                        "rag-action"
+                    ) &&
+                    !isOn()
+                ) {
+                    event.preventDefault();
+                    showOffMessage();
+                }
+            }
+        );
+
+
+        document.body.addEventListener(
+            "htmx:beforeSwap",
+            (event) => {
+                if (event.detail.xhr.status >= 400) {
+                    event.detail.shouldSwap = true;
+                    event.detail.isError = false;
+                }
+            }
+        );
+    </script>
+
+</body>
+</html>
