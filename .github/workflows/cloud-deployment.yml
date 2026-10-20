@@ -36,7 +36,7 @@ jobs:
 
       - name: Wait for services
         run: |
-          for url in http://localhost:5000/ http://localhost:5001/ http://localhost:6001/reviews; do
+          for url in http://localhost:5000/ http://localhost:5001/ http://localhost:6001/reviews http://localhost:5005/api/health; do
             for i in $(seq 1 15); do
               code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
               if [[ "$code" =~ ^[23] ]]; then echo "UP $url"; break; fi
