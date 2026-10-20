@@ -98,7 +98,12 @@ class OrdersWorkflowReviewTests(unittest.TestCase):
             good.json.return_value = self.workflow
             with patch.dict("os.environ", env), patch.object(self.module.requests, "get", side_effect=[good, Mock(status_code=403)]) as get:
                 with patch.object(self.module.requests, "post") as post:
-                    self.assertTrue(self.module.run(lambda *args: None, args))
+                    with patch.object(self.module, "ask", return_value=("Advisory role assessment.", None)) as ask:
+                        self.assertTrue(self.module.run(lambda *args: None, args))
+                    prompt = ask.call_args.args[0]
+                    self.assertIn(self.workflow["worker_result"]["output"], prompt)
+                    self.assertNotIn(self.workflow["human_decision"]["corrected_output"], prompt)
+                    self.assertNotIn('"checks"', prompt)
                     post.assert_not_called()
                 self.assertEqual(get.call_count, 2)
                 self.assertNotIn("headers", get.call_args.kwargs)
