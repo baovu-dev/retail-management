@@ -140,6 +140,8 @@ jobs:
       - name: Deploy apps
         env:
           STAFF_PASSWORD: ${{ secrets.STAFF_PASSWORD }}
+          ORDERS_CRUD_SECRET: ${{ secrets.ORDERS_CRUD_SECRET }}
+          ORDERS_PURCHASE_SECRET: ${{ secrets.ORDERS_PURCHASE_SECRET }}
         run: bash scripts/deploy/deploy-azure.sh
 
       - name: Azure login (refresh before testing)

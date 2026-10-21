@@ -175,6 +175,7 @@
 
         const API_BASE = {{ api_base | tojson }};
         const SHARED_BASE = {{ shared_base | tojson }};
+        {% include "partials/orders_auth.html" %}
         let activeWorkflowId = null;
 
         async function staffReviewToken() {
@@ -315,7 +316,7 @@
             try {
 
                 const response =
-                    await fetch(`${API_BASE}/api/orders`);
+                    await ordersFetch(`${API_BASE}/api/orders`);
 
                 if (!response.ok) {
                     throw new Error("Could not load orders");
@@ -457,7 +458,7 @@
             try {
 
                 const response =
-                    await fetch(
+                    await ordersFetch(
                         `${API_BASE}/api/orders/${orderId}`
                     );
 
@@ -523,7 +524,7 @@
                                 <div class="order-item">
 
                                     <span>
-                                        Product #${item.product_id}
+                                        ${orderItemLabel(item)}
                                     </span>
 
                                     <span>
@@ -577,7 +578,7 @@
             try {
 
                 const response =
-                    await fetch(
+                    await ordersFetch(
                         `${API_BASE}/api/orders/${orderId}`,
                         {
                             method: "PUT",
@@ -641,7 +642,7 @@
             try {
 
                 const response =
-                    await fetch(
+                    await ordersFetch(
                         `${API_BASE}/api/orders/${orderId}`,
                         {
                             method: "DELETE"

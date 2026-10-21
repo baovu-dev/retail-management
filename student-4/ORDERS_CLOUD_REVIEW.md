@@ -64,14 +64,14 @@ Every JUnit file requires at least two distinct non-skipped passing tests; Stude
 the endpoint-function mapping for other students; a test count alone is not that
 mapping. Coverage failures and mismatched readiness URLs block the review.
 
-## Smallest missing deployment evidence change
+## Deployment evidence integration still required
 
 Keep the existing Markdown report for its original purpose. Add a sanitized
 `orders-cloud-evidence.json` alongside it to the **actual deployment run artifact**
 and expand that workflow's deployment artifact upload path to include it. The
-current script does not generate this supplement; a later authorized collector
-must record real observations. This implementation neither fabricates it nor
-alters the deployment workflow or Student 1 scripts to imply it already exists.
+shared deployment script does not invoke the collector yet. The Orders collector
+below records real observations only during an explicitly authorized future run.
+It is not wired into deployment by this change; Student 1 scripts remain unchanged.
 
 Required report fields are `feature: student-4`, `run_id` (integer), `commit_sha`
 (full deployed SHA matched to the run), timezone-aware `timestamp`,
@@ -142,3 +142,108 @@ decision separately, binds it to the evidence, and keeps release pending unless
 all deterministic checks, advisory completion and explicit human approval are
 present. Rejection stays rejected. Changed evidence invalidates the prior
 decision. A workflow-level human correction is unrelated to this release decision.
+
+
+## Orders cloud collector: prerequisites and safe execution
+
+`scripts/orders/cloud_evidence.py` creates a new, private `orders-cloud-evidence.json`
+with the exact core fields/check names above. Additional bounded fields are
+`collector: orders-cloud-http-v1`, a unique `collection_id`, `collection_status`,
+`deployment_config_sha256`, `retention`, `limitations`, and three denial checks:
+`unauthenticated_create_denied`, `invalid_credential_denied`, `ownership_denied`.
+These checks use the same row format. Their observations contain only
+`access_denied: true/false`. The reviewer rejects marked collector reports with
+failed collection status or missing/failed denial checks, even if core rows pass.
+No raw request headers, cookies, response bodies, customer IDs/names/emails or
+exception strings are written. The dedicated synthetic order ID is retained for
+traceability and manual cleanup. HTTP response reads are limited to 64 KiB.
+
+**Authentication implementation:** Orders CRUD now verifies dedicated signed
+shared-session capabilities and enforces customer ownership and staff actions.
+See [the CRUD contract](ORDERS_CRUD_AUTH.md). The collector's anonymous and forged
+probes still run before authenticated creation. An old/misconfigured deployment
+continues to fail closed; implementing this source does not prove it is deployed.
+Shared-store login cookies are used only at shared login; MCP/review tokens cannot
+authorize CRUD and mandatory-profile MCP stays disabled.
+
+Use three distinct real shared-login accounts: an approved synthetic owner, a
+second unrelated synthetic customer, and staff. The collector can mint fresh
+120-second CRUD credentials through their shared sessions for each protected
+operation. It checks returned role and owner/other customer IDs. The staff account
+must use the configured private password. No signing key is needed by the tool.
+Alternatively provide recently minted actual CRUD bearer credentials, accepting
+that expiry causes a failed run rather than an automatic mutation retry.
+
+Supply a private mode-0600 JSON credential file (never commit or pass tokens in
+command arguments). Preferred mode uses `owner.email`, `owner.password`,
+`owner.customer_id`, equivalent `other` fields and `staff.email`, `staff.password`;
+add `shared_origin: https://shared-backend.<environment_domain>` to the deployment
+config. Existing bearer mode fields are `owner.bearer_token`, `owner.customer_id`,
+`other.bearer_token`, `other.customer_id`, and `staff.bearer_token`. Both customer
+IDs must be distinct positive IDs for explicitly approved synthetic accounts.
+The owner creates/reads; staff confirms/cancels; the other credential must receive
+403/forbidden when reading that exact newly created order. A 401, generic 403,
+404, or a successful read cannot establish ownership denial.
+
+Supply an operator-verified deployment JSON with `run_id`, full `commit_sha`,
+`environment_domain`, `frontend_origin`, `api_origin`, and `images`. The images
+map contains `student4-frontend` and `student4-backend`, each the actual deployed
+`<registry>.azurecr.io/student-4:<commit-tag>` reference. Tags must match a prefix
+of at least seven characters of the full SHA. Use the actual environment domain;
+origins must be exactly `https://student4-frontend.<environment_domain>` and
+`https://student4-backend.<environment_domain>`, without ports, queries or
+credentials. Localhost, local Docker, internal-only origins, redirects, private
+DNS results and unrelated HTTPS origins are rejected. TLS verification stays on;
+ambient proxy/netrc settings are disabled. Never repack local Docker results as
+cloud evidence. The collector validates supplied image/SHA consistency, not image
+content authenticity: the deployment owner must verify revision/image-to-commit
+mapping and retain that source evidence. It never contacts the Azure control plane.
+
+Coordinate with the deployment owner before choosing the run ID, SHA and timing.
+To meet the offline reviewer's run-window rule and artifact digest verification,
+collection must occur within the same authorized deployment workflow run and be
+uploaded alongside the existing report in that run's deployment artifact. An
+independent later manual run is diagnostic evidence; it must not be relabelled
+as evidence from an already completed workflow. Do not enable deployment or
+bypass Student 2/3 validation to run this collector.
+
+The browser probe requires Playwright and its Chromium runtime (install separately
+with `python -m pip install playwright` and `python -m playwright install chromium`
+in the intended collection environment). It opens the actual frontend in a fresh
+context and fetches only the public count endpoint from that origin. Other API
+calls, third-party resources and service workers are blocked in that browser.
+An HTTP request carrying an Origin header is never substituted for a real browser
+CORS result. No browser screenshots, customer pages or HAR files are saved.
+
+For a later **explicitly authorized** run only (not executed during implementation):
+
+```sh
+.venv/bin/python scripts/orders/cloud_evidence.py \
+  --deployment-file /private/run/deployed-config.json \
+  --credentials-file /private/run/api-credentials.json \
+  --product-id SYNTHETIC_PRODUCT_ID --unit-price APPROVED_TEST_PRICE \
+  --output /private/run/orders-cloud-evidence.json --allow-test-order
+```
+
+The output parent directory must already exist. Existing output files are refused
+before network access. `--allow-test-order` explicitly authorizes one fresh POST;
+there is no retry of create or any other mutation. Use a dedicated approved test
+product/price with quantity one. The database generates a fresh order ID, tied to
+the unique collection ID. Inspect that exact order's ID, owner, one item, price,
+status and total in memory before any staff mutation; customer data is discarded
+from the report. A second uncached read on a new connection after cancellation
+checks the retained cancelled state/items after a short delay. This proves
+request-level retention only, **not** persistence across restart/redeployment.
+No resource restart is performed. Separate authorized restart evidence remains
+necessary before claiming that stronger property.
+
+Failures exit nonzero and retain a failed/partial report. The current blocked
+implementation produces no successful Orders cloud claim. On a create timeout,
+an order may exist without a known ID: reconcile only the synthetic account
+privately before retrying; do not blindly rerun. After successful cancellation,
+the order and items remain stored and may affect team counts. On later failure,
+an order may remain PENDING or CONFIRMED. The report retains the known ID and
+manual-retention warning. No automatic physical deletion, database reset or volume
+cleanup is performed. Agree on retention/cleanup with the team before collection.
+No live collection, cloud deployment, bonus validation or release approval occurs
+as part of adding or mock-testing this tool.

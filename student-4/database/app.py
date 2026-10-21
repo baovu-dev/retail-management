@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
 import sqlite3
+from contextlib import closing
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +23,24 @@ def health():
         "service": "order-database",
         "status": "ok"
     }), 200
+
+
+@app.post("/orders/verified-purchase")
+def verified_purchase():
+    data = request.get_json(silent=True)
+    if (not isinstance(data, dict) or any(type(data.get(key)) is not int or not 0 < data[key] <= 2147483647
+                                         for key in ("customer_id", "product_id"))):
+        return jsonify(error="Valid customer and product required."), 400
+    try:
+        with closing(get_db_connection()) as connection:
+            row = connection.execute(
+                "SELECT EXISTS(SELECT 1 FROM orders o JOIN order_items i ON i.order_id=o.order_id "
+                "WHERE o.customer_id=? AND o.status='CONFIRMED' AND i.product_id=?)",
+                (data["customer_id"], data["product_id"]),
+            ).fetchone()
+        return jsonify(verified_purchase=bool(row[0]))
+    except sqlite3.Error:
+        return jsonify(error="Purchase verification unavailable."), 503
 
 
 @app.route("/orders", methods=["GET"])
@@ -122,11 +141,15 @@ def create_order():
         if unit_price < 0:
             return jsonify({"error": "unit_price cannot be negative"}), 400
 
+        product_name = item.get("product_name")
+        if product_name is not None and (not isinstance(product_name, str) or not 0 < len(product_name.strip()) <= 120):
+            return jsonify(error="Invalid product name."), 400
         subtotal = round(quantity * unit_price, 2)
         total_amount += subtotal
 
         validated_items.append({
             "product_id": product_id,
+            "product_name": product_name.strip() if product_name is not None else None,
             "quantity": quantity,
             "unit_price": unit_price,
             "subtotal": subtotal
@@ -153,12 +176,13 @@ def create_order():
             cursor.execute(
                 """
                 INSERT INTO order_items
-                (order_id, product_id, quantity, unit_price, subtotal)
-                VALUES (?, ?, ?, ?, ?)
+                (order_id, product_id, product_name, quantity, unit_price, subtotal)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
                     order_id,
                     item["product_id"],
+                    item["product_name"],
                     item["quantity"],
                     item["unit_price"],
                     item["subtotal"]

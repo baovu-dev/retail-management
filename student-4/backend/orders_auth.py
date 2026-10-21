@@ -59,3 +59,44 @@ def verify_review_token(token):
 
 def mcp_enabled():
     return os.getenv("MCP_ENABLED", "false").strip().lower() in ("1", "true", "yes", "on")
+
+
+CRUD_SALT = "orders-crud-v1"  # noqa: S105 - public domain separation, not a credential
+CRUD_AUDIENCE = "orders-crud"
+CRUD_SCOPES = {"customer": "orders:customer:crud", "staff": "orders:staff:manage"}
+
+
+def crud_configuration():
+    from urllib.parse import urlsplit
+    secret = os.getenv("ORDERS_CRUD_SECRET", "")
+    origin = os.getenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004")
+    try:
+        address = urlsplit(origin)
+        valid_origin = (bool(address.hostname) and not address.username and not address.password
+                        and not address.query and not address.fragment and address.path == ""
+                        and (address.scheme == "https" or address.scheme == "http"
+                             and address.hostname in {"localhost", "127.0.0.1"}))
+    except ValueError:
+        valid_origin = False
+    cloud = os.getenv("APP_ENV", "local") == "cloud"
+    return (len(secret) >= 32 and secret not in {os.getenv("ORDERS_MCP_SECRET", ""), os.getenv("ORDERS_PURCHASE_SECRET", "")} and valid_origin
+            and (not cloud or "ORDERS_FRONTEND_ORIGIN" in os.environ and origin.startswith("https://")))
+
+
+def verify_crud_token(token):
+    if not crud_configuration():
+        return None, ({"error": "Orders CRUD authentication is not configured.", "code": "unavailable"}, 503)
+    if not isinstance(token, str) or not token or len(token) > 4096:
+        return None, ({"error": "Orders login is required.", "code": "unauthorized"}, 401)
+    try:
+        claims = URLSafeTimedSerializer(os.environ["ORDERS_CRUD_SECRET"], salt=CRUD_SALT).loads(token, max_age=120)
+    except (SignatureExpired, BadSignature, ValueError, TypeError):
+        return None, ({"error": "Orders credential is invalid or expired.", "code": "unauthorized"}, 401)
+    if (not isinstance(claims, dict) or claims.get("aud") != CRUD_AUDIENCE
+            or claims.get("iss") != "kicklab-shared" or not isinstance(claims.get("role"), str) or claims["role"] not in CRUD_SCOPES
+            or claims.get("scope") != CRUD_SCOPES[claims["role"]]):
+        return None, ({"error": "Invalid Orders CRUD scope.", "code": "unauthorized"}, 401)
+    if (claims["role"] == "customer" and valid_order_id(claims.get("customer_id"))
+            or claims["role"] == "staff" and isinstance(claims.get("staff_email"), str) and claims["staff_email"].strip()):
+        return claims, None
+    return None, ({"error": "Invalid Orders identity.", "code": "unauthorized"}, 401)

@@ -28,6 +28,9 @@ services:
       MCP_URL: http://host.docker.internal:8100/mcp
       MCP_ENABLED: ${MCP_ENABLED:-false}
       ORDERS_MCP_SECRET: ${ORDERS_MCP_SECRET:-}
+      ORDERS_CRUD_SECRET: ${ORDERS_CRUD_SECRET:-}
+      ORDERS_PURCHASE_SECRET: ${ORDERS_PURCHASE_SECRET:-}
+      ORDERS_FRONTEND_ORIGIN: http://localhost:3004
       RAG_URL: http://host.docker.internal:8200
       RAG_ENABLED: ${RAG_ENABLED:-false}
       MULTI_AGENT_SERVICE_URL: http://host.docker.internal:8300

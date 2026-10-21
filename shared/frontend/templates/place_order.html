@@ -256,6 +256,7 @@
             <div class="order-divider"></div>
 
             <form method="POST" action="/order/{{ product.product_id }}/place">
+                <input type="hidden" name="orders_csrf" value="{{ session.get('orders_checkout_csrf', '') }}">
 
                 <div class="order-row">
                     <span class="order-row-label">Unit Price</span>

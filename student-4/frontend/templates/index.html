@@ -216,6 +216,7 @@
 
         const API_BASE = {{ api_base | tojson }};
         const SHARED_BASE = {{ shared_base | tojson }};
+        {% include "partials/orders_auth.html" %}
 
         document.getElementById("ragForm").addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -308,9 +309,6 @@
             }
         });
 
-        const params = new URLSearchParams(window.location.search);
-        const customerId = params.get("customer_id");
-
         const ordersContainer =
             document.getElementById("ordersContainer");
 
@@ -328,12 +326,10 @@
 
             try {
 
-                const ordersUrl = customerId
-                    ? `${API_BASE}/api/orders?customer_id=${encodeURIComponent(customerId)}`
-                    : `${API_BASE}/api/orders`;
+                const ordersUrl = `${API_BASE}/api/orders`;
 
                 const response =
-                    await fetch(ordersUrl);
+                    await ordersFetch(ordersUrl);
 
                 if (!response.ok) {
                     throw new Error("Could not load orders");
@@ -467,7 +463,7 @@
             try {
 
                 const response =
-                    await fetch(
+                    await ordersFetch(
                         `${API_BASE}/api/orders/${orderId}`
                     );
 
@@ -536,7 +532,7 @@
                                 <div class="order-item">
 
                                     <span>
-                                        Product #${item.product_id}
+                                        ${orderItemLabel(item)}
                                     </span>
 
                                     <span>
@@ -594,7 +590,7 @@
             try {
 
                 const response =
-                    await fetch(
+                    await ordersFetch(
                         `${API_BASE}/api/orders/${orderId}`,
                         {
                             method: "DELETE"
@@ -682,7 +678,7 @@
             try {
 
                 const response =
-                    await fetch(
+                    await ordersFetch(
                         `${API_BASE}/api/order-assistant`,
                         {
                             method: "POST",

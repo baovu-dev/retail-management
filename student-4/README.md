@@ -39,7 +39,7 @@ import secrets
 path = Path('.env')
 with path.open('x') as out:
     path.chmod(0o600)
-    for name in ('SECRET_KEY', 'ORDERS_MCP_SECRET', 'MULTI_AGENT_ORDERS_SECRET', 'STAFF_PASSWORD'):
+    for name in ('SECRET_KEY', 'ORDERS_MCP_SECRET', 'ORDERS_CRUD_SECRET', 'MULTI_AGENT_ORDERS_SECRET', 'STAFF_PASSWORD'):
         out.write(f'{name}={secrets.token_hex(32)}\n')
     out.write('STAFF_EMAIL=admin@kicklab.com\nAI_ENABLED=true\nMCP_ENABLED=true\nRAG_ENABLED=true\nMULTI_AGENT_ENABLED=true\n')
 PY
@@ -135,9 +135,10 @@ Orders backend settings: `AI_ENABLED` (default true), `MCP_ENABLED` and
 6. Ask the Orders guide about statuses and cancellation; inspect sources. Ask an
    undocumented delivery/refund timing question and verify insufficient context.
 
-Release 1's legacy CRUD/customer-id filter is not an authorization boundary.
-The stronger identity/ownership checks described here apply to MCP; this cleanup
-does not claim to add authorization to the existing CRUD routes.
+Orders CRUD and the order-specific AI assistant now require a separate short-lived
+shared-session capability and enforce customer ownership and staff permissions.
+See [Orders CRUD authentication](ORDERS_CRUD_AUTH.md) for the exact contract,
+private configuration, checkout CSRF protection and team interface migration.
 
 ## Release 2: staff Orders Multi-Agent review
 
@@ -257,3 +258,7 @@ Use the offline [Orders Cloud Review runbook](ORDERS_CLOUD_REVIEW.md) for explic
 run-bound validation/deployment artifacts, deterministic failure checks and a
 separate human release decision. Missing group tests or deployment evidence
 remain release blockers; this path does not deploy Azure or validate bonuses.
+
+The cloud collector now obtains CRUD capabilities from actual shared login sessions;
+see [Orders CRUD authentication](ORDERS_CRUD_AUTH.md) before running old anonymous
+validation scripts or integrating any other service with list/detail endpoints.

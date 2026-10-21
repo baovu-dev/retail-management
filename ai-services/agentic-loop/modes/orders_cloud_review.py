@@ -154,6 +154,20 @@ def behavior_checks(report):
     test_order = report.get("test_order_id")
     if not isinstance(checks, dict) or type(test_order) is not int or test_order <= 0:
         return False
+    if "collector" in report:
+        if report["collector"] != "orders-cloud-http-v1" or report.get("collection_status") != "complete":
+            return False
+        # A collector failure or unverified ownership must never be hidden by the older core schema.
+        for name, method, path, statuses in (
+                ("unauthenticated_create_denied", "POST", "/api/orders", {401, 403}),
+                ("invalid_credential_denied", "POST", "/api/orders", {401, 403}),
+                ("ownership_denied", "GET", f"/api/orders/{test_order}", {403})):
+            row = checks.get(name, {})
+            if (not isinstance(row, dict) or row.get("method") != method or not api
+                    or row.get("url") != api + path or row.get("http_status") not in statuses
+                    or row.get("passed") is not True or row.get("observed", {}).get("access_denied") is not True
+                    or timestamp(row.get("timestamp")) is None):
+                return False
     times = []
     for name, (method, path, status) in ROUTES.items():
         row = checks.get(name, {})
