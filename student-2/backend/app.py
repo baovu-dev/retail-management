@@ -186,7 +186,7 @@ def start_multi_agent_workflow():
         response = requests.post(
             f"{MULTI_AGENT_SERVER_URL}/workflow",
             json={"user_request": user_request, "feature": "student-2"},
-            timeout=120,
+            timeout=600,
         )
         return jsonify(response.json()), response.status_code
     except requests.RequestException:
