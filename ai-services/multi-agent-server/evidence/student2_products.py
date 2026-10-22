@@ -47,7 +47,7 @@ def collect(user_request: str) -> dict:
         {
             "id": f"product {p['product_id']}",
             "text": (
-                f"name: {p.get('name', '')}",
+                f"name: {p.get('name', '')}, "
                 f"category: {p.get('category', '')}, "
                 f"brand: {p.get('brand', '')}, "
                 f"price: {p.get('price', '')}, "
