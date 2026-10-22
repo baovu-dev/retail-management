@@ -16,8 +16,9 @@ REVIEWER_MAX_TOKENS = int(os.getenv("REVIEWER_MAX_TOKENS", "200"))
 
 client = OpenAI(
     base_url=OLLAMA_BASE_URL,
-        api_key="ollama",  # pragma: allowlist secret - placeholder, Ollama does not check API keys
-    timeout=OLLAMA_TIMEOUT_SECONDS
+    api_key="ollama",  # pragma: allowlist secret - placeholder, Ollama does not check API keys
+    timeout=OLLAMA_TIMEOUT_SECONDS,
+    max_retries=0,
 )
 
 
@@ -26,6 +27,14 @@ def load_prompt() -> str:
 
 
 def call_model(user_request: str, plan: str, worker_result: Dict[str, Any]) -> str:
+    orders_scope = """
+For student-4 Orders, the plan is not evidence. The Worker receives only the
+aggregate count and the two cited public guidance documents. Check claims
+against those records. Do not penalize the Worker for explicitly identifying
+missing individual-order data or for declining to make unsupported claims.
+If the Planner requests unavailable records or tables, identify that as a
+planning limitation rather than claiming that the Worker invented facts.
+""" if worker_result.get("feature") == "student-4" else ""
     prompt = f"""
 {load_prompt()}
 
@@ -40,6 +49,8 @@ Plan:
 Worker Result:
 
 {json.dumps(worker_result, indent=2)}
+
+{orders_scope}
 """
 
     try:
@@ -52,20 +63,21 @@ Worker Result:
         return response.choices[0].message.content.strip()
 
     except Exception as exc:
-        return (
-            "Risk: Review model unavailable.\n"
-            "Correction: Verify Ollama and the reviewer model.\n"
-            "Retest: Run the workflow again.\n"
-            f"Recommendation: Do not approve until reviewed. Error: {exc}"
-        )
+        raise RuntimeError("Reviewer model unavailable") from exc
 
 
 def review_output(user_request: str, worker_result: Dict[str, Any], plan: str = "") -> Dict[str, Any]:
+    try:
+        review = call_model(user_request, plan, worker_result)
+    except RuntimeError:
+        return {"status": "error", "agent": "reviewer_agent", "model": OLLAMA_REVIEW_MODEL,
+                "review": "", "error": "Reviewer model unavailable",
+                "human_approval_required": True}
     return {
         "status": "completed",
         "agent": "reviewer_agent",
         "model": OLLAMA_REVIEW_MODEL,
-        "review": call_model(user_request, plan, worker_result),
+        "review": review,
         "human_approval_required": True
     }
 

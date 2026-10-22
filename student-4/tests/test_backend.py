@@ -1,6 +1,8 @@
 import importlib.util
 import os
 import sys
+import secrets
+from itsdangerous import URLSafeTimedSerializer
 from unittest.mock import patch, Mock
 import pytest
 
@@ -9,6 +11,8 @@ import pytest
 def isolated_ai_mode(monkeypatch):
     # Explicitly enable only the mocked unit-test path, even when CI disables AI.
     monkeypatch.setenv("AI_ENABLED", "true")
+    monkeypatch.setenv("ORDERS_CRUD_SECRET", secrets.token_hex(32))
+    monkeypatch.setenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004")
 
 BACKEND_DIR = os.path.join(
     os.path.dirname(__file__),
@@ -17,6 +21,12 @@ BACKEND_DIR = os.path.join(
 )
 
 sys.path.insert(0, os.path.abspath(BACKEND_DIR))
+
+def crud_headers():
+    claims = {"aud": "orders-crud", "iss": "kicklab-shared", "scope": "orders:customer:crud", "role": "customer", "customer_id": 1}
+    token = URLSafeTimedSerializer(os.environ["ORDERS_CRUD_SECRET"], salt="orders-crud-v1").dumps(claims)
+    return {"Authorization": f"Bearer {token}"}
+
 
 def load_backend():
     spec = importlib.util.spec_from_file_location(
@@ -70,6 +80,7 @@ def test_order_assistant_requires_question():
 
         response = client.post(
             "/api/order-assistant",
+            headers=crud_headers(),
             json={
                 "order_id": 1
             }
@@ -86,6 +97,7 @@ def test_order_assistant_requires_order_id():
 
         response = client.post(
             "/api/order-assistant",
+            headers=crud_headers(),
             json={
                 "question": "Where is my order?"
             }
@@ -130,6 +142,7 @@ def test_order_assistant_uses_ollama():
 
                 response = client.post(
                     "/api/order-assistant",
+            headers=crud_headers(),
                     json={
                         "order_id": 1,
                         "question": "What is the status?"
@@ -172,6 +185,7 @@ def test_order_assistant_fallback():
 
                 response = client.post(
                     "/api/order-assistant",
+            headers=crud_headers(),
                     json={
                         "order_id": 1,
                         "question": "What is the status?"

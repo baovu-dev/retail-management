@@ -13,19 +13,19 @@ def collect(user_request: str) -> dict:
     """Collect product records for the shared multi-agent workflow."""
     match = re.search(r"product\s*(?:id\s*)?#?(\d+)", user_request, re.IGNORECASE)
 
-    try: 
+    try:
         if match:
             product_id = int(match.group(1))
             scope = f"product {product_id}"
             response = requests.get(
-                f"{PRODUCTS_DB_API}/products/{product_id}", 
+                f"{PRODUCTS_DB_API}/products/{product_id}",
                 timeout=TIMEOUT,
             )
-            
+
         else:
            scope = "all products"
            response = requests.get(
-               f"{PRODUCTS_DB_API}/products", 
+               f"{PRODUCTS_DB_API}/products",
                timeout=TIMEOUT,
         )
 
@@ -34,9 +34,9 @@ def collect(user_request: str) -> dict:
 
     except requests.RequestException as exc:
         return {
-            "status": "error", 
-            "source": "products-db", 
-            "error": str(exc), 
+            "status": "error",
+            "source": "products-db",
+            "error": str(exc),
             "records": []
         }
 

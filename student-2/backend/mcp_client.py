@@ -17,17 +17,16 @@ async def _call_tool(name, arguments):
             if result.isError:
                 text = " ".join(getattr(b, "text", "") for b in result.content)
                 return {"error": text or "MCP tool returned an error"}
-            
+
             if result.structuredContent:
                 return result.structuredContent
-            
+
             return json.loads(result.content[0].text)
 
 def call_tool(name, arguments=None):
             return asyncio.run(
                 asyncio.wait_for(
-                    _call_tool(name, arguments or {}), 
+                    _call_tool(name, arguments or {}),
                     timeout=MCP_TIMEOUT
                 )
             )
-        

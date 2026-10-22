@@ -120,7 +120,7 @@ Return only the product description.
 def mcp_get_product(product_id):
     try:
         result = call_tool(
-            "product_by_id", 
+            "product_by_id",
             {"product_id": product_id}
         )
         if "error" in result:
@@ -147,7 +147,7 @@ def rag_ask():
 
     try:
         result = call_rag_service(
-            "/answer", 
+            "/answer",
             {
                 "query": query,
                 "feature": RAG_FEATURE,
@@ -155,7 +155,7 @@ def rag_ask():
             }
         )
         return jsonify(result), 200
-    
+
     except Exception as exc:
         return jsonify({
             "status": "error",
@@ -196,9 +196,9 @@ def start_multi_agent_workflow():
 @app.route("/multi-agent/workflow/<workflow_id>/decision", methods=["POST"])
 def submit_workflow_decision(workflow_id):
     if not multi_agent_enabled():
-        return jsonify({"error": "Multi-Agent mode is disabled"}), 403 
+        return jsonify({"error": "Multi-Agent mode is disabled"}), 403
 
-    try: 
+    try:
             uuid.UUID(workflow_id)
     except ValueError:
         return jsonify({"error": "Invalid workflow_id"}), 400
@@ -209,7 +209,7 @@ def submit_workflow_decision(workflow_id):
          for key in ("decision", "reviewer", "comment", "corrected_output")
     }
 
-    try: 
+    try:
         response = requests.post(
             f"{MULTI_AGENT_SERVER_URL}/workflow/{workflow_id}/decision",
             json=payload,
@@ -224,7 +224,7 @@ def multi_agent_workflow_status():
     if not multi_agent_enabled():
         return jsonify({"error": "Multi-Agent mode is disabled"}), 403
 
-    
+
     try:
         response = requests.get(
             f"{MULTI_AGENT_SERVER_URL}/workflow/status",
@@ -233,6 +233,6 @@ def multi_agent_workflow_status():
         return jsonify(response.json()), response.status_code
     except requests.RequestException:
         return jsonify({"error": "Multi-agent server unreachable"}), 503
-        
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5002, debug=True)

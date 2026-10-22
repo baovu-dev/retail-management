@@ -23,12 +23,15 @@ def record(name, ok, detail):
     print(('PASS ' if ok else 'FAIL ') + name + ': ' + str(detail), flush=True)
 def require(condition, name, detail):
     record(name, bool(condition), detail)
-    if not condition: raise RuntimeError(name)
+    if not condition:
+        raise RuntimeError(name)
 def wait_mcp():
     for _ in range(40):
         try:
-            requests.get('http://localhost:8100/mcp', timeout=1); return
-        except requests.RequestException: time.sleep(.25)
+            requests.get('http://localhost:8100/mcp', timeout=1)
+            return
+        except requests.RequestException:
+            time.sleep(.25)
     raise RuntimeError('MCP readiness')
 def check_mcp(page, order_id):
     page.locator('#mcpOrderId').fill(str(order_id))

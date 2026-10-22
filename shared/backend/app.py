@@ -1,4 +1,5 @@
 import os
+import secrets
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, session
 from flask_cors import CORS, cross_origin
@@ -39,6 +40,96 @@ CUSTOMERS_UI_URL = os.getenv("CUSTOMERS_UI_URL", "http://localhost:5003")
 ORDERS_UI_URL = os.getenv("ORDERS_UI_URL", "http://localhost:3004")
 CHATBOT_UI_URL = os.getenv("CHATBOT_UI_URL", "http://localhost:3005")
 
+# Orders CRUD is a separate capability domain from MCP and Multi-Agent review.
+app.config.update(SESSION_COOKIE_HTTPONLY=True,
+                  SESSION_COOKIE_SECURE=os.getenv("APP_ENV", "local") == "cloud",
+                  SESSION_COOKIE_SAMESITE="None" if os.getenv("APP_ENV", "local") == "cloud" else "Lax")
+
+
+def orders_crud_headers():
+    """Derive identity only from the verified shared session, including server checkout."""
+    secret = os.getenv("ORDERS_CRUD_SECRET", "")
+    from urllib.parse import urlsplit
+    try:
+        origin = urlsplit(ORDERS_FRONTEND_ORIGIN)
+        configured = (bool(origin.hostname) and not origin.username and not origin.password
+                      and origin.path == "" and not origin.query and not origin.fragment
+                      and (origin.scheme == "https" or origin.scheme == "http" and origin.hostname in {"localhost", "127.0.0.1"}))
+    except ValueError:
+        configured = False
+    if (len(secret) < 32 or secret == os.getenv("ORDERS_MCP_SECRET", "") or len(app.secret_key or "") < 32
+            or not configured or os.getenv("APP_ENV", "local") == "cloud" and
+            ("ORDERS_FRONTEND_ORIGIN" not in os.environ or not ORDERS_FRONTEND_ORIGIN.startswith("https://"))):
+        return None, None, (jsonify(error="Orders CRUD authentication is not configured.", code="unavailable"), 503)
+    customer = session.get("customer")
+    if session.get("is_staff") is True:
+        if not session.get("staff_email") or not STAFF_PASSWORD or STAFF_PASSWORD == KNOWN_DEV_STAFF_PASSWORD:
+            return None, None, (jsonify(error="Private staff credentials required.", code="unavailable"), 503)
+        identity = {"role": "staff", "staff_email": session["staff_email"], "scope": "orders:staff:manage"}
+    elif isinstance(customer, dict) and type(customer.get("customer_id")) is int and 0 < customer["customer_id"] <= 2147483647:
+        identity = {"role": "customer", "customer_id": customer["customer_id"], "scope": "orders:customer:crud"}
+    else:
+        return None, None, (jsonify(error="Shared login required.", code="unauthorized"), 401)
+    claims = {**identity, "aud": "orders-crud", "iss": "kicklab-shared"}
+    token = URLSafeTimedSerializer(secret, salt="orders-crud-v1").dumps(claims)
+    return {"Authorization": f"Bearer {token}"}, identity, None
+
+
+@app.post("/api/orders/crud-token")
+@cross_origin(origins=[ORDERS_FRONTEND_ORIGIN], supports_credentials=True)
+def orders_crud_token():
+    if request.headers.get("Origin") != ORDERS_FRONTEND_ORIGIN or request.headers.get("X-Orders-Token-Request") != "1":
+        return jsonify(error="Trusted Orders origin and request header required.", code="forbidden"), 403
+    headers, identity, error = orders_crud_headers()
+    if error:
+        return error
+    response = jsonify(access_token=headers["Authorization"].removeprefix("Bearer "), expires_in=120,
+                       role=identity["role"], customer_id=identity.get("customer_id"))
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
+REVIEWS_FRONTEND_ORIGIN = os.getenv("REVIEWS_FRONTEND_ORIGIN", "http://localhost:5001")
+
+
+@app.post("/api/orders/purchase-proof")
+@cross_origin(origins=[REVIEWS_FRONTEND_ORIGIN], supports_credentials=True)
+def orders_purchase_proof():
+    if request.headers.get("Origin") != REVIEWS_FRONTEND_ORIGIN or request.headers.get("X-Reviews-Proof-Request") != "1":
+        return jsonify(error="Trusted Reviews origin and request header required.", code="forbidden"), 403
+    from urllib.parse import urlsplit
+    secret = os.getenv("ORDERS_PURCHASE_SECRET", "")
+    try:
+        origin = urlsplit(REVIEWS_FRONTEND_ORIGIN)
+        configured = (bool(origin.hostname) and not origin.username and not origin.password
+                      and origin.path == "" and not origin.query and not origin.fragment
+                      and (origin.scheme == "https" or origin.scheme == "http" and origin.hostname in {"localhost", "127.0.0.1"}))
+    except ValueError:
+        configured = False
+    if (not configured or len(app.secret_key or "") < 32 or len(secret) < 32
+            or secret in {os.getenv("ORDERS_CRUD_SECRET", ""), os.getenv("ORDERS_MCP_SECRET", "")}
+            or os.getenv("APP_ENV", "local") == "cloud" and
+            ("REVIEWS_FRONTEND_ORIGIN" not in os.environ or origin.scheme != "https")):
+        return jsonify(error="Purchase proof issuance is not configured.", code="unavailable"), 503
+    customer = session.get("customer")
+    if session.get("is_staff") is True:
+        return jsonify(error="A customer session is required.", code="forbidden"), 403
+    if not isinstance(customer, dict) or type(customer.get("customer_id")) is not int or not 0 < customer["customer_id"] <= 2147483647:
+        return jsonify(error="Customer login required.", code="unauthorized"), 401
+    data = request.get_json(silent=True)
+    product_id = data.get("product_id") if isinstance(data, dict) else None
+    if type(product_id) is not int or not 0 < product_id <= 2147483647:
+        return jsonify(error="Valid product ID required.", code="invalid_input"), 400
+    token = URLSafeTimedSerializer(secret, salt="orders-verified-purchase-v1").dumps({
+        "iss": "kicklab-shared", "aud": "orders-verified-purchase", "scope": "reviews:purchase",
+        "role": "customer", "customer_id": customer["customer_id"], "product_id": product_id})
+    response = jsonify(access_token=token, expires_in=120)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
 @app.post("/api/orders/mcp-token")
 @cross_origin(origins=[ORDERS_FRONTEND_ORIGIN], supports_credentials=True)
 def orders_mcp_token():
@@ -64,6 +155,27 @@ def orders_mcp_token():
     # Customer ID / role in the request body are deliberately ignored.
     claims = {**identity, "aud": "orders-mcp", "scope": "order:status", "order_id": order_id}
     token = URLSafeTimedSerializer(secret, salt="orders-mcp-status-v1").dumps(claims)
+    response = jsonify(access_token=token, expires_in=120)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
+@app.post("/api/orders/multi-agent-token")
+@cross_origin(origins=[ORDERS_FRONTEND_ORIGIN], supports_credentials=True)
+def orders_multi_agent_token():
+    """Issue a short-lived, staff-only capability for an Orders review."""
+    if request.headers.get("Origin") != ORDERS_FRONTEND_ORIGIN:
+        return jsonify(error="Orders frontend origin is required."), 403
+    secret = os.getenv("ORDERS_MCP_SECRET", "")
+    if len(secret) < 32 or len(app.secret_key or "") < 32:
+        return jsonify(error="Orders authentication is not configured."), 503
+    if (session.get("is_staff") is not True or not session.get("staff_email")
+            or not STAFF_PASSWORD or STAFF_PASSWORD == KNOWN_DEV_STAFF_PASSWORD):
+        return jsonify(error="Staff login with private credentials is required."), 403
+    claims = {"aud": "orders-multi-agent", "scope": "orders:workflow:review",
+              "role": "staff", "staff_email": session["staff_email"]}
+    token = URLSafeTimedSerializer(secret, salt="orders-multi-agent-v1").dumps(claims)
     response = jsonify(access_token=token, expires_in=120)
     response.headers["Cache-Control"] = "no-store"
     response.headers["Pragma"] = "no-cache"
@@ -217,6 +329,7 @@ def order_product(product_id):
     except (requests.exceptions.RequestException, ValueError):
         return redirect(url_for("shop"))
 
+    session.setdefault("orders_checkout_csrf", secrets.token_urlsafe(32))
     return render_template(
         "place_order.html",
         product=product,
@@ -230,6 +343,15 @@ def place_order(product_id):
 
     if not customer:
         return redirect(url_for("login"))
+
+    expected = session.get("orders_checkout_csrf", "")
+    supplied = request.form.get("orders_csrf", "")
+    if (request.headers.get("Origin") != request.host_url.rstrip("/") or not expected
+            or len(supplied) > 128 or not secrets.compare_digest(expected.encode(), supplied.encode())):
+        return jsonify(error="Checkout request denied.", code="forbidden"), 403
+    crud_headers, _, error = orders_crud_headers()
+    if error:
+        return error
 
     try:
         quantity = int(request.form.get("quantity", 1))
@@ -258,11 +380,13 @@ def place_order(product_id):
 
         order_response = requests.post(
             f"{ORDERS_API}/api/orders",
+            headers=crud_headers,
             json={
                 "customer_id": customer["customer_id"],
                 "items": [
                     {
                         "product_id": product["product_id"],
+                        "product_name": product.get("name"),
                         "quantity": quantity,
                         "unit_price": product["price"]
                     }
@@ -307,12 +431,18 @@ def order_success(order_id):
     if not customer:
         return redirect(url_for("login"))
 
+    crud_headers, _, error = orders_crud_headers()
+    if error:
+        return error
     try:
         response = requests.get(
             f"{ORDERS_API}/api/orders/{order_id}",
+            headers=crud_headers,
             timeout=5
         )
 
+        if response.status_code in (401, 403):
+            return jsonify(error="Order access denied.", code="forbidden" if response.status_code == 403 else "unauthorized"), response.status_code
         order = (
             response.json()
             if response.ok

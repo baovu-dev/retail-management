@@ -114,7 +114,7 @@ def observe(results):
             if not missing_fields:
                 observations.append(
                     "PASS: Product data contains the required fields."
-    
+
                 )
             else:
                 observations.append(
@@ -155,7 +155,7 @@ def adapt(observations):
             print(
                 "No corrective action required."
                 "The Product Management workflow passed all validation checks."
-        
+
             )
             print(
                 "Recommended next step: continue monitoring API, "
@@ -188,4 +188,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
