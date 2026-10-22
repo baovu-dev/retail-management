@@ -4,10 +4,14 @@ on:
   push:
     paths:
       - 'student-2/**'
+      - 'ai-services/multi-agent-server/evidence/student2_products.py'
+      - 'shared/frontend/templates/staff_dashboard.html'
       - '.github/workflows/student-2-ci.yml'
   pull_request:
     paths:
       - 'student-2/**'
+      - 'ai-services/multi-agent-server/evidence/student2_products.py'
+      - 'shared/frontend/templates/staff_dashboard.html'
       - '.github/workflows/student-2-ci.yml'
 
 jobs:
@@ -28,9 +32,13 @@ jobs:
           pip install -r student-2/backend/requirements.txt
           pip install -r student-2/frontend/requirements.txt
           pip install -r student-2/database/requirements.txt
+          pip install pytest
 
       - name: Initialize database
         run: python student-2/database/init_db.py
+
+      - name: Test two Product backend endpoints and evidence shape
+        run: python -m pytest student-2/tests/post_commit student-2/tests/test_product_evidence.py -q
 
   build:
     runs-on: ubuntu-latest
