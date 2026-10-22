@@ -7,7 +7,9 @@ from tools.student1_reviews import (
     get_flagged_reviews,
 )
 from tools.student4_orders import get_order_status as read_order_status
+from tools.student2_products import get_product_by_id
 from tools.student3_customers import get_customer_summary
+
 from tools.student5_recommendations import (
     get_customer_browsing_history,
     get_customer_recommendations,
@@ -45,6 +47,10 @@ def flagged_reviews() -> dict:
     """Return a list of all flagged reviews. Read-only."""
     return get_flagged_reviews()
 
+@mcp.tool()
+def product_by_id(product_id: int) -> dict:
+    """Return product information for one KICKLAB product. Read-only."""
+    return get_product_by_id(product_id)
 
 @mcp.tool()
 def customer_summary(customer_id: int) -> dict:
