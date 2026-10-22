@@ -77,7 +77,7 @@ APP_ENV = {
     },
     "student2-backend": {"DATABASE_URL": url("student2-database")},
     "student2-frontend": {"API_BASE": url("student2-backend")},
-    "student3-backend": {"DATABASE_URL": url("student3-database")},
+    "student3-backend": {"DATABASE_URL": url("student3-database"), "SHARED_URL": url("shared-backend")},
     "student4-database": {"ORDERS_DB_PATH": "/app/data/orders.db"},
     "student4-backend": {"DATABASE_URL": url("student4-database")},
     "student4-frontend": {"API_BASE": url("student4-backend"), "SHARED_BASE": url("shared-backend")},
