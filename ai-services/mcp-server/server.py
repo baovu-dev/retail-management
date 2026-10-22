@@ -7,7 +7,6 @@ from tools.student1_reviews import (
     get_flagged_reviews,
 )
 from tools.student4_orders import get_order_status as read_order_status
-from tools.student1_reviews import get_rating_summary, get_reviews_by_product, get_flagged_reviews
 from tools.student2_products import get_product_by_id
 from tools.student3_customers import get_customer_summary
 
@@ -17,7 +16,9 @@ from tools.student5_recommendations import (
     get_recommendation_metrics,
 )
 
-mcp = FastMCP("KICKLAB Shared MCP", host="0.0.0.0", port=8100)  # noqa: S104 - must accept connections from Docker via host.docker.internal
+# Host defaults support Docker clients; port override supports isolated live tests.
+mcp = FastMCP("KICKLAB Shared MCP", host=os.getenv("MCP_HOST", "0.0.0.0"),  # noqa: S104 - host service accepts Docker clients
+              port=int(os.getenv("MCP_PORT", "8100")))
 
 @mcp.tool()
 def get_order_status(order_id: int, access_token: str) -> dict:
@@ -55,6 +56,9 @@ def product_by_id(product_id: int) -> dict:
 def customer_summary(customer_id: int) -> dict:
     """Return safe account details for one KICKLAB customer. Read-only."""
     return get_customer_summary(customer_id)
+
+
+@mcp.tool()
 def customer_recommendations(customer_id: int) -> dict:
     """Return saved sneaker recommendations for one customer. Read-only."""
     return get_customer_recommendations(customer_id)

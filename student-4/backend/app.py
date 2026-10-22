@@ -1,17 +1,23 @@
 import os
+import math
 
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 
 from prompt_loader import load_prompt
-from orders_auth import bearer_token, mcp_enabled, valid_order_id, verify_access_token
+from orders_auth import bearer_token, mcp_enabled, valid_order_id, verify_access_token, verify_crud_token
+from purchase_auth import verify_purchase_proof
 from orders_rag import rag_bp
+from orders_multi_agent import multi_agent_bp
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[os.getenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004")],
+     supports_credentials=False, allow_headers=["Authorization", "Content-Type"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 app.register_blueprint(rag_bp)
+app.register_blueprint(multi_agent_bp)
 
 
 DATABASE_URL = os.getenv(
@@ -229,85 +235,143 @@ def health():
     )
 
 
-@app.route(
-    "/api/orders",
-    methods=["GET"]
-)
+@app.post("/api/orders/verified-purchase")
+def verified_purchase():
+    data = request.get_json(silent=True)
+    product_id = data.get("product_id") if isinstance(data, dict) else None
+    claims, error = verify_purchase_proof(bearer_token(request), product_id)
+    if error:
+        return jsonify(error[0]), error[1]
+    try:
+        response = db_post("/orders/verified-purchase", {"customer_id": claims["customer_id"], "product_id": product_id})
+        result = response.json()
+        if response.status_code != 200 or not isinstance(result, dict) or type(result.get("verified_purchase")) is not bool:
+            raise ValueError("Invalid purchase result")
+        answer = jsonify(verified_purchase=result["verified_purchase"])
+        answer.headers["Cache-Control"] = "no-store"
+        return answer
+    except (requests.RequestException, ValueError, TypeError):
+        return jsonify(error="Purchase verification unavailable.", code="unavailable"), 503
+
+
+def access_error(code="forbidden", status=403):
+    return jsonify(error="Orders access denied.", code=code), status
+
+
+def authenticated_order(order_id, claims):
+    if not valid_order_id(order_id):
+        return None, (jsonify(error="Invalid order ID.", code="invalid_input"), 400)
+    response = db_get(f"/orders/{order_id}")
+    if response.status_code == 404:
+        return None, (jsonify(error="Order not found.", code="not_found"), 404)
+    if response.status_code != 200:
+        return None, (jsonify(error="Orders database unavailable.", code="unavailable"), 503)
+    try:
+        order = response.json()
+        if (not isinstance(order, dict) or order.get("order_id") != order_id
+                or not valid_order_id(order.get("customer_id"))):
+            raise ValueError("Invalid database order")
+        if claims["role"] == "customer" and order["customer_id"] != claims["customer_id"]:
+            return None, access_error()
+        return order, None
+    except (ValueError, TypeError, KeyError):
+        return None, (jsonify(error="Invalid Orders database response.", code="unavailable"), 503)
+
+
+@app.before_request
+def protect_orders_crud():
+    if request.method == "OPTIONS":
+        return None
+    protected = {"get_orders", "get_order", "create_order", "update_order", "cancel_order"}
+    enabled_ai = (request.endpoint == "order_assistant"
+                  and os.getenv("AI_ENABLED", "true").strip().lower() in {"1", "true", "yes", "on"})
+    if request.endpoint in protected or enabled_ai:
+        claims, error = verify_crud_token(bearer_token(request))
+        if error:
+            return jsonify(error[0]), error[1]
+        g.orders_identity = claims
+    return None
+
+
+@app.get("/api/orders")
 def get_orders():
-    customer_id = request.args.get("customer_id")
-
-    path = "/orders"
-
-    if customer_id:
-        path += f"?customer_id={customer_id}"
-
+    claims = g.orders_identity
+    supplied = request.args.get("customer_id")
+    customer_id = claims.get("customer_id") if claims["role"] == "customer" else None
+    if supplied is not None:
+        if not supplied.isdecimal() or not valid_order_id(int(supplied)):
+            return access_error("invalid_input", 400)
+        if claims["role"] == "customer" and int(supplied) != customer_id:
+            return access_error()
+        customer_id = int(supplied)
+    path = "/orders" + (f"?customer_id={customer_id}" if customer_id else "")
     response = db_get(path)
+    if response.status_code != 200:
+        return access_error("unavailable", 503)
+    rows = response.json()
+    if not isinstance(rows, list) or any(not isinstance(row, dict) or
+            claims["role"] == "customer" and row.get("customer_id") != customer_id for row in rows):
+        return access_error("unavailable", 503)
+    return jsonify(rows)
 
-    return jsonify(
-        response.json()
-    ), response.status_code
 
-
-@app.route(
-    "/api/orders/<int:order_id>",
-    methods=["GET"]
-)
+@app.get("/api/orders/<int:order_id>")
 def get_order(order_id):
-    response = db_get(
-        f"/orders/{order_id}"
-    )
-
-    return jsonify(
-        response.json()
-    ), response.status_code
+    order, error = authenticated_order(order_id, g.orders_identity)
+    return error if error else jsonify(order)
 
 
-@app.route(
-    "/api/orders",
-    methods=["POST"]
-)
+@app.post("/api/orders")
 def create_order():
-    data = request.json or {}
+    claims = g.orders_identity
+    if claims["role"] != "customer":
+        return access_error()
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict) or not isinstance(data.get("items"), list) or not data["items"]:
+        return jsonify(error="Order items are required.", code="invalid_input"), 400
+    if "customer_id" in data and (type(data["customer_id"]) is not int or data["customer_id"] != claims["customer_id"]):
+        return access_error()
+    if any(not isinstance(item, dict) for item in data["items"]):
+        return jsonify(error="Invalid order items.", code="invalid_input"), 400
+    if any(not valid_order_id(item.get("product_id")) or type(item.get("quantity")) is not int
+           or item["quantity"] <= 0 or type(item.get("unit_price")) not in (int, float)
+           or not math.isfinite(item["unit_price"]) or item["unit_price"] < 0 for item in data["items"]):
+        return jsonify(error="Invalid product, quantity or price.", code="invalid_input"), 400
+    if any(item.get("product_name") is not None and
+           (not isinstance(item["product_name"], str) or not 0 < len(item["product_name"].strip()) <= 120) for item in data["items"]):
+        return jsonify(error="Invalid product display name.", code="invalid_input"), 400
+    items = [{key: item[key] for key in ("product_id", "quantity", "unit_price")} for item in data["items"]]
+    for original, item in zip(data["items"], items):
+        if isinstance(original.get("product_name"), str):
+            item["product_name"] = original["product_name"].strip()
+    response = db_post("/orders", {"customer_id": claims["customer_id"], "items": items})
+    return jsonify(response.json()), response.status_code
 
-    response = db_post(
-        "/orders",
-        data
-    )
 
-    return jsonify(
-        response.json()
-    ), response.status_code
-
-
-@app.route(
-    "/api/orders/<int:order_id>",
-    methods=["PUT"]
-)
+@app.put("/api/orders/<int:order_id>")
 def update_order(order_id):
-    data = request.json or {}
+    if g.orders_identity["role"] != "staff":
+        return access_error()
+    order, error = authenticated_order(order_id, g.orders_identity)
+    if error:
+        return error
+    data = request.get_json(silent=True)
+    status = data.get("status") if isinstance(data, dict) else None
+    if not isinstance(status, str) or status not in {"CONFIRMED", "CANCELLED"}:
+        return jsonify(error="Staff may confirm or cancel an order.", code="invalid_input"), 400
+    if order.get("status") == "CANCELLED" and status != "CANCELLED":
+        return jsonify(error="Cancelled orders cannot be reopened.", code="invalid_transition"), 409
+    response = db_put(f"/orders/{order_id}", {"status": status})
+    return jsonify(response.json()), response.status_code
 
-    response = db_put(
-        f"/orders/{order_id}",
-        data
-    )
 
-    return jsonify(
-        response.json()
-    ), response.status_code
-
-
-@app.route(
-    "/api/orders/<int:order_id>",
-    methods=["DELETE"]
-)
+@app.delete("/api/orders/<int:order_id>")
 def cancel_order(order_id):
-    response = db_delete(
-        f"/orders/{order_id}"
-    )
-
-    return jsonify(
-        response.json()
-    ), response.status_code
+    _, error = authenticated_order(order_id, g.orders_identity)
+    if error:
+        return error
+    response = db_delete(f"/orders/{order_id}")
+    return jsonify(response.json()), response.status_code
 
 
 @app.route(
@@ -374,22 +438,9 @@ def order_assistant():
         }), 400
 
 
-    db_response = db_get(
-        f"/orders/{order_id}"
-    )
-
-
-    if (
-        db_response.status_code
-        != 200
-    ):
-        return jsonify(
-            db_response.json()
-        ), db_response.status_code
-
-
-    order = db_response.json()
-
+    order, error = authenticated_order(order_id, g.orders_identity)
+    if error:
+        return error
 
     order_context = (
         f"Order ID: "
@@ -483,7 +534,7 @@ if __name__ == "__main__":
     )
 
     app.run(
-        host="0.0.0.0",
+        host="0.0.0.0",  # noqa: S104 - Docker must accept connections on all interfaces
         port=5004,
-        debug=True
+        debug=os.getenv("FLASK_DEBUG", "false").strip().lower() == "true"
     )

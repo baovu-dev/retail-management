@@ -6,13 +6,13 @@ PRODUCT_DB_API = os.getenv("PRODUCT_DB_API", "http://localhost:6002")
 def get_product_by_id(product_id: int) -> dict:
     if product_id <= 0:
         return {"error": "product_id must be a positive integer"}
-    
+
     try:
         response = requests.get(
             f"{PRODUCT_DB_API}/products/{product_id}",
               timeout=5
             )
-        
+
         if response.status_code == 404:
             return {"error": "Product not found"}
 

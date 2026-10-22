@@ -17,7 +17,7 @@
     <p>Planner -> Worker -> Reviewer -> Human Review</p>
 
     <label for="request">Product analysis request:</label>
-    <textarea id="request" rows="4" 
+    <textarea id="request" rows="4"
     placeholder="Analyse product 103 and suggest improvements"></textarea>
     <button id="run">Run Multi-Agent Workflow</button>
 
@@ -45,7 +45,7 @@
             if (!response.ok) throw new Error(data.error || JSON.stringify(data));
             return data;
         }
-       
+
         document.getElementById("run").addEventListener("click", async () => {
             const userRequest = document.getElementById("request").value.trim();
             if (!userRequest) return alert("Enter a request first.");
@@ -64,19 +64,19 @@
                 if (workflowId) document.getElementById("review").style.display = "block";
             } catch (error) {
                 document.getElementById("result").textContent = error.message;
-            }   
+            }
         });
 
         async function submitDecision(decision) {
             if (!workflowId) return;
             try {
                 const data = await apiRequest(
-                    `/multi-agent/workflow/${encodeURIComponent(workflowId)}/decision`, 
+                    `/multi-agent/workflow/${encodeURIComponent(workflowId)}/decision`,
                     {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        decision, 
+                    body: JSON.stringify({
+                        decision,
                         reviewer: "student-2",
                         comment: document.getElementById("comment").value,
                         corrected_output: document.getElementById("correction").value

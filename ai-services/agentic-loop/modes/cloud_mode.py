@@ -50,14 +50,14 @@ def run(stage):
     domain = domain_match.group(1) if domain_match else ""
     stage("ACT", f"Reading {REPORT.relative_to(REPO_ROOT)} (domain {domain})")
 
-    public_rows = [l for l in text.splitlines() if l.startswith("| ") and "https://" in l]
-    check("Report: every public app responded", bool(public_rows) and all(l.rstrip().endswith("| PASS |") for l in public_rows),
-          f"{sum(l.rstrip().endswith('| PASS |') for l in public_rows)}/{len(public_rows)} passed")
-    baseline_rows = [l for l in text.splitlines() if "disabled" in l and l.startswith("| ")]
-    check("Report: AI-Mode, MCP, RAG and Multi-Agent disabled", len(baseline_rows) == 4 and all(l.rstrip().endswith("| PASS |") for l in baseline_rows),
+    public_rows = [line for line in text.splitlines() if line.startswith("| ") and "https://" in line]
+    check("Report: every public app responded", bool(public_rows) and all(line.rstrip().endswith("| PASS |") for line in public_rows),
+          f"{sum(line.rstrip().endswith('| PASS |') for line in public_rows)}/{len(public_rows)} passed")
+    baseline_rows = [line for line in text.splitlines() if "disabled" in line and line.startswith("| ")]
+    check("Report: AI-Mode, MCP, RAG and Multi-Agent disabled", len(baseline_rows) == 4 and all(line.rstrip().endswith("| PASS |") for line in baseline_rows),
           f"{len(baseline_rows)} baseline rows")
-    internal_rows = [l for l in text.splitlines() if re.match(r"\| \S+ \| (true|false) \|", l)]
-    check("Report: databases and internal backends are internal-only", bool(internal_rows) and all("| false | PASS |" in l for l in internal_rows),
+    internal_rows = [line for line in text.splitlines() if re.match(r"\| \S+ \| (true|false) \|", line)]
+    check("Report: databases and internal backends are internal-only", bool(internal_rows) and all("| false | PASS |" in line for line in internal_rows),
           f"{len(internal_rows)} internal apps")
     check("Report: overall result is PASS", "## Overall: PASS" in text, "Overall line")
 

@@ -13,6 +13,9 @@ def initialize(db_path=None):
     Path(target_path).parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(target_path) as connection:
         connection.executescript(Path(SCHEMA_PATH).read_text(encoding="utf-8"))
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(order_items)")}
+        if "product_name" not in columns:
+            connection.execute("ALTER TABLE order_items ADD COLUMN product_name TEXT")
 
 
 def seed(db_path=None, *, reset=False):

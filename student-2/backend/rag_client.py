@@ -7,8 +7,8 @@ RAG_TIMEOUT = 120
 
 def call_rag_service(path, payload):
     response = requests.post(
-        f"{RAG_URL}{path}", 
-        json=payload, 
+        f"{RAG_URL}{path}",
+        json=payload,
         timeout=RAG_TIMEOUT
     )
     return response.json()

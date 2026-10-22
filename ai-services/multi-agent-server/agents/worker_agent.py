@@ -18,7 +18,8 @@ WORKER_MAX_TOKENS = int(os.getenv("WORKER_MAX_TOKENS", "300"))
 client = OpenAI(
     base_url=OLLAMA_BASE_URL,
     api_key="ollama",  # pragma: allowlist secret - placeholder, Ollama does not check API keys
-    timeout=OLLAMA_TIMEOUT_SECONDS
+    timeout=OLLAMA_TIMEOUT_SECONDS,
+    max_retries=0,
 )
 
 
@@ -59,14 +60,7 @@ Evidence:
         return response.choices[0].message.content.strip()
 
     except Exception as exc:
-        return (
-            "Output:\n"
-            "Model output could not be generated.\n\n"
-            "Evidence Used:\n"
-            f"{evidence_text}\n\n"
-            "Limitations:\n"
-            f"Model call failed. Human review required. Error: {exc}"
-        )
+        raise RuntimeError("Worker model unavailable") from exc
 
 
 def generate_output(user_request: str, feature: str = "student-1", plan: str = "") -> Dict[str, Any]:
@@ -100,6 +94,15 @@ def generate_output(user_request: str, feature: str = "student-1", plan: str = "
     records = evidence["records"]
     evidence_text = format_evidence(records)
 
+    try:
+        output = call_model(user_request, plan, evidence_text)
+    except RuntimeError:
+        return {"status": "error", "agent": "worker_agent", "model": OLLAMA_MODEL,
+                "feature": feature, "evidence_source": evidence["source"],
+                "evidence_count": len(records), "evidence": records,
+                "output": "", "error": "Worker model unavailable",
+                "human_approval_required": True}
+
     return {
         "status": "completed",
         "agent": "worker_agent",
@@ -108,7 +111,7 @@ def generate_output(user_request: str, feature: str = "student-1", plan: str = "
         "evidence_source": evidence["source"],
         "evidence_count": len(records),
         "evidence": records,
-        "output": call_model(user_request, plan, evidence_text),
+        "output": output,
         "human_approval_required": True
     }
 

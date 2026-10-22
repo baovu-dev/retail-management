@@ -9,7 +9,7 @@ Each product contains:
 - name
 - category
 - description
-- price 
+- price
 - brand
 - status
 
@@ -27,7 +27,7 @@ The prompt instructs the AI to use only the provided product information and not
 
 The generated description is returned to the frontend and is not automatically saved to the product database.
 
-# Shared MCP Integration 
+# Shared MCP Integration
 
 The shared MCP service can retrieve product information using a product ID.
 

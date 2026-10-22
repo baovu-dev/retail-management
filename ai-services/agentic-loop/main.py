@@ -28,21 +28,41 @@ def main():
     parser = argparse.ArgumentParser(description="KICKLAB shared agentic loop")
     parser.add_argument("--mode", required=True, choices=MODES.keys())
     parser.add_argument("--feature", choices=("student-1", "student-4"), default="student-1")
-    parser.add_argument("--evidence-file", type=Path, help="Orders RAG: save a new actual run, or review a saved run")
+    parser.add_argument("--evidence-file", type=Path, help="Orders RAG evidence or explicit Orders cloud artifact bundle JSON")
     parser.add_argument("--review-file", type=Path, help="Orders RAG: source-grounded analyst review of the saved evidence")
+    parser.add_argument("--workflow-id", help="Orders multi-agent: existing workflow to review without modifying it")
+    parser.add_argument("--history-file", type=Path, help="Orders multi-agent: original server history")
+    parser.add_argument("--audit-file", type=Path, help="Orders multi-agent: original server coordination audit")
     parser.add_argument("--output-dir", type=Path, default=Path(__file__).parent / "outputs")
+    parser.add_argument("--cloud-decision-file", type=Path, help="Orders cloud: separate human release decision JSON")
+    parser.add_argument("--cloud-no-advisory", action="store_true", help="Orders cloud: offline deterministic checks only; cannot approve release")
     args = parser.parse_args()
     if args.feature == "student-4" and args.mode == "ai-mode":
         parser.error("Orders extends MCP/RAG only; existing AI validation uses student-1")
     if args.feature == "student-4" and args.mode == "rag" and not args.evidence_file:
         parser.error("Orders RAG requires --evidence-file")
 
+    if args.feature == "student-4" and args.mode == "multi-agent" and not args.workflow_id:
+        parser.error("Orders multi-agent review requires --workflow-id")
+
     LOG.clear()
     emit(f"=== KICKLAB agentic loop: {args.mode} ===")
     if args.feature == "student-4":
         from modes import orders_mode
         try:
-            passed = orders_mode.run(stage, args)
+            if args.mode == "testing":
+                passed = testing_mode.run(stage, feature="student-4")
+            elif args.mode == "multi-agent":
+                from modes import orders_workflow_review
+                passed = orders_workflow_review.run(stage, args)
+            elif args.mode == "cloud":
+                from modes import orders_cloud_review
+                passed = orders_cloud_review.run(stage, args)
+            elif args.mode in ("mcp", "rag"):
+                passed = orders_mode.run(stage, args)
+            else:
+                stage("OBSERVE", "FAIL: Orders review mode is not connected yet")
+                passed = False
         except Exception as exc:
             # Never serialize auth request arguments, cookies or credential-bearing exceptions.
             stage("OBSERVE", f"FAIL: Orders validation interrupted ({type(exc).__name__})")

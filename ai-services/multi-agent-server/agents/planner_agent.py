@@ -16,7 +16,8 @@ PLANNER_MAX_TOKENS = int(os.getenv("PLANNER_MAX_TOKENS", "200"))
 client = OpenAI(
     base_url=OLLAMA_BASE_URL,
     api_key="ollama",  # pragma: allowlist secret - placeholder, Ollama does not check API keys
-    timeout=OLLAMA_TIMEOUT_SECONDS
+    timeout=OLLAMA_TIMEOUT_SECONDS,
+    max_retries=0,
 )
 
 
@@ -34,12 +35,23 @@ def default_steps() -> List[Dict[str, Any]]:
 
 
 def call_model(user_request: str, feature: str) -> str:
+    orders_scope = """
+Available evidence for student-4 Orders:
+- A live aggregate total order count, with no customer or individual order records.
+- knowledge/student-4/order-statuses.md (supported status rules).
+- knowledge/student-4/order-cancellation.md (cancellation rules).
+Plan only work these sources can support. An Orders table query, individual status,
+customer-specific count, or CancellationRules table is not available to the Worker.
+The feature name student-4 identifies a service, not a customer.
+""" if feature == "student-4" else ""
     prompt = f"""
 {load_prompt()}
 
 Feature:
 
 {feature}
+
+{orders_scope}
 
 User Request:
 
@@ -56,23 +68,22 @@ User Request:
         return response.choices[0].message.content.strip()
 
     except Exception as exc:
-        return (
-            "Objective: Process the user request.\n"
-            "Steps: Plan, work, review, human decision.\n"
-            "Evidence Required: Feature records from the database API.\n"
-            "Human Approval: Required.\n"
-            f"Fallback Reason: {exc}"
-        )
+        raise RuntimeError("Planner model unavailable") from exc
 
 
 def plan_workflow(user_request: str, feature: str = "student-1") -> Dict[str, Any]:
+    try:
+        plan = call_model(user_request, feature)
+    except RuntimeError:
+        return {"status": "error", "agent": "planner_agent", "model": OLLAMA_MODEL,
+                "feature": feature, "plan": "", "error": "Planner model unavailable"}
     return {
         "status": "completed",
         "agent": "planner_agent",
         "model": OLLAMA_MODEL,
         "objective": user_request,
         "feature": feature,
-        "plan": call_model(user_request, feature),
+        "plan": plan,
         "steps": default_steps(),
         "human_approval_required": True
     }

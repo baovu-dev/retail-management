@@ -12,9 +12,12 @@ services:
       - ORDERS_API=http://student4-backend:5004
       - SECRET_KEY=${SECRET_KEY:-kicklab-dev-secret-key}
       - ORDERS_MCP_SECRET=${ORDERS_MCP_SECRET:-}
+      - ORDERS_CRUD_SECRET=${ORDERS_CRUD_SECRET:-}
+      - ORDERS_PURCHASE_SECRET=${ORDERS_PURCHASE_SECRET:-}
       - STAFF_EMAIL=${STAFF_EMAIL:-admin@kicklab.com}
       - STAFF_PASSWORD=${STAFF_PASSWORD:-Admin1234}
       - ORDERS_FRONTEND_ORIGIN=http://localhost:3004
+      - REVIEWS_FRONTEND_ORIGIN=http://localhost:5001
 
   # ── Student 1 — Reviews & Ratings ──
   student1-database:
@@ -37,13 +40,15 @@ services:
     environment:
       - AI_MODE_ENABLED=${AI_MODE_ENABLED:-true}
       - DATABASE_URL=http://student1-database:6001
+      - ORDERS_PURCHASE_SECRET=${ORDERS_PURCHASE_SECRET:-}
+      - ORDERS_API_URL=http://student4-backend:5004
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - MCP_URL=http://host.docker.internal:8100/mcp
-      - MCP_ENABLED=true
+      - MCP_ENABLED=${MCP_ENABLED:-true}
       - RAG_URL=http://host.docker.internal:8200
-      - RAG_ENABLED=true
+      - RAG_ENABLED=${RAG_ENABLED:-true}
       - MULTI_AGENT_SERVICE_URL=http://host.docker.internal:8300
-      - MULTI_AGENT_ENABLED=true
+      - MULTI_AGENT_ENABLED=${MULTI_AGENT_ENABLED:-true}
     depends_on:
       student1-database:
         condition: service_healthy
@@ -103,9 +108,9 @@ services:
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - OLLAMA_MODEL=llama3.1:8b
       - MCP_URL=http://host.docker.internal:8100/mcp
-      - MCP_ENABLED=true
+      - MCP_ENABLED=${MCP_ENABLED:-true}
       - RAG_URL=http://host.docker.internal:8200
-      - RAG_ENABLED=true
+      - RAG_ENABLED=${RAG_ENABLED:-true}
     depends_on:
       student3-database:
         condition: service_healthy
@@ -134,14 +139,20 @@ services:
       - "5004:5004"
     environment:
       - DATABASE_URL=http://student4-database:6004
+      - ORDERS_FRONTEND_ORIGIN=http://localhost:3004
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - OLLAMA_MODEL=qwen2.5:0.5b
       - AI_ENABLED=${AI_ENABLED:-true}
       - MCP_URL=http://host.docker.internal:8100/mcp
       - MCP_ENABLED=${MCP_ENABLED:-false}
       - ORDERS_MCP_SECRET=${ORDERS_MCP_SECRET:-}
+      - ORDERS_CRUD_SECRET=${ORDERS_CRUD_SECRET:-}
+      - ORDERS_PURCHASE_SECRET=${ORDERS_PURCHASE_SECRET:-}
       - RAG_URL=http://host.docker.internal:8200
       - RAG_ENABLED=${RAG_ENABLED:-false}
+      - MULTI_AGENT_SERVICE_URL=http://host.docker.internal:8300
+      - MULTI_AGENT_ENABLED=${MULTI_AGENT_ENABLED:-false}
+      - MULTI_AGENT_ORDERS_SECRET=${MULTI_AGENT_ORDERS_SECRET:-}
     depends_on:
       student4-database:
         condition: service_healthy
@@ -179,11 +190,11 @@ services:
       - DATABASE_URL=http://student5-database:6005
       - OLLAMA_URL=http://host.docker.internal:11434/api/generate
       - MCP_URL=http://host.docker.internal:8100/mcp
-      - MCP_ENABLED=true
+      - MCP_ENABLED=${MCP_ENABLED:-true}
       - RAG_URL=http://host.docker.internal:8200
-      - RAG_ENABLED=true
+      - RAG_ENABLED=${RAG_ENABLED:-true}
       - MULTI_AGENT_SERVICE_URL=http://host.docker.internal:8300
-      - MULTI_AGENT_ENABLED=true
+      - MULTI_AGENT_ENABLED=${MULTI_AGENT_ENABLED:-true}
     depends_on:
       student5-database:
         condition: service_healthy

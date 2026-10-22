@@ -59,8 +59,10 @@ APP_ENV = {
         "PRODUCTS_API": url("student2-backend"),
         "CUSTOMERS_API": url("student3-backend"),
         "ORDERS_API": url("student4-backend"),
+        "APP_ENV": "cloud",
         "STAFF_EMAIL": os.getenv("STAFF_EMAIL", "admin@kicklab.com"),
         "ORDERS_FRONTEND_ORIGIN": url("student4-frontend"),
+        "REVIEWS_FRONTEND_ORIGIN": url("student1-backend"),
         "REVIEWS_UI_URL": url("student1-backend"),
         "PRODUCTS_UI_URL": url("student2-frontend"),
         "CUSTOMERS_UI_URL": url("student3-backend"),
@@ -68,6 +70,7 @@ APP_ENV = {
         "CHATBOT_UI_URL": url("student5-frontend"),
     },
     "student1-backend": {
+        "APP_ENV": "cloud",
         "DATABASE_URL": url("student1-database"),
         "SHARED_URL": url("shared-backend"),
         "PRODUCTS_URL": url("student2-frontend"),
@@ -79,7 +82,8 @@ APP_ENV = {
     "student2-frontend": {"API_BASE": url("student2-backend")},
     "student3-backend": {"DATABASE_URL": url("student3-database")},
     "student4-database": {"ORDERS_DB_PATH": "/app/data/orders.db"},
-    "student4-backend": {"DATABASE_URL": url("student4-database")},
+    "student4-backend": {"DATABASE_URL": url("student4-database"), "APP_ENV": "cloud",
+                         "ORDERS_FRONTEND_ORIGIN": url("student4-frontend")},
     "student4-frontend": {"API_BASE": url("student4-backend"), "SHARED_BASE": url("shared-backend")},
     "student5-backend": {"DATABASE_URL": url("student5-database")},
     "student5-frontend": {"API_BASE": url("student5-backend")},
@@ -87,10 +91,15 @@ APP_ENV = {
 
 # Sensitive values are stored as Container Apps secrets, never as plain environment variables
 APP_SECRETS = {
+    "student1-backend": {"ORDERS_PURCHASE_SECRET": "orders-purchase-secret"},  # pragma: allowlist secret - reference name only
     "shared-backend": {"SECRET_KEY": "secret-key",  # pragma: allowlist secret - secret name, not a value
                        "STAFF_PASSWORD": "staff-password",  # pragma: allowlist secret - secret name, not a value
-                       "ORDERS_MCP_SECRET": "orders-mcp-secret"},  # pragma: allowlist secret - secret name, not a value
-    "student4-backend": {"ORDERS_MCP_SECRET": "orders-mcp-secret"},  # pragma: allowlist secret - secret name, not a value
+                       "ORDERS_MCP_SECRET": "orders-mcp-secret",  # pragma: allowlist secret - Container Apps secret name only
+                       "ORDERS_CRUD_SECRET": "orders-crud-secret",  # pragma: allowlist secret - reference name only
+                       "ORDERS_PURCHASE_SECRET": "orders-purchase-secret"},  # pragma: allowlist secret - secret name, not a value
+    "student4-backend": {"ORDERS_MCP_SECRET": "orders-mcp-secret",  # pragma: allowlist secret - Container Apps secret name only
+                       "ORDERS_CRUD_SECRET": "orders-crud-secret",  # pragma: allowlist secret - reference name only
+                       "ORDERS_PURCHASE_SECRET": "orders-purchase-secret"},  # pragma: allowlist secret - secret name, not a value
 }
 
 
