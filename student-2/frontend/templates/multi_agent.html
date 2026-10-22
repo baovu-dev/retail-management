@@ -4,37 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Product Management - Multi-Agent</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
     <style>
-        body{ font-family: Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; }
-        textarea{ width: 100%; box-sizing: border-box; padding: 12px; }
-        button{ padding: 10px 16px; margin: 8px 5px 8px 0; cursor: pointer; }
-        pre { background: #f4f4f4; padding: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
-        #review { display: none; }
+        .agent-container {
+            width: min(1100px, 100%);
+            margin: 0 auto;
+        }
+
+        .agent-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .agent-card h2 {
+            margin-bottom: 20px;
+        }
+
+        .agent-card label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .agent-card textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 13px;
+            background: var(--surface-soft);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            margin-bottom: 18px;
+        }
+
+        .agent-card textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+            box-shadow: 0 0 0 4px rgba(155, 93, 229, 0.1);
+        }
+
+        .agent-card button {
+            padding: 13px 22px;
+            border: none;
+            border-radius: 13px;
+            background: var(--gradient);
+            color: white;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 6px 8px 6px 0;
+        }
+      
+        .agent-card button:hover {
+            opacity: 0.9;
+        }
+
+        .agent-card pre {
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            padding: 20px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .agent-subtitle {
+            text-align: center;
+            color: var(--muted);
+            margin: -25px auto 35px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 25px;
+            color: var(--purple);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        #review {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
+    <div class="agent-container">
     <h1>Product Management - Multi-Agent</h1>
-    <p>Planner -> Worker -> Reviewer -> Human Review</p>
+    <p class="agent-subtitle">Planner -> Worker -> Reviewer -> Human Review</p>
 
-    <label for="request">Product analysis request:</label>
-    <textarea id="request" rows="4" 
-    placeholder="Analyse product 103 and suggest improvements"></textarea>
-    <button id="run">Run Multi-Agent Workflow</button>
 
-    <h2>Workflow Result</h2>
-    <pre id="result">No workflow started.</pre>
+    <div class="agent-card">
+        <label for="request">Product analysis request:</label>
+        <textarea id="request" rows="4" 
+        placeholder="Analyse product 103 and suggest improvements"></textarea>
+        <button id="run">Run Multi-Agent Workflow</button>
+    </div>
 
-    <section id="review">
+    <div class="agent-card">
+        <h2>Workflow Result</h2>
+        <pre id="result">No workflow started.</pre>
+    </div>
+
+    <section id="review" class="agent-card">
         <h2>Human Review</h2>
         <textarea id="comment" rows="2" placeholder="Optional reviewer comment"></textarea>
         <textarea id="correction" rows="3" placeholder="Corrected output (for Correct)"></textarea>
         <div>
-            <button onclick="submitDecision('approve')">Approve</button>
-            <button onclick="submitDecision('correct')">Correct</button>
-            <button onclick="submitDecision('reject')">Reject</button>
+            <button onclick="submitDecision('Approve')">Approve</button>
+            <button onclick="submitDecision('Correct')">Correct</button>
+            <button onclick="submitDecision('Reject')">Reject</button>
         </div>
     </section>
 
+    </div>
     <script>
         const API = `${location.protocol}//${location.hostname}:5002`;
         let workflowId = null;
