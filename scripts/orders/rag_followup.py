@@ -15,7 +15,7 @@ from validation_checks import route_resource
 ROOT = Path(__file__).resolve().parents[2]
 RUN = Path(os.environ["ORDERS_VALIDATION_RUN"]).resolve()
 sys.path.insert(0, str(ROOT / "ai-services/agentic-loop"))
-from modes.orders_mode import CASES
+from modes.orders_mode import CASES  # noqa: E402 - requires repository path or validation setup above
 
 EXTRA = [
     ("delivery_paraphrase", "On which day should I expect my confirmed purchase to arrive?", "correct_abstention"),

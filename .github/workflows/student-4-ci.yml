@@ -9,6 +9,7 @@ on:
       - 'ai-services/mcp-server/**'
       - 'ai-services/rag-server/**'
       - 'ai-services/agentic-loop/**'
+      - 'ai-services/multi-agent-server/**'
       - 'shared/backend/**'
       - 'shared/Dockerfile'
       - 'shared/.dockerignore'
@@ -23,6 +24,7 @@ on:
       - 'ai-services/mcp-server/**'
       - 'ai-services/rag-server/**'
       - 'ai-services/agentic-loop/**'
+      - 'ai-services/multi-agent-server/**'
       - 'shared/backend/**'
       - 'shared/Dockerfile'
       - 'shared/.dockerignore'
@@ -37,6 +39,7 @@ jobs:
       AI_ENABLED: 'false'
       MCP_ENABLED: 'false'
       RAG_ENABLED: 'false'
+      MULTI_AGENT_ENABLED: 'false'
 
     steps:
       - name: Checkout repository
@@ -62,6 +65,7 @@ jobs:
       AI_ENABLED: 'false'
       MCP_ENABLED: 'false'
       RAG_ENABLED: 'false'
+      MULTI_AGENT_ENABLED: 'false'
 
     steps:
       - name: Checkout repository

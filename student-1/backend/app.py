@@ -3,16 +3,17 @@ import requests
 import os
 
 from prompt_loader import load_prompt
+from purchase_auth import verify_purchase_proof
+from routes.mcp_mode import mcp_bp
+from routes.rag_mode import rag_bp
+from routes.multi_agent_mode import multi_agent_bp
 
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/css', static_url_path='/static')
 
-from routes.mcp_mode import mcp_bp
 app.register_blueprint(mcp_bp)
 
-from routes.rag_mode import rag_bp
 app.register_blueprint(rag_bp)
 
-from routes.multi_agent_mode import multi_agent_bp
 app.register_blueprint(multi_agent_bp)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "http://localhost:6001")
@@ -53,30 +54,72 @@ def analyse_sentiment(comment_text):
         print(f"Error during sentiment analysis: {e}")
         return 0.0  # Default to neutral sentiment on error
 
-def is_verified_purchase(customer_id, product_id):
+def is_verified_purchase(proof, product_id):
+    """Return a boolean only; no list/detail calls and no credential-bearing exception logs."""
+    from urllib.parse import urlsplit
     try:
-        r = requests.get(f"{ORDERS_API_URL}/api/orders", timeout=5)
-        orders = r.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Orders API connection error: {e}")
-        return False
+        target = urlsplit(ORDERS_API_URL)
+        if (target.scheme not in {"http", "https"} or not target.hostname or target.username or target.password
+                or target.query or target.fragment or target.path not in ("", "/")
+                or os.getenv("APP_ENV", "local") == "cloud" and target.scheme != "https"):
+            return None
+        response = requests.post(ORDERS_API_URL.rstrip("/") + "/api/orders/verified-purchase",
+                                 json={"product_id": product_id}, headers={"Authorization": "Bearer " + proof},
+                                 timeout=5, allow_redirects=False)
+        data = response.json()
+        if response.status_code != 200 or not isinstance(data, dict) or type(data.get("verified_purchase")) is not bool:
+            return None
+        return data["verified_purchase"]
+    except (requests.RequestException, ValueError, TypeError):
+        return None
 
-    for order in orders:
-        if order['customer_id'] != customer_id:
-            continue
-        if order['status'] != 'CONFIRMED':
-            continue
 
-        order_detail_res = requests.get(
-            f"{ORDERS_API_URL}/api/orders/{order['order_id']}", timeout=5
-        )
-        order_detail = order_detail_res.json()
-        item_product_ids = [item['product_id'] for item in order_detail.get('items', [])]
+def review_submission(data, form=False):
+    if not isinstance(data, dict):
+        return jsonify(error="Review input required.", code="invalid_input"), 400
+    try:
+        product_id = int(data.get("product_id")) if form else data.get("product_id")
+        rating = int(data.get("rating")) if form else data.get("rating")
+    except (TypeError, ValueError):
+        return jsonify(error="Valid product and rating required.", code="invalid_input"), 400
+    scheme, _, proof = request.headers.get("Authorization", "").partition(" ")
+    claims, error = verify_purchase_proof(proof if scheme.lower() == "bearer" else "", product_id)
+    if error:
+        return jsonify(error[0]), error[1]
+    if "customer_id" in data:
+        supplied = str(data["customer_id"])
+        if supplied != str(claims["customer_id"]):
+            return jsonify(error="Customer identity mismatch.", code="forbidden"), 403
+    comment = data.get("comment", "")
+    if (type(rating) is not int or not 1 <= rating <= 5 or not isinstance(comment, str) or len(comment) > 3000):
+        return jsonify(error="Rating or comment is invalid.", code="invalid_input"), 400
+    verified = is_verified_purchase(proof, product_id)
+    if verified is None:
+        return jsonify(error="Purchase verification unavailable.", code="unavailable"), 503
+    if not verified:
+        return jsonify(error="Only confirmed purchases can leave a review.", code="forbidden"), 403
+    payload = {"customer_id": claims["customer_id"], "product_id": product_id, "rating": rating, "comment": comment}
+    try:
+        if form:
+            existing = requests.get(f"{DATABASE_URL}/reviews/{product_id}", timeout=REQUEST_TIMEOUT)
+            rows = existing.json()
+            if existing.status_code != 200 or not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+                raise ValueError("Invalid review response")
+            if any(row.get("customer_id") == claims["customer_id"] for row in rows):
+                return jsonify(error="You have already reviewed this product.", code="duplicate"), 409
+        payload["sentiment_score"] = analyse_sentiment(comment)
+        payload["is_flagged"] = int(payload["sentiment_score"] < -0.8)
+        response = requests.post(f"{DATABASE_URL}/reviews", json=payload, timeout=REQUEST_TIMEOUT)
+        if response.status_code != 201:
+            raise ValueError("Review write failed")
+        if form:
+            result = jsonify(message="Review submitted.")
+            result.headers["HX-Redirect"] = SHARED_URL.rstrip("/") + "/"
+            return result, 201
+        return jsonify(response.json()), 201
+    except (requests.RequestException, ValueError, TypeError):
+        return jsonify(error="Review service unavailable.", code="unavailable"), 503
 
-        if product_id in item_product_ids:
-            return True
-
-    return False
 
 @app.route('/')
 def index():
@@ -85,8 +128,7 @@ def index():
 @app.route('/submit')
 def submit_page():
     product_id = request.args.get('product_id')
-    customer_id = request.args.get('customer_id')
-    return render_template('submit.html', product_id=product_id, customer_id=customer_id)
+    return render_template('submit.html', product_id=product_id)
 
 @app.route('/reviews/view', methods=['GET'])
 def view_reviews_html():
@@ -115,49 +157,13 @@ def list_reviews(product_id):
 
 @app.route('/reviews', methods=['POST'])
 def submit_review():
-    data = request.json
+    return review_submission(request.get_json(silent=True))
 
-    if not is_verified_purchase(data['customer_id'], data['product_id']):
-        return jsonify({"error": "Only verified purchases can leave a review."}), 403
-
-    data['sentiment_score'] = analyse_sentiment(data.get('comment', ''))
-    data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0 # Flag if sentiment is very negative
-
-    response = requests.post(f"{DATABASE_URL}/reviews", json=data, timeout=REQUEST_TIMEOUT)
-    return jsonify(response.json()), response.status_code
 
 @app.route('/reviews/submit-form', methods=['POST'])
 def submit_review_form():
-    data = {
-        "product_id": int(request.form.get('product_id')),
-        "customer_id": int(request.form.get('customer_id')),
-        "rating": int(request.form.get('rating')),
-        "comment": request.form.get('comment', '')
-    }
- 
-    if not is_verified_purchase(data['customer_id'], data['product_id']):
-        return "<p style='color: var(--pink);'>Only verified purchases can leave a review.</p>"
- 
-    existing_reviews_res = requests.get(f"{DATABASE_URL}/reviews/{data['product_id']}", timeout=REQUEST_TIMEOUT)
-    existing_reviews = existing_reviews_res.json()
-    already_reviewed = any(
-        rev['customer_id'] == data['customer_id'] for rev in existing_reviews
-    )
-    if already_reviewed:
-        return "<p style='color: var(--pink);'>You've already reviewed this product.</p>"
- 
-    data['sentiment_score'] = analyse_sentiment(data['comment'])
-    data['is_flagged'] = 1 if data['sentiment_score'] < -0.8 else 0
- 
-    r = requests.post(f"{DATABASE_URL}/reviews", json=data, timeout=REQUEST_TIMEOUT)
- 
-    if r.status_code == 201:
-        response = app.make_response(
-            "<p style='color: var(--purple); font-weight: 600;'>Review submitted. Redirecting…</p>"
-        )
-        response.headers['HX-Redirect'] = f"{SHARED_URL}/"
-        return response
-    return "<p style='color: var(--pink);'>Something went wrong. Please try again.</p>"
+    return review_submission(request.form.to_dict(), form=True)
+
 
 @app.route('/reviews/<int:review_id>', methods=['PUT'])
 def edit_review(review_id):

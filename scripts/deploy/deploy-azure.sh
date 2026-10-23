@@ -24,6 +24,18 @@ if [[ -z "$REGISTRY_NAME" || -z "$ENV_NAME" || -z "$ENV_DOMAIN" || -z "$IMAGE_TA
 fi
 
 : "${STAFF_PASSWORD:?Set STAFF_PASSWORD (the cloud staff login password) before deploying}"
+: "${ORDERS_CRUD_SECRET:?Set ORDERS_CRUD_SECRET to a private shared/backend CRUD key before deploying}"
+if [[ "${#ORDERS_CRUD_SECRET}" -lt 32 ]]; then echo "ORDERS_CRUD_SECRET must contain at least 32 characters." >&2; exit 1; fi
+: "${ORDERS_PURCHASE_SECRET:?Set a distinct ORDERS_PURCHASE_SECRET before deploying}"
+if [[ "${#ORDERS_PURCHASE_SECRET}" -lt 32 || "$ORDERS_PURCHASE_SECRET" == "$ORDERS_CRUD_SECRET" || "$ORDERS_PURCHASE_SECRET" == "${ORDERS_MCP_SECRET:-}" ]]; then
+  echo "A separate purchase proof key of at least 32 characters is required." >&2; exit 1
+fi
+export ORDERS_CRUD_SECRET ORDERS_PURCHASE_SECRET
+: "${CUSTOMERS_REVIEW_SECRET:?Set a private CUSTOMERS_REVIEW_SECRET for shared and Student 3 before deploying}"
+if [[ "${#CUSTOMERS_REVIEW_SECRET}" -lt 32 || "$CUSTOMERS_REVIEW_SECRET" == "$ORDERS_CRUD_SECRET" || "$CUSTOMERS_REVIEW_SECRET" == "$ORDERS_PURCHASE_SECRET" || "$CUSTOMERS_REVIEW_SECRET" == "${ORDERS_MCP_SECRET:-}" ]]; then
+  echo "A distinct customer review key of at least 32 characters is required." >&2; exit 1
+fi
+export CUSTOMERS_REVIEW_SECRET
 export SECRET_KEY="${SECRET_KEY:-$(openssl rand -hex 32)}"
 export ORDERS_MCP_SECRET="${ORDERS_MCP_SECRET:-$(openssl rand -hex 32)}"
 

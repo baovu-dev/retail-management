@@ -1,3 +1,4 @@
 flask
+itsdangerous>=2.2,<3
 requests
 openai

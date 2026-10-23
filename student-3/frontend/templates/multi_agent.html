@@ -143,7 +143,8 @@
             id="user-request"
             type="text"
             maxlength="300"
-            value="Summarise the account details for customer 1."
+            value="Review aggregate customer account status counts."
+            readonly
             required
           >
 
@@ -193,12 +194,7 @@
             <option value="Reject">Reject</option>
           </select>
 
-          <input
-            id="reviewer-name"
-            type="text"
-            placeholder="Reviewer name"
-            required
-          >
+          <p>Reviewer identity comes from your shared staff login.</p>
 
           <textarea
             id="comment"
@@ -249,6 +245,16 @@
         value || "No output returned.";
     }
 
+    async function reviewToken() {
+      const response = await fetch({{ shared_url|tojson }} + "/api/customers/review-token", {
+        method: "POST", credentials: "include",
+        headers: { "X-Customers-Review-Request": "1" }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Staff login required.");
+      return data.access_token;
+    }
+
     function hideWorkflowResults() {
       [
         "planner-card",
@@ -264,21 +270,19 @@
       hideWorkflowResults();
 
       const status = document.getElementById("workflow-status");
-      const userRequest = document
-        .getElementById("user-request")
-        .value
-        .trim();
+      const userRequest = document.getElementById("user-request").value;
 
       status.classList.remove("error");
       status.textContent =
         "Planner, Worker and Reviewer are running...";
 
       try {
+        const token = await reviewToken();
         const response = await fetch("/multi-agent/workflow", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Multi-Agent-Mode": "on"
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
             user_request: userRequest
@@ -376,11 +380,6 @@
       const payload = {
         decision: decision.value,
 
-        reviewer: document
-          .getElementById("reviewer-name")
-          .value
-          .trim(),
-
         comment: document
           .getElementById("comment")
           .value
@@ -393,13 +392,14 @@
       };
 
       try {
+        const token = await reviewToken();
         const response = await fetch(
           `/multi-agent/workflow/${currentWorkflowId}/decision`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-Multi-Agent-Mode": "on"
+              "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify(payload)
           }

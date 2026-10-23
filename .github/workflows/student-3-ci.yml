@@ -8,6 +8,7 @@ on:
       - 'ai-services/multi-agent-server/evidence/__init__.py'
       - 'scripts/deploy/render_app_spec.py'
       - 'docker-compose.yml'
+      - 'shared/backend/app.py'
       - '.github/workflows/student-3-ci.yml'
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - 'ai-services/multi-agent-server/evidence/__init__.py'
       - 'scripts/deploy/render_app_spec.py'
       - 'docker-compose.yml'
+      - 'shared/backend/app.py'
       - '.github/workflows/student-3-ci.yml'
 
 env:

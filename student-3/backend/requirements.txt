@@ -1,4 +1,5 @@
 flask
 flask-cors
+itsdangerous>=2.2,<3
 requests
 mcp>=1.10,<2

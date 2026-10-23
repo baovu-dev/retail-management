@@ -1,89 +1,30 @@
-"""Student 3 evidence provider: safe customer account records from the Customer database API."""
+"""Aggregate customer evidence without names, contact details or account IDs."""
 
 import os
-import re
+from collections import Counter
 
 import requests
 
 
-CUSTOMERS_DB_API = os.getenv(
-    "CUSTOMERS_DB_API",
-    "http://localhost:6003"
-)
-
-TIMEOUT = 10
-MAX_RECORDS = 20
+CUSTOMERS_DB_API = os.getenv("CUSTOMERS_DB_API", "http://localhost:6003").rstrip("/")
 
 
-def collect(user_request: str) -> dict:
-    """Return safe customer records relevant to the request."""
-
-    match = re.search(
-        r"customer\s*(\d+)",
-        user_request,
-        re.IGNORECASE
-    )
-
+def collect(_user_request: str) -> dict:
+    """Read customer accounts but disclose only counts to the agent and history."""
     try:
-        if match:
-            customer_id = int(match.group(1))
-            scope = f"customer {customer_id}"
-
-            response = requests.get(
-                f"{CUSTOMERS_DB_API}/customers/{customer_id}",
-                timeout=TIMEOUT,
-            )
-
-            if response.status_code == 404:
-                return {
-                    "status": "success",
-                    "source": "customers-db",
-                    "scope": scope,
-                    "records": [],
-                }
-
-            response.raise_for_status()
-
-            customers = [response.json()]
-
-        else:
-            scope = "all customers"
-
-            response = requests.get(
-                f"{CUSTOMERS_DB_API}/customers",
-                timeout=TIMEOUT,
-            )
-
-            response.raise_for_status()
-
-            customers = response.json()
-
-    except requests.RequestException as exc:
-        return {
-            "status": "error",
-            "source": "customers-db",
-            "error": str(exc),
-            "records": [],
-        }
-
-    records = [
-        {
-            "id": f"customer {customer.get('customer_id')}",
-            "text": (
-                f"name {customer.get('first_name', '')} "
-                f"{customer.get('last_name', '')}, "
-                f"email {customer.get('email', '')}, "
-                f"phone {customer.get('phone') or 'not provided'}, "
-                f"status {customer.get('status', '')}, "
-                f"created {customer.get('created_at', '')}"
-            ),
-        }
-        for customer in customers[:MAX_RECORDS]
-    ]
-
-    return {
-        "status": "success",
-        "source": "customers-db",
-        "scope": scope,
-        "records": records,
-    }
+        response = requests.get(f"{CUSTOMERS_DB_API}/customers", timeout=10)
+        response.raise_for_status()
+        customers = response.json()
+        if not isinstance(customers, list) or any(not isinstance(item, dict) for item in customers):
+            raise ValueError("Invalid customer evidence")
+        statuses = [item.get("status") for item in customers]
+        if any(not isinstance(status, str) or status.strip().lower() not in {"active", "inactive"}
+               for status in statuses):
+            raise ValueError("Unknown customer status")
+        counts = Counter(status.strip().lower() for status in statuses)
+        records = [{"id": "customer total", "text": f"Total customer accounts: {len(customers)}."}]
+        records += [{"id": f"status {status}", "text": f"{status.title()} customer accounts: {counts[status]}."}
+                    for status in ("active", "inactive")]
+    except (requests.RequestException, ValueError, TypeError, AttributeError):
+        return {"status": "error", "source": "customers-db", "error": "Customer aggregate unavailable", "records": []}
+    return {"status": "success", "source": "customers-db", "scope": "aggregate account status", "records": records}

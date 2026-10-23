@@ -6,5 +6,9 @@ app = Flask(__name__, template_folder="templates", static_folder="css", static_u
 def index():
     return render_template("index.html")
 
+@app.route("/multi-agent")
+def multi_agent():
+    return render_template("multi_agent.html")
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3002, debug=True)

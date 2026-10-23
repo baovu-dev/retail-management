@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
+    product_name TEXT,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     unit_price REAL NOT NULL CHECK (unit_price >= 0),
     subtotal REAL NOT NULL CHECK (subtotal >= 0),
