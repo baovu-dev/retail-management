@@ -50,6 +50,7 @@ jobs:
         run: |
           pip install -r backend/requirements.txt
           pip install -r database/requirements.txt
+          pip install -r ../ai-services/multi-agent-server/requirements.txt
           pip install pytest
 
 
