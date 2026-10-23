@@ -72,10 +72,3 @@ a bit different per student.
 - `docker-compose.yml` - runs the whole thing together
 
 See the Orders runbook and retained evidence for the scope of verified flows.
-
-## Release 1 Orders
-
-See the [Orders runbook](student-4/README.md) and
-[retained validation evidence](student-4/evidence/README.md). AI Mode/Ollama, MCP,
-RAG and the agentic loop run locally outside Docker. Release 2 implementation
-is a separate next phase.
