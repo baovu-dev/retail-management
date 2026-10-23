@@ -38,7 +38,7 @@ jobs:
         run: python student-2/database/init_db.py
 
       - name: Test two Product backend endpoints and evidence shape
-        run: python -m pytest student-2/tests/post_commit student-2/tests/test_product_evidence.py -q
+        run: python -m pytest student-2/tests/post_commit student-2/tests/test_product_evidence.py student-2/tests/test_multi_agent_frontend.py -q
 
   build:
     runs-on: ubuntu-latest

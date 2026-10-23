@@ -129,11 +129,10 @@
 
     </div>
     <script>
-        const API = `${location.protocol}//${location.hostname}:5002`;
         let workflowId = null;
 
         async function apiRequest(path, options = {}) {
-            const response = await fetch(`${API}${path}`, options);
+            const response = await fetch(path, options);
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || JSON.stringify(data));
             return data;
