@@ -19,7 +19,7 @@ def test_get_product_returns_database_result():
         response = backend.app.test_client().get("/products/103")
     assert response.status_code == 200
     assert response.get_json() == product
-    get.assert_called_once_with(f"{backend.DATABASE_URL}/products/103")
+    get.assert_called_once_with(f"{backend.DATABASE_URL}/products/103", timeout=5)
 
 
 def test_get_product_preserves_not_found_status():
@@ -35,4 +35,4 @@ def test_create_product_forwards_request_and_returns_created_id():
         response = backend.app.test_client().post("/products", json=product)
     assert response.status_code == 201
     assert response.get_json()["product_id"] == 103
-    post.assert_called_once_with(f"{backend.DATABASE_URL}/products", json=product)
+    post.assert_called_once_with(f"{backend.DATABASE_URL}/products", json=product, timeout=5)
