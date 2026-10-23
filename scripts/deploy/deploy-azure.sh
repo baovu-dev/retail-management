@@ -31,6 +31,11 @@ if [[ "${#ORDERS_PURCHASE_SECRET}" -lt 32 || "$ORDERS_PURCHASE_SECRET" == "$ORDE
   echo "A separate purchase proof key of at least 32 characters is required." >&2; exit 1
 fi
 export ORDERS_CRUD_SECRET ORDERS_PURCHASE_SECRET
+: "${CUSTOMERS_REVIEW_SECRET:?Set a private CUSTOMERS_REVIEW_SECRET for shared and Student 3 before deploying}"
+if [[ "${#CUSTOMERS_REVIEW_SECRET}" -lt 32 || "$CUSTOMERS_REVIEW_SECRET" == "$ORDERS_CRUD_SECRET" || "$CUSTOMERS_REVIEW_SECRET" == "$ORDERS_PURCHASE_SECRET" || "$CUSTOMERS_REVIEW_SECRET" == "${ORDERS_MCP_SECRET:-}" ]]; then
+  echo "A distinct customer review key of at least 32 characters is required." >&2; exit 1
+fi
+export CUSTOMERS_REVIEW_SECRET
 export SECRET_KEY="${SECRET_KEY:-$(openssl rand -hex 32)}"
 export ORDERS_MCP_SECRET="${ORDERS_MCP_SECRET:-$(openssl rand -hex 32)}"
 

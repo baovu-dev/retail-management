@@ -32,6 +32,28 @@ STAFF_EMAIL = os.getenv("STAFF_EMAIL", "admin@kicklab.com")
 STAFF_PASSWORD = os.getenv("STAFF_PASSWORD")  # no hardcoded default: docker-compose sets it locally, a Container Apps secret in the cloud
 KNOWN_DEV_STAFF_PASSWORD = "Admin1234"  # pragma: allowlist secret - public dev default, only used to refuse it  # noqa: S105
 ORDERS_FRONTEND_ORIGIN = os.getenv("ORDERS_FRONTEND_ORIGIN", "http://localhost:3004").rstrip("/")
+CUSTOMERS_FRONTEND_ORIGIN = os.getenv("CUSTOMERS_FRONTEND_ORIGIN", "http://localhost:5003").rstrip("/")
+
+
+@app.post("/api/customers/review-token")
+@cross_origin(origins=[CUSTOMERS_FRONTEND_ORIGIN], supports_credentials=True)
+def customers_review_token():
+    """Mint a staff-only capability from the verified shared login session."""
+    if (request.headers.get("Origin") != CUSTOMERS_FRONTEND_ORIGIN or
+            request.headers.get("X-Customers-Review-Request") != "1"):
+        return jsonify(error="Trusted Customers origin required."), 403
+    secret = os.getenv("CUSTOMERS_REVIEW_SECRET", "")
+    if len(secret) < 32 or len(app.secret_key or "") < 32 or not STAFF_PASSWORD or STAFF_PASSWORD == KNOWN_DEV_STAFF_PASSWORD:
+        return jsonify(error="Customers review authentication unavailable."), 503
+    if (session.get("is_staff") is not True or not isinstance(session.get("staff_email"), str)
+            or session["staff_email"].lower() != STAFF_EMAIL.lower()):
+        return jsonify(error="Staff login required."), 401
+    token = URLSafeTimedSerializer(secret, salt="customers-review-v1").dumps({
+        "iss": "kicklab-shared", "aud": "customers-review", "scope": "customers:review",
+        "role": "staff", "staff_email": session["staff_email"]})
+    response = jsonify(access_token=token, expires_in=120)
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 # Public page addresses for each feature (browser links). Defaults match local Docker; the cloud deployment overrides them.
 REVIEWS_UI_URL = os.getenv("REVIEWS_UI_URL", "http://localhost:5001")

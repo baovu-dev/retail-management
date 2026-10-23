@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 
 from flask import Flask, jsonify, request
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from coordinator import HISTORY_PATH, get_workflow, read_jsonl, record_decision, run_workflow, workflow_status
 from evidence import PROVIDERS
@@ -22,6 +23,28 @@ def orders_authorized():
     secret = os.getenv("MULTI_AGENT_ORDERS_SECRET", "")
     supplied = request.headers.get("X-Orders-Workflow-Key", "")
     return len(secret) >= 32 and hmac.compare_digest(supplied, secret)
+
+
+def customers_authorized():
+    secret = os.getenv("CUSTOMERS_REVIEW_SECRET", "")
+    scheme, _, token = request.headers.get("Authorization", "").partition(" ")
+    if len(secret) < 32 or scheme.lower() != "bearer" or not 0 < len(token) <= 4096:
+        return False
+    try:
+        claims = URLSafeTimedSerializer(secret, salt="customers-review-v1").loads(token, max_age=120)
+    except (BadSignature, SignatureExpired, TypeError, ValueError):
+        return False
+    return (isinstance(claims, dict) and claims.get("iss") == "kicklab-shared"
+            and claims.get("aud") == "customers-review" and claims.get("scope") == "customers:review"
+            and claims.get("role") == "staff" and isinstance(claims.get("staff_email"), str)
+            and bool(claims["staff_email"]))
+
+
+def customers_guard(workflow_id):
+    found = get_workflow(workflow_id)
+    if found is not None and found.get("feature") == "student-3" and not customers_authorized():
+        return jsonify({"status": "error", "error": "Customer workflow access denied"}), 403
+    return None
 
 
 def orders_guard(workflow_id):
@@ -61,6 +84,8 @@ def workflow():
         return jsonify({"status": "error", "error": f"unknown feature: {feature}"}), 400
     if feature == "student-4" and not orders_authorized():
         return jsonify({"status": "error", "error": "Orders workflow access denied"}), 403
+    if feature == "student-3" and not customers_authorized():
+        return jsonify({"status": "error", "error": "Customer workflow access denied"}), 403
 
     if feature == "student-4" and request.args.get("async") == "true":
         workflow_id = str(uuid.uuid4())
@@ -80,6 +105,8 @@ def status():
             return jsonify({"status": "error", "error": "unknown feature"}), 400
         if feature == "student-4" and not orders_authorized():
             return jsonify({"status": "error", "error": "Orders workflow access denied"}), 403
+        if feature == "student-3" and not customers_authorized():
+            return jsonify({"status": "error", "error": "Customer workflow access denied"}), 403
         matching = [record for record in read_jsonl(HISTORY_PATH)
                     if record.get("feature") == feature and record.get("record_type") != "human_decision"]
         return jsonify({"status": "success", "workflow_history_count": len(matching),
@@ -90,11 +117,16 @@ def status():
         reviews = [record for record in read_jsonl(HISTORY_PATH)
                    if record.get("feature") == "student-1" and record.get("record_type") != "human_decision"]
         latest["latest_workflow"] = get_workflow(reviews[-1]["workflow_id"]) if reviews else None
+    if (latest.get("latest_workflow") or {}).get("feature") == "student-3" and not customers_authorized():
+        latest["latest_workflow"] = None
     return jsonify(latest), 200
 
 
 @app.get("/workflow/<workflow_id>")
 def get_one(workflow_id):
+    denied = customers_guard(workflow_id)
+    if denied is not None:
+        return denied
     denied = orders_guard(workflow_id)
     if denied is not None:
         return denied
@@ -118,6 +150,9 @@ def get_one(workflow_id):
 
 @app.post("/workflow/<workflow_id>/decision")
 def decision(workflow_id):
+    denied = customers_guard(workflow_id)
+    if denied is not None:
+        return denied
     denied = orders_guard(workflow_id)
     if denied is not None:
         return denied

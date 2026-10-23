@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>KICKLAB — Multi-Agent Workflow</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='styles.css') }}"
+  >
+
+  <style>
+    .workflow-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .workflow-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .workflow-card h3 {
+      margin: 6px 0 10px;
+    }
+
+    .workflow-card p {
+      line-height: 1.6;
+    }
+
+    .step-label {
+      color: var(--purple);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .request-form {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .request-form input {
+      flex: 1;
+    }
+
+    .request-form input,
+    .review-form input,
+    .review-form select,
+    .review-form textarea {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.95rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .review-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .review-form textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .evidence-list {
+      padding-left: 20px;
+      line-height: 1.5;
+    }
+
+    .status {
+      margin-top: 12px;
+      color: var(--text-muted);
+    }
+
+    .error {
+      color: #c62828;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-effects" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header id="header" class="scrolled">
+    <div class="container header-inner">
+      <a href="/" class="logo">
+        <span class="logo-name">KICKLAB</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/mcp" class="btn btn-glass">MCP Tools</a>
+        <a href="/rag" class="btn btn-glass">RAG Assistant</a>
+        <a href="/" class="btn btn-glass">Account</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="finder">
+    <div class="container workflow-container">
+      <span class="section-tag">🤝 Multi-Agent Workflow</span>
+
+      <h2 class="section-title">
+        Customer Account Multi-Agent Review
+      </h2>
+
+      <p class="section-sub">
+        Planner creates the approach, Worker retrieves customer evidence,
+        Reviewer checks the result, then a human makes the final decision.
+      </p>
+
+      <div class="workflow-card">
+        <h3>Run Workflow</h3>
+
+        <form id="workflow-form" class="request-form">
+          <input
+            id="user-request"
+            type="text"
+            maxlength="300"
+            value="Review aggregate customer account status counts."
+            readonly
+            required
+          >
+
+          <button type="submit" class="btn btn-gradient">
+            Run
+          </button>
+        </form>
+
+        <p id="workflow-status" class="status"></p>
+      </div>
+
+      <div id="planner-card" class="workflow-card hidden">
+        <span class="step-label">Step 1</span>
+        <h3>Planner</h3>
+        <p id="planner-output"></p>
+      </div>
+
+      <div id="worker-card" class="workflow-card hidden">
+        <span class="step-label">Step 2</span>
+        <h3>Worker</h3>
+
+        <p id="worker-output"></p>
+
+        <h4>Evidence Used</h4>
+        <ul id="evidence-list" class="evidence-list"></ul>
+      </div>
+
+      <div id="reviewer-card" class="workflow-card hidden">
+        <span class="step-label">Step 3</span>
+        <h3>Reviewer</h3>
+        <p id="reviewer-output"></p>
+      </div>
+
+      <div id="human-card" class="workflow-card hidden">
+        <span class="step-label">Step 4</span>
+        <h3>Human Review</h3>
+
+        <p>
+          Review the agent output, then choose the final decision.
+        </p>
+
+        <form id="review-form" class="review-form">
+          <select id="decision" required>
+            <option value="Approve">Approve</option>
+            <option value="Correct">Correct</option>
+            <option value="Partially Accept">Partially Accept</option>
+            <option value="Reject">Reject</option>
+          </select>
+
+          <p>Reviewer identity comes from your shared staff login.</p>
+
+          <textarea
+            id="comment"
+            placeholder="Reason for decision"
+            required
+          ></textarea>
+
+          <textarea
+            id="corrected-output"
+            class="hidden"
+            placeholder="Corrected output"
+          ></textarea>
+
+          <button type="submit" class="btn btn-gradient">
+            Submit Decision
+          </button>
+        </form>
+
+        <p id="decision-status" class="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">
+      &copy; 2026 KICKLAB · Customer Account Management
+    </p>
+  </footer>
+
+  <script>
+    const workflowForm = document.getElementById("workflow-form");
+    const reviewForm = document.getElementById("review-form");
+    const decision = document.getElementById("decision");
+    const correctedOutput = document.getElementById("corrected-output");
+
+    let currentWorkflowId = null;
+
+    function show(id) {
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function hide(id) {
+      document.getElementById(id).classList.add("hidden");
+    }
+
+    function setText(id, value) {
+      document.getElementById(id).textContent =
+        value || "No output returned.";
+    }
+
+    async function reviewToken() {
+      const response = await fetch({{ shared_url|tojson }} + "/api/customers/review-token", {
+        method: "POST", credentials: "include",
+        headers: { "X-Customers-Review-Request": "1" }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Staff login required.");
+      return data.access_token;
+    }
+
+    function hideWorkflowResults() {
+      [
+        "planner-card",
+        "worker-card",
+        "reviewer-card",
+        "human-card"
+      ].forEach(hide);
+    }
+
+    workflowForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      hideWorkflowResults();
+
+      const status = document.getElementById("workflow-status");
+      const userRequest = document.getElementById("user-request").value;
+
+      status.classList.remove("error");
+      status.textContent =
+        "Planner, Worker and Reviewer are running...";
+
+      try {
+        const token = await reviewToken();
+        const response = await fetch("/multi-agent/workflow", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            user_request: userRequest
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.status === "error") {
+          throw new Error(
+            data.error || "Workflow failed."
+          );
+        }
+
+        currentWorkflowId = data.workflow_id;
+
+        setText(
+          "planner-output",
+          data.planner_result?.plan
+        );
+
+        setText(
+          "worker-output",
+          data.worker_result?.output
+        );
+
+        setText(
+          "reviewer-output",
+          data.reviewer_result?.review
+        );
+
+        const evidenceList =
+          document.getElementById("evidence-list");
+
+        evidenceList.replaceChildren();
+
+        const evidence =
+          data.worker_result?.evidence || [];
+
+        if (evidence.length === 0) {
+          const item = document.createElement("li");
+          item.textContent = "No evidence returned.";
+          evidenceList.appendChild(item);
+        } else {
+          evidence.forEach(record => {
+            const item = document.createElement("li");
+            item.textContent =
+              `${record.id}: ${record.text}`;
+            evidenceList.appendChild(item);
+          });
+        }
+
+        show("planner-card");
+        show("worker-card");
+        show("reviewer-card");
+        show("human-card");
+
+        status.textContent =
+          `Workflow complete (${data.duration_ms} ms). Human review required.`;
+
+      } catch (error) {
+        status.classList.add("error");
+        status.textContent =
+          `Error: ${error.message}`;
+      }
+    });
+
+    decision.addEventListener("change", () => {
+      const needsCorrection =
+        decision.value === "Correct";
+
+      correctedOutput.classList.toggle(
+        "hidden",
+        !needsCorrection
+      );
+
+      correctedOutput.required =
+        needsCorrection;
+    });
+
+    reviewForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (!currentWorkflowId) {
+        return;
+      }
+
+      const status =
+        document.getElementById("decision-status");
+
+      status.classList.remove("error");
+      status.textContent =
+        "Submitting decision...";
+
+      const payload = {
+        decision: decision.value,
+
+        comment: document
+          .getElementById("comment")
+          .value
+          .trim(),
+
+        corrected_output:
+          decision.value === "Correct"
+            ? correctedOutput.value.trim()
+            : null
+      };
+
+      try {
+        const token = await reviewToken();
+        const response = await fetch(
+          `/multi-agent/workflow/${currentWorkflowId}/decision`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || data.status === "error") {
+          throw new Error(
+            data.error || "Could not record decision."
+          );
+        }
+
+        status.textContent =
+          `Decision recorded: ${payload.decision}.`;
+
+        reviewForm
+          .querySelectorAll(
+            "input, select, textarea, button"
+          )
+          .forEach(element => {
+            element.disabled = true;
+          });
+
+      } catch (error) {
+        status.classList.add("error");
+        status.textContent =
+          `Error: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

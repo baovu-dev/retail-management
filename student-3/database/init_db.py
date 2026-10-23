@@ -29,13 +29,16 @@ def seed():
 
     ]
 
-    PASSWORD = "kicklab321"
+    DEMO_PASSWORD = os.getenv(
+        "DEMO_PASSWORD",
+        "kicklab321" # noqa: S105 # pragma: allowlist secret
+    )
     sample_customers_with_passwords = []
 
     for customer in sample_customers:
         first_name, last_name, phone, email, status = customer
 
-        password_hash = generate_password_hash(PASSWORD)
+        password_hash = generate_password_hash(DEMO_PASSWORD)
 
         sample_customers_with_passwords.append(
             (

@@ -250,7 +250,8 @@ def test_cloud_cookie_flags_and_secret_ingress_configuration(system, monkeypatch
     config = {"ENV_DOMAIN": DOMAIN, "LOGIN_SERVER": "fixture.azurecr.io", "IMAGE_TAG": "a" * 40,
               "ENV_ID": "/fixture/environment", "PULL_ID": "/fixture/identity", "LOCATION": "australiaeast",
               "SECRET_KEY": secrets.token_hex(32), "ORDERS_MCP_SECRET": secrets.token_hex(32), "ORDERS_CRUD_SECRET": system.secret,
-              "STAFF_PASSWORD": system.accounts["staff"]["password"]}
+              "STAFF_PASSWORD": system.accounts["staff"]["password"],
+              "CUSTOMERS_REVIEW_SECRET": secrets.token_hex(32)}
     for key, value in config.items():
         monkeypatch.setenv(key, value)
     for app in ("student4-database", "student4-backend", "shared-backend", "student1-backend"):
@@ -270,6 +271,7 @@ def test_cloud_cookie_flags_and_secret_ingress_configuration(system, monkeypatch
                 continue
             if app == "shared-backend":
                 assert {"name": "REVIEWS_FRONTEND_ORIGIN", "value": f"https://student1-backend.{DOMAIN}"} in env
+                assert {"name": "CUSTOMERS_REVIEW_SECRET", "secretRef": "customers-review-secret"} in env  # pragma: allowlist secret - reference name only
             assert {"name": "ORDERS_CRUD_SECRET", "secretRef": "orders-crud-secret"} in env  # pragma: allowlist secret - secret reference name only
             assert {"name": "APP_ENV", "value": "cloud"} in env
 

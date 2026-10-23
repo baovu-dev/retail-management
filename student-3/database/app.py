@@ -421,8 +421,23 @@ def get_auth_customer_by_email():
 
 
 if __name__ == "__main__":
+
+    debug_mode = (
+        os.getenv(
+            "FLASK_DEBUG",
+            "false"
+        )
+        .lower()
+        == "true"
+    )
+
+    host = os.getenv(
+        "FLASK_HOST",
+        "127.0.0.1"
+    )
+
     app.run(
-        host="0.0.0.0",
+        host=host,
         port=6003,
-        debug=True
+        debug=debug_mode
     )

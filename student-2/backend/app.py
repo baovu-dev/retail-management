@@ -26,13 +26,13 @@ OLLAMA_MODEL = os.getenv(
 
 @app.route('/products', methods=['GET'])
 def get_products():
-    response = requests.get(f"{DATABASE_URL}/products")
+    response = requests.get(f"{DATABASE_URL}/products", timeout=5)
     return jsonify(response.json()), response.status_code
 
 @app.route('/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
     response = requests.get(
-        f"{DATABASE_URL}/products/{product_id}"
+        f"{DATABASE_URL}/products/{product_id}", timeout=5
     )
     return jsonify(response.json()), response.status_code
 
@@ -43,7 +43,7 @@ def create_product():
 
     response = requests.post(
         f"{DATABASE_URL}/products",
-        json=data
+        json=data, timeout=5
     )
 
     return jsonify(response.json()), response.status_code
@@ -54,7 +54,7 @@ def update_product(product_id):
 
     response = requests.put(
         f"{DATABASE_URL}/products/{product_id}",
-        json=data
+        json=data, timeout=5
     )
 
     return jsonify(response.json()), response.status_code
@@ -62,14 +62,14 @@ def update_product(product_id):
 @app.route("/products/<int:product_id>", methods=["DELETE"])
 def delete_product(product_id):
     response = requests.delete(
-        f"{DATABASE_URL}/products/{product_id}"
+        f"{DATABASE_URL}/products/{product_id}", timeout=5
     )
 
     return jsonify(response.json()), response.status_code
 
 @app.route("/products/count", methods=["GET"])
 def get_product_count():
-    response = requests.get(f"{DATABASE_URL}/products")
+    response = requests.get(f"{DATABASE_URL}/products", timeout=5)
     products = response.json()
 
     return jsonify({
@@ -79,7 +79,7 @@ def get_product_count():
 @app.route("/products/<int:product_id>/generate-description", methods=["POST"])
 def generate_product_description(product_id):
     product_response = requests.get(
-        f"{DATABASE_URL}/products/{product_id}"
+        f"{DATABASE_URL}/products/{product_id}", timeout=5
     )
 
     if product_response.status_code != 200:
@@ -106,7 +106,8 @@ Return only the product description.
             "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False,
-        }
+        },
+        timeout=30,
     )
 
     result = ollama_response.json()
@@ -186,7 +187,7 @@ def start_multi_agent_workflow():
         response = requests.post(
             f"{MULTI_AGENT_SERVER_URL}/workflow",
             json={"user_request": user_request, "feature": "student-2"},
-            timeout=120,
+            timeout=600,
         )
         return jsonify(response.json()), response.status_code
     except requests.RequestException:
@@ -235,4 +236,4 @@ def multi_agent_workflow_status():
         return jsonify({"error": "Multi-agent server unreachable"}), 503
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=False)  # noqa: S104 - Docker ingress
