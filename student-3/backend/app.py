@@ -8,6 +8,9 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import os
+from routes.mcp_mode import mcp_bp
+from routes.rag_mode import rag_bp
+from routes.multi_agent_mode import multi_agent_bp
 
 app = Flask(
     __name__,
@@ -17,13 +20,10 @@ app = Flask(
 )
 CORS(app)
 
-from routes.mcp_mode import mcp_bp
 app.register_blueprint(mcp_bp)
 
-from routes.rag_mode import rag_bp
 app.register_blueprint(rag_bp)
 
-from routes.multi_agent_mode import multi_agent_bp
 app.register_blueprint(multi_agent_bp)
 
 DATABASE_URL = os.getenv('DATABASE_URL', 'http://localhost:6003')
