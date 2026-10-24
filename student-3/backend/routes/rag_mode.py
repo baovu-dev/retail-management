@@ -1,5 +1,4 @@
 import html
-import json
 import os
 import requests
 from flask import Blueprint, request, render_template

@@ -1,7 +1,6 @@
 import importlib.util
 import os
 import sys
-import tempfile
 import unittest
 
 BACKEND_DIR = os.path.join(os.path.dirname(__file__), "..", "backend")
