@@ -7,8 +7,8 @@ import pytest
 
 LOOP = Path(__file__).resolve().parents[2] / "ai-services/agentic-loop"
 sys.path.insert(0, str(LOOP))
-from modes import orders_mode, mcp_mode, rag_mode
-from test_orders_mcp import load_file
+from modes import orders_mode, mcp_mode, rag_mode  # noqa: E402 - requires repository path or validation setup above
+from test_orders_mcp import load_file  # noqa: E402 - requires repository path or validation setup above
 
 
 def sample():

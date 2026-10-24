@@ -4,3 +4,4 @@ requests
 pytest
 itsdangerous>=2.2,<3
 mcp>=1.10,<2
+openai>=1,<3

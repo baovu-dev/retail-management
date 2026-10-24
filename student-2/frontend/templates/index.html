@@ -32,6 +32,18 @@
 
 <div id="product-list"></div>
 
+<h2>Shared AI Services</h2>
+
+<h3>MCP Product Lookup</h3>
+<input type="number" id="mcp-product-id" placeholder="Product ID">
+<button onclick="lookupMCPProduct()">Get Product via MCP</button>
+<pre id="mcp-result"></pre>
+
+<h3>RAG Product Assistant</h3>
+<input type="text" id="rag-query" placeholder="Ask about Product Management">
+<button onclick="askRAG()">Ask RAG</button>
+<pre id="rag-result"></pre>
+
 <script>
     const API_URL = "http://localhost:5002";
 
@@ -72,7 +84,7 @@
     }
 
     document.getElementById("product-form").addEventListener(
-        "submit", 
+        "submit",
         async function(event) {
             event.preventDefault();
 
@@ -84,10 +96,10 @@
                 brand: document.getElementById("brand").value,
                 status: document.getElementById("status").value
             };
-            
+
             await fetch(`${API_URL}/products`, {
                 method: "POST",
-                headers: { 
+                headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(product)
@@ -117,13 +129,13 @@
 
         const brand = prompt("Edit Brand:", product.brand || "");
         if (brand === null) return;
-        
+
         const status = prompt("Edit Status (active/inactive):", product.status);
         if (status === null) return;
 
         await fetch(`${API_URL}/products/${productId}`, {
             method: "PUT",
-            headers: { 
+            headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -135,7 +147,7 @@
                 status: status
             })
         });
-        
+
         loadProducts();
     }
 
@@ -148,16 +160,64 @@
 
     async function generateDescription(productId) {
         const response = await fetch(
-            `${API_URL}/products/${productId}/generate-description`, 
+            `${API_URL}/products/${productId}/generate-description`,
             {
             method: "POST"
         }
-    
+
     );
-    
+
     const result = await response.json();
 
     alert(result.description);
+    }
+
+    async function lookupMCPProduct() {
+        const productId = document.getElementById("mcp-product-id").value;
+        const resultBox = document.getElementById("mcp-result");
+
+        if (!productId) {
+            resultBox.textContent = "Please enter a product ID.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/mcp/product/${productId}`);
+            const result = await response.json();
+
+            resultBox.textContent = JSON.stringify(result, null, 2);
+        } catch (error) {
+            resultBox.textContent = "MCP request failed.";
+        }
+    }
+
+    async function askRAG() {
+        const query = document.getElementById("rag-query").value;
+        const resultBox = document.getElementById("rag-result");
+
+        if (!query.trim()) {
+            resultBox.textContent = "Please enter a question.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/rag/ask`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            const result = await response.json();
+
+            resultBox.textContent =
+                `Answer: ${result.answer || result.error}\n` +
+                `Confidence: ${result.confidence_category || "N/A"}\n` +
+                `Citations: ${JSON.stringify(result.citations || [], null, 2)}`;
+        } catch (error) {
+            resultBox.textContent = "RAG request failed.";
+        }
     }
 
     loadProducts();

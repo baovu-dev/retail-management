@@ -1,0 +1,21 @@
+        async function ordersFetch(url, options = {}) {
+            const issued = await fetch(`${SHARED_BASE}/api/orders/crud-token`, {
+                method: "POST", credentials: "include",
+                headers: {"X-Orders-Token-Request": "1"},
+                signal: AbortSignal.timeout(10000),
+            });
+            const capability = await issued.json();
+            if (!issued.ok) throw new Error(capability.error || "Please log in to the shared store.");
+            const expectedRole = {{ ("staff" if staff_mode else "customer") | tojson }};
+            if (capability.role !== expectedRole) throw new Error(`Please use the ${capability.role} Orders page.`);
+            // Never persist tokens or retry mutations. Obtain a fresh capability per request.
+            return fetch(url, {...options, credentials: "omit",
+                headers: {...(options.headers || {}), Authorization: `Bearer ${capability.access_token}`},
+                signal: AbortSignal.timeout(45000)});
+        }
+
+        function orderItemLabel(item) {
+            const label = typeof item.product_name === "string" && item.product_name.trim()
+                ? item.product_name : `Product #${item.product_id}`;
+            return label.replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[char]));
+        }

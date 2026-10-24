@@ -10,8 +10,8 @@ from itsdangerous import URLSafeTimedSerializer
 from test_backend import load_backend
 
 ROOT = Path(__file__).resolve().parents[2]
-SECRET = "orders-test-secret-with-at-least-32-characters"
-SESSION_SECRET = "session-test-secret-with-at-least-32-characters"
+SECRET = "orders-test-secret-with-at-least-32-characters"  # pragma: allowlist secret - deliberate test fixture
+SESSION_SECRET = "session-test-secret-with-at-least-32-characters"  # pragma: allowlist secret - deliberate test fixture
 ORIGIN = "http://localhost:3004"
 
 
@@ -54,7 +54,7 @@ def test_shared_login_issues_order_scoped_token(shared, login_body):
     customer_response = Mock(status_code=200)
     customer_response.json.return_value = login_body
     with shared.app.test_client() as client, patch.object(shared.requests, "post", return_value=customer_response):
-        assert client.post("/login", data={"email": "test@example.com", "password": "test"}).status_code == 302
+        assert client.post("/login", data={"email": "test@example.com", "password": "test"}).status_code == 302  # pragma: allowlist secret - deliberate test fixture
         response = client.post("/api/orders/mcp-token", headers={"Origin": ORIGIN},
                                json={"order_id": 1, "customer_id": 999, "role": "staff"})
     assert response.status_code == 200
@@ -71,7 +71,7 @@ def test_shared_rejects_no_session_forged_session_and_untrusted_origin(shared):
         assert client.post(url, headers={"Origin": ORIGIN, "X-Customer-ID": "7"}, json={"order_id": 1}).status_code == 401
         serializer = shared.app.session_interface.get_signing_serializer(shared.app)
         old_key = shared.app.secret_key
-        shared.app.secret_key = "kicklab-dev-secret-key"
+        shared.app.secret_key = "kicklab-dev-secret-key"  # pragma: allowlist secret - deliberate test fixture
         forged = shared.app.session_interface.get_signing_serializer(shared.app).dumps({"customer": {"customer_id": 7}})
         shared.app.secret_key = old_key
         client.set_cookie("session", forged)
@@ -87,7 +87,7 @@ def test_shared_rejects_no_session_forged_session_and_untrusted_origin(shared):
 
 def test_shared_fails_closed_with_default_keys(shared, monkeypatch):
     with shared.app.test_client() as client:
-        shared.app.secret_key = "kicklab-dev-secret-key"
+        shared.app.secret_key = "kicklab-dev-secret-key"  # pragma: allowlist secret - deliberate test fixture
         assert client.post("/api/orders/mcp-token", headers={"Origin": ORIGIN}, json={"order_id": 1}).status_code == 503
         shared.app.secret_key = SESSION_SECRET
         monkeypatch.delenv("ORDERS_MCP_SECRET")
@@ -130,7 +130,7 @@ def test_backend_executes_registered_tool_contract(backend):
 
 
 @pytest.mark.parametrize("credential,status", [
-    ("", 401), ("forged", 401), (token(secret="wrong-signing-key"), 401),
+    ("", 401), ("forged", 401), (token(secret="wrong-signing-key"), 401),  # pragma: allowlist secret - deliberate test fixture
     (token(order_id=2), 403), (token(aud="other"), 401), (token(scope="order:write"), 401),
     (token(role="admin"), 401), (token(customer_id=True), 401),
 ])

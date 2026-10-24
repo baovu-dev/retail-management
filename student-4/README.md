@@ -1,4 +1,4 @@
-# Orders — Release 1
+# Orders — Release 1 and Release 2
 
 Orders is part of the shared KICKLAB application. Keep the existing CRUD, AI
 assistant, authenticated read-only MCP status lookup, and documentation RAG.
@@ -19,7 +19,7 @@ consistently; the shared login cookie and MCP origin check depend on this.
 | Orders database API | http://localhost:6004 | `http://student4-database:6004` |
 | Customers API | http://localhost:5003 | `http://student3-backend:5003` |
 | Products API | http://localhost:5002 | `http://student2-backend:5002` |
-| Host MCP / RAG | http://localhost:8100/mcp / http://localhost:8200 | `host.docker.internal:8100` / `:8200` |
+| Host MCP / RAG / Multi-Agent | http://localhost:8100/mcp / http://localhost:8200 / http://localhost:8300 | `host.docker.internal:8100` / `:8200` / `:8300` |
 | Host Ollama | http://localhost:11434 | `host.docker.internal:11434` |
 
 Docker Desktop supplies `host.docker.internal`. Native Linux needs an equivalent
@@ -39,9 +39,9 @@ import secrets
 path = Path('.env')
 with path.open('x') as out:
     path.chmod(0o600)
-    for name in ('SECRET_KEY', 'ORDERS_MCP_SECRET', 'STAFF_PASSWORD'):
+    for name in ('SECRET_KEY', 'ORDERS_MCP_SECRET', 'ORDERS_CRUD_SECRET', 'MULTI_AGENT_ORDERS_SECRET', 'STAFF_PASSWORD'):
         out.write(f'{name}={secrets.token_hex(32)}\n')
-    out.write('STAFF_EMAIL=admin@kicklab.com\nAI_ENABLED=true\nMCP_ENABLED=true\nRAG_ENABLED=true\n')
+    out.write('STAFF_EMAIL=admin@kicklab.com\nAI_ENABLED=true\nMCP_ENABLED=true\nRAG_ENABLED=true\nMULTI_AGENT_ENABLED=true\n')
 PY
 ```
 
@@ -84,7 +84,8 @@ Prepare a host environment once:
 ```sh
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -r student-4/tests/requirements.txt \
-  -r ai-services/rag-server/requirements.txt -r ai-services/agentic-loop/requirements.txt
+  -r ai-services/rag-server/requirements.txt -r ai-services/agentic-loop/requirements.txt \
+  -r ai-services/multi-agent-server/requirements.txt
 ollama pull qwen2.5:0.5b
 ollama pull qwen2.5:3b
 ollama pull nomic-embed-text
@@ -134,9 +135,63 @@ Orders backend settings: `AI_ENABLED` (default true), `MCP_ENABLED` and
 6. Ask the Orders guide about statuses and cancellation; inspect sources. Ask an
    undocumented delivery/refund timing question and verify insufficient context.
 
-Release 1's legacy CRUD/customer-id filter is not an authorization boundary.
-The stronger identity/ownership checks described here apply to MCP; this cleanup
-does not claim to add authorization to the existing CRUD routes.
+Orders CRUD and the order-specific AI assistant now require a separate short-lived
+shared-session capability and enforce customer ownership and staff permissions.
+See [Orders CRUD authentication](ORDERS_CRUD_AUTH.md) for the exact contract,
+private configuration, checkout CSRF protection and team interface migration.
+
+## Release 2: staff Orders Multi-Agent review
+
+The staff Orders page at `http://localhost:3004/admin` starts a fixed review
+request: Planner → Worker (live total order count and public Orders guidance) →
+Reviewer → human decision. It shows the source records and previous/latest
+decision. It does not retrieve customer-specific orders or send credentials to
+the models or shared workflow history. The decision is an audit event, not an
+automatic order update. Existing AI, MCP and RAG screens remain available.
+The workflow starts in the background and the UI polls for its result with a
+fresh staff capability on each request. A model timeout or missing evidence is
+recorded as a failed workflow and cannot receive a human approval. Historical
+fallback runs are also blocked from approval. The Ollama client does not retry
+timed-out generations automatically; a slow local model can still cause a failed
+review, which must be reported as a failure rather than a completed assessment.
+
+The shared login issues a separate 120-second, staff-only review capability.
+`ORDERS_MCP_SECRET` must match in shared login and Orders backend. A second
+private value, `MULTI_AGENT_ORDERS_SECRET` (at least 32 characters), must match
+in the Orders backend and the host Multi-Agent server. Start the host server
+with these **environment variables**, not by adding it to Compose:
+
+```sh
+# From the repository root, with your private value available in your shell:
+ORDERS_API=http://localhost:5004 \
+OLLAMA_MODEL=qwen2.5:3b OLLAMA_REVIEW_MODEL=qwen2.5:3b \
+OLLAMA_TIMEOUT_SECONDS=150 \
+MULTI_AGENT_ORDERS_SECRET="$MULTI_AGENT_ORDERS_SECRET" \
+  .venv/bin/python ai-services/multi-agent-server/app.py
+```
+
+This is the model configuration used for the local Orders browser check.
+`llama3.1:8b` is an optional Reviewer model, but it exceeded the timeout on
+the tested CPU machine; do not count that run as a successful review.
+
+Do not print, commit or include either secret in screenshots. Root Compose reads
+them from its private `.env`; for the standalone Compose pass `--env-file .env`.
+`MULTI_AGENT_ENABLED=true` enables Orders locally. Cloud CI uses `false` and
+the service key must not be present in public frontend configuration.
+
+Login as staff at `http://localhost:5000/staff-login`, open the Orders staff
+page, select **Run Orders review**, inspect Planner, Worker, evidence and
+Reviewer, then choose Approve, Partially Accept, Correct or Reject and enter a
+reason. **Show latest review** retrieves the most recent Orders workflow and
+its human decision. New calls obtain a fresh capability, so a long model
+response does not require retaining an expired token in browser storage.
+
+Post-commit tests cover `start_order_workflow` and `record_order_decision` in
+`student-4/tests/post_commit/`. Their mocks test boundaries and identity, while
+`test_orders_multi_agent.py` checks source data and audit flow with stubbed
+model outputs. The local three-model UI run must be recorded separately; unit
+tests do not prove that Ollama responded correctly or that the full team cloud
+deployment works.
 
 ## Existing data and demo seeding
 
@@ -196,3 +251,14 @@ test runs real local HTTP/MCP with an isolated fixture, not the complete group a
 The existing `.github/workflows/student-4-ci.yml` runs tests and Docker validation.
 See [validation scripts](../scripts/orders/README.md), [agentic review](ORDERS_AGENTIC.md)
 and [retained evidence](evidence/README.md) for scope and historical limitations.
+
+## Orders cloud evidence review
+
+Use the offline [Orders Cloud Review runbook](ORDERS_CLOUD_REVIEW.md) for explicit
+run-bound validation/deployment artifacts, deterministic failure checks and a
+separate human release decision. Missing group tests or deployment evidence
+remain release blockers; this path does not deploy Azure or validate bonuses.
+
+The cloud collector now obtains CRUD capabilities from actual shared login sessions;
+see [Orders CRUD authentication](ORDERS_CRUD_AUTH.md) before running old anonymous
+validation scripts or integrating any other service with list/detail endpoints.
