@@ -1,5 +1,5 @@
 """Each feature registers one evidence provider here."""
-from evidence import student1_reviews, student2_products, student4_orders, student5_recommendations
+from evidence import student1_reviews, student2_products, student3_customers, student4_orders, student5_recommendations
 
 PROVIDERS = {
     "student-1": student1_reviews.collect,
