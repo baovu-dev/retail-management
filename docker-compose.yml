@@ -89,6 +89,8 @@ services:
   student3-database:
     build: ./student-3
     command: sh -c "cd database && python init_db.py && python app.py"
+    environment:
+      - FLASK_HOST=0.0.0.0
     ports:
       - "6003:6003"
     healthcheck:
@@ -111,6 +113,10 @@ services:
       - MCP_ENABLED=${MCP_ENABLED:-true}
       - RAG_URL=http://host.docker.internal:8200
       - RAG_ENABLED=${RAG_ENABLED:-true}
+      - SHARED_URL=http://localhost:5000
+      - AI_MODE_ENABLED=${AI_MODE_ENABLED:-true}
+      - MULTI_AGENT_SERVICE_URL=http://host.docker.internal:8300
+      - MULTI_AGENT_ENABLED=${MULTI_AGENT_ENABLED:-true}
     depends_on:
       student3-database:
         condition: service_healthy

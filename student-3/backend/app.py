@@ -23,9 +23,32 @@ app.register_blueprint(mcp_bp)
 from routes.rag_mode import rag_bp
 app.register_blueprint(rag_bp)
 
+from routes.multi_agent_mode import multi_agent_bp
+app.register_blueprint(multi_agent_bp)
+
 DATABASE_URL = os.getenv('DATABASE_URL', 'http://localhost:6003')
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://localhost:11434/api/generate')
 OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'llama3.1:8b')
+SHARED_URL = os.getenv('SHARED_URL', 'http://localhost:5000')
+REQUEST_TIMEOUT = 5
+AI_MODE_ENABLED = (
+    os.getenv(
+        'AI_MODE_ENABLED',
+        'true'
+    )
+    .strip()
+    .lower()
+    in (
+        '1',
+        'true',
+        'yes',
+        'on'
+    )
+)
+AI_DISABLED_MESSAGE = (
+    'AI features are disabled '
+    'in this deployment.'
+)
 
 
 def call_ollama(prompt):
@@ -44,7 +67,7 @@ def call_ollama(prompt):
 @app.route('/')
 def index():
     try:
-        return render_template('index.html')
+        return render_template('index.html', shared_url=SHARED_URL)
     except Exception:
         return jsonify({'service': 'student-3-customer-backend', 'status': 'running'})
 
@@ -103,7 +126,8 @@ def create_customer():
             'email': email,
             'password_hash': password_hash,
             'status': 'Active'
-        }
+        },
+        timeout=REQUEST_TIMEOUT,
     )
 
     return jsonify(response.json()), response.status_code
@@ -125,7 +149,8 @@ def login():
         f"{DATABASE_URL}/customers/by-email",
         params={
             'email': email
-        }
+        },
+        timeout=REQUEST_TIMEOUT,
     )
 
     if response.status_code == 404:
@@ -191,7 +216,8 @@ def change_password(customer_id):
         }), 400
 
     customer_response = requests.get(
-        f"{DATABASE_URL}/customers/{customer_id}/auth"
+        f"{DATABASE_URL}/customers/{customer_id}/auth",
+        timeout=REQUEST_TIMEOUT,
     )
 
     if customer_response.status_code != 200:
@@ -217,7 +243,8 @@ def change_password(customer_id):
         f"{DATABASE_URL}/customers/{customer_id}/password",
         json={
             'password_hash': new_password_hash
-        }
+        },
+        timeout=REQUEST_TIMEOUT,
     )
 
     return jsonify(
@@ -277,6 +304,10 @@ def account_assistant():
 
     if not question:
         return jsonify({'error': 'Question is required'}), 400
+    if not AI_MODE_ENABLED:
+        return jsonify({
+            'answer': AI_DISABLED_MESSAGE
+        }), 200
 
     customer_context = 'No customer context available.'
     if customer_id is not None:
@@ -292,7 +323,10 @@ def account_assistant():
                     f"Status: {customer.get('status', '')}"
                 )
         except requests.exceptions.RequestException:
-            pass
+            customer_context = (
+                'Customer context is '
+                'temporarily unavailable.'
+            )
 
     try:
         base_prompt = load_prompt('account_assistant_prompt.txt')
@@ -308,4 +342,12 @@ def account_assistant():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5003, debug=True)
+    debug_mode = (
+        os.getenv(
+            'FLASK_DEBUG',
+            'false'
+        )
+        .lower()
+        == 'true'
+    )
+    app.run(host='0.0.0.0', port=5003, debug=debug_mode) # noqa: S104
