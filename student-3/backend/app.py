@@ -17,13 +17,13 @@ app = Flask(
 )
 CORS(app)
 
-from routes.mcp_mode import mcp_bp
+from routes.mcp_mode import mcp_bp  # noqa: E402
 app.register_blueprint(mcp_bp)
 
-from routes.rag_mode import rag_bp
+from routes.rag_mode import rag_bp  # noqa: E402
 app.register_blueprint(rag_bp)
 
-from routes.multi_agent_mode import multi_agent_bp
+from routes.multi_agent_mode import multi_agent_bp  # noqa: E402
 app.register_blueprint(multi_agent_bp)
 
 DATABASE_URL = os.getenv('DATABASE_URL', 'http://localhost:6003')

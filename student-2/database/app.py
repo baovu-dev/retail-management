@@ -132,5 +132,5 @@ def delete_product(product_id):
     return jsonify({"message": "Product deleted"})
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=6002, debug=True)
+    app.run(host="0.0.0.0", port=6002, debug=os.environ.get("FLASK_DEBUG") == "1")  # noqa: S104 - must listen on all interfaces inside the container
 
