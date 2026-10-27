@@ -41,4 +41,4 @@
 
 ## Overall: PASS
 
-Human release decision: (pending Cloud Deployment Review)
+Human release decision: Approve by Bao Vu at 2026-10-24T13:37:54+00:00; reason: All six checks passed and the live Reviews data matches the deployment report
